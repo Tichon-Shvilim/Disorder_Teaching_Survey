@@ -50,7 +50,7 @@ services:
 
   frontend:
     build:
-      context: ./your-vite-react-project
+      context: ./my-app
     ports:
       - "3005:3000" # Assuming Vite runs on port 3000
     environment:
