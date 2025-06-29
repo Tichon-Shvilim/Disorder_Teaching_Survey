@@ -1,15 +1,16 @@
-
 import './App.css'
-
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import SignIn from './components/signIn/SignIn';
 
 function App() {
-  //const [count, setCount] = useState(0)
-
-  return (<><h1>hiiiiiiiiiiiiiii</h1> 
-     
-    
-    </>
-  )
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<SignIn />} />
+        <Route path="/signin" element={<SignIn />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
