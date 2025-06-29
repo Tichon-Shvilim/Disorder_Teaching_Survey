@@ -1,12 +1,13 @@
 
-import './App.css'
-import SignUp from './sign-up/SignUp';
+//import React from 'react';
+import './App.css';
+
 
 function App() {
   //const [count, setCount] = useState(0)
 
   return (
-    <><SignUp></SignUp>
+    <><h1>Bye!!!!!</h1>
 
       
      
