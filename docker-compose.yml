@@ -52,7 +52,7 @@ services:
     build:
       context: ./my-app
     ports:
-      - "3005:3000" # Assuming Vite runs on port 3000
+      - "3005:80" # Assuming Vite runs on port 80
     environment:
       - VITE_API_URL=http://localhost:3001 # Adjust according to your API endpoints
 
