@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  admin-service:
+    build:
+      context: ./microservices/admin-service
+    ports:
+      - "3006:3006"
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/adminDB
+
+  user-service:
+    build:
+      context: ./microservices/user-service
+    ports:
+      - "3001:3001"
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/userDB
+
+  student-service:
+    build:
+      context: ./microservices/student-service
+    ports:
+      - "3002:3002"
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/studentDB
+
+  form-service:
+    build:
+      context: ./microservices/form-service
+    ports:
+      - "3003:3003"
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/formDB
+
+  analytics-service:
+    build:
+      context: ./microservices/analytics-service
+    ports:
+      - "3004:3004"
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/analyticsDB
+
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  frontend:
+    build:
+      context: ./your-vite-react-project
+    ports:
+      - "3005:3000" # Assuming Vite runs on port 3000
+    environment:
+      - VITE_API_URL=http://localhost:3001 # Adjust according to your API endpoints
+
+volumes:
+  mongo-data:
