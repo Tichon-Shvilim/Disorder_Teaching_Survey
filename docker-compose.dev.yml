@@ -25,6 +25,7 @@ services:
       - /app/node_modules
     environment:
       - MONGODB_URI=mongodb://mongo:27017/userDB
+      - PORT=3001
     command: npm run dev
 
   student-service:
