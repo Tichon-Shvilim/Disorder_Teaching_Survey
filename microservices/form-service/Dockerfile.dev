@@ -1,0 +1,19 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install dependencies separately to leverage Docker layer caching
+COPY package*.json ./
+RUN npm install
+
+# Install nodemon globally for hot-reloading in dev
+RUN npm install -g nodemon
+
+# Copy the rest of the app
+COPY . .
+
+# Expose the development port
+EXPOSE 3003
+
+# Use nodemon to auto-restart the server on changes
+CMD ["nodemon", "index.js"]

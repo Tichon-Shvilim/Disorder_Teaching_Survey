@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { TextField, Button, Paper, Typography, FormControl, Select, MenuItem, InputLabel, Link } from '@mui/material';
+import { addItem } from '../Api-Requests/genericRequests'; 
+import type UserModel from '../UserModel'; 
 
 const SignUp: React.FC = () => {
   const [name, setName] = useState('');
@@ -7,9 +9,26 @@ const SignUp: React.FC = () => {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('');
 
-  const handleSignUp = (event: React.FormEvent) => {
+  const handleSignUp = async (event: React.FormEvent) => {
     event.preventDefault();
-    // Handle sign-up logic here
+
+    // Create a user object based on the UserModel interface
+    const user: UserModel = {
+      name,
+      email,
+      password,
+      role,
+    };
+
+    try {
+      // Send the user object to the backend using the generic addItem function
+      const response = await addItem<UserModel>('api/users/register', user);
+      console.log('User signed up successfully:', response);
+      // Optionally, redirect or show a success message
+    } catch (error) {
+      console.error('Error signing up:', error);
+      // Optionally, show an error message to the user
+    }
   };
 
   return (
