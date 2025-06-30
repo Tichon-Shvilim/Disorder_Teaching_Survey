@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
-import { TextField, Button, Paper, Typography, Link } from '@mui/material';
+import { TextField, Button, Paper, Typography, FormControl, Select, MenuItem, InputLabel, Link } from '@mui/material';
 
-const SignIn: React.FC = () => {
+const SignUp: React.FC = () => {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('');
 
-  const handleSignIn = (event: React.FormEvent) => {
+  const handleSignUp = (event: React.FormEvent) => {
     event.preventDefault();
-    // Handle sign-in logic here
+    // Handle sign-up logic here
   };
 
   return (
@@ -24,8 +26,16 @@ const SignIn: React.FC = () => {
         margin: 'auto',
       }}
     >
-      <Typography variant="h5">Sign In</Typography>
-      <form onSubmit={handleSignIn}>
+      <Typography variant="h5">Sign Up</Typography>
+      <form onSubmit={handleSignUp}>
+        <TextField
+          label="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          fullWidth
+          margin="normal"
+          required
+        />
         <TextField
           label="Email"
           type="email"
@@ -44,6 +54,17 @@ const SignIn: React.FC = () => {
           margin="normal"
           required
         />
+        <FormControl fullWidth margin="normal" required>
+          <InputLabel>Role</InputLabel>
+          <Select
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+          >
+            <MenuItem value="Admin">Admin</MenuItem>
+            <MenuItem value="Teacher">Teacher</MenuItem>
+            <MenuItem value="Therapist">Therapist</MenuItem>
+          </Select>
+        </FormControl>
         <Button
           type="submit"
           variant="contained"
@@ -51,17 +72,17 @@ const SignIn: React.FC = () => {
           sx={{ marginTop: 2 }}
           fullWidth
         >
-          Sign In
+          Sign Up
         </Button>
       </form>
       <Typography variant="body2" sx={{ marginTop: 2 }}>
-        Don't have an account?{' '}
-        <Link href="/signup" variant="body2">
-          Sign Up
+        Already have an account?{' '}
+        <Link href="/signin" variant="body2">
+          Sign In
         </Link>
       </Typography>
     </Paper>
   );
 };
 
-export default SignIn;
+export default SignUp;
