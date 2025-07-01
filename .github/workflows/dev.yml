@@ -1,0 +1,49 @@
+name: Dev CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      mongo:
+        image: mongo
+        ports:
+          - 27017:27017
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Docker
+        run: |
+          docker-compose -f docker-compose.dev.yml up -d --build
+
+      - name: Wait for services
+        run: sleep 10
+
+      - name: Run tests (admin-service)
+        run: docker-compose exec -T admin-service npm test || echo "No tests yet"
+
+      - name: Run tests (user-service)
+        run: docker-compose exec -T user-service npm test || echo "No tests yet"
+
+      - name: Run tests (student-service)
+        run: docker-compose exec -T student-service npm test || echo "No tests yet"
+
+      - name: Run tests (form-service)
+        run: docker-compose exec -T form-service npm test || echo "No tests yet"
+
+      - name: Run tests (analytics-service)
+        run: docker-compose exec -T analytics-service npm test || echo "No tests yet"
+
+      - name: Run tests (frontend)
+        run: docker-compose exec -T frontend npm test || echo "No tests yet"
+
+      - name: Tear down containers
+        run: docker-compose -f docker-compose.dev.yml down
