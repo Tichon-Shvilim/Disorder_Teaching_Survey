@@ -1,14 +1,33 @@
 import React, { useState } from 'react';
 import { TextField, Button, Paper, Typography, Link } from '@mui/material';
+import { useDispatch } from 'react-redux';
+import { loginSuccess } from '../../../store/authSlice'; // adjust path as needed
+import { signIn } from '../Api-Requests/genericRequests';
+import type UserModel from '../UserModel'; // adjust path as needed 
 
 const SignIn: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const dispatch = useDispatch();
 
-  const handleSignIn = (event: React.FormEvent) => {
-    event.preventDefault();
-    // Handle sign-in logic here
-  };
+ const handleSignIn = async (event: React.FormEvent) => {
+  event.preventDefault();
+  setError('');
+  try {
+    // 'users' is the route, { email, password } is the credentials object
+    const response = await signIn('api/users', { email, password });
+    type SignInResponse = { token: string; user: UserModel }; // Adjust 'any' to your user type if available
+    const data = response.data as SignInResponse;
+    dispatch(loginSuccess({ token: data.token, user: data.user }));
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(data.user));
+    // Redirect or update UI as needed
+    alert("signed up sucessfully")
+  } catch {
+    setError('Invalid email or password');
+  }
+};
 
   return (
     <Paper
@@ -54,6 +73,11 @@ const SignIn: React.FC = () => {
           Sign In
         </Button>
       </form>
+      {error && (
+        <Typography color="error" sx={{ marginTop: 2 }}>
+          {error}
+        </Typography>
+      )}
       <Typography variant="body2" sx={{ marginTop: 2 }}>
         Don't have an account?{' '}
         <Link href="/signup" variant="body2">

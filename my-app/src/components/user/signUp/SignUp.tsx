@@ -37,7 +37,7 @@ const SignUp: React.FC = () => {
           setName(user.name);
           setEmail(user.email);
           setRole(user.role);
-          setPassword(user.password); // Keep current password for edit
+          if (user.password !== undefined) setPassword(user.password); // Keep current password for edit
         })
         .catch((error) => {
           console.error("Error fetching user:", error);
