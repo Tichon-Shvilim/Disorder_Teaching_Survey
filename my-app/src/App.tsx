@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import SignIn from './components/user/signIn/SignIn';
 import SignUp from './components/user/signUp/SignUp';
-import StudentList from './components/user/studentManagement/StudentList';   
+import UserList from './components/user/userManagement/UserList';
 
 function App() {
   return (
@@ -11,17 +11,8 @@ function App() {
       <Routes>
         <Route path="/" element={<SignUp />} />
         <Route path="/signin" element={<SignIn />} />
-        <Route path="/signup" element={<SignUp/>} />
-        <Route
-          path="/studentlist"
-          element={
-            <StudentList
-              users={[]} // Replace with your users data
-              onEdit={() => {}} // Replace with your edit handler
-              onDelete={() => {}} // Replace with your delete handler
-            />
-          }
-        />
+        <Route path="/signup/:id?" element={<SignUp />} />
+        <Route path="/userlist" element={<UserList/>}/>
       </Routes>
     </BrowserRouter>
   );

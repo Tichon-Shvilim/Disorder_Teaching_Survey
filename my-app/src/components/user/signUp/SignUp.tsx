@@ -1,18 +1,53 @@
-import React, { useState } from 'react';
-import { TextField, Button, Paper, Typography, FormControl, Select, MenuItem, InputLabel, Link } from '@mui/material';
-import { addItem } from '../Api-Requests/genericRequests'; 
-import type UserModel from '../UserModel'; 
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import {
+  TextField,
+  Button,
+  Paper,
+  Typography,
+  FormControl,
+  Select,
+  MenuItem,
+  InputLabel,
+  Link,
+} from "@mui/material";
+import {
+  addItem,
+  getItemById,
+  updateItem,
+} from "../Api-Requests/genericRequests";
+import type UserModel from "../UserModel";
 
 const SignUp: React.FC = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState('');
+  const { id } = useParams<{ id?: string }>();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const handleSignUp = async (event: React.FormEvent) => {
+  // Fetch user details if editing
+  useEffect(() => {
+    if (id) {
+      setLoading(true);
+      getItemById<UserModel>("api/users", id)
+        .then((response) => {
+          const user = response.data;
+          setName(user.name);
+          setEmail(user.email);
+          setRole(user.role);
+          setPassword(user.password); // Keep current password for edit
+        })
+        .catch((error) => {
+          console.error("Error fetching user:", error);
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [id]);
+
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-
-    // Create a user object based on the UserModel interface
     const user: UserModel = {
       name,
       email,
@@ -21,13 +56,15 @@ const SignUp: React.FC = () => {
     };
 
     try {
-      // Send the user object to the backend using the generic addItem function
-      const response = await addItem<UserModel>('api/users/register', user);
-      console.log('User signed up successfully:', response);
-      // Optionally, redirect or show a success message
+      if (id) {
+        await updateItem<UserModel>("api/users", id.toString(), user);
+        alert("User updated successfully!");
+      } else {
+        await addItem<UserModel>("api/users/register", user);
+        alert("User signed up successfully!");
+      }
     } catch (error) {
-      console.error('Error signing up:', error);
-      // Optionally, show an error message to the user
+      console.error("Error submitting form:", error);
     }
   };
 
@@ -35,18 +72,18 @@ const SignUp: React.FC = () => {
     <Paper
       elevation={3}
       sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '100vh',
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100vh",
         padding: 3,
-        width: { xs: '90%', sm: '400px' },
-        margin: 'auto',
+        width: { xs: "90%", sm: "400px" },
+        margin: "auto",
       }}
     >
-      <Typography variant="h5">Sign Up</Typography>
-      <form onSubmit={handleSignUp}>
+      <Typography variant="h5">{id ? "Edit User" : "Sign Up"}</Typography>
+      <form onSubmit={handleSubmit}>
         <TextField
           label="Name"
           value={name}
@@ -66,19 +103,29 @@ const SignUp: React.FC = () => {
         />
         <TextField
           label="Password"
-          type="password"
+          type={showPassword ? "text" : "password"}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           fullWidth
           margin="normal"
-          required
+          required={!id}
+          slotProps={{
+            input: {
+              endAdornment: (
+                <Button
+                  onClick={() => setShowPassword((show) => !show)}
+                  tabIndex={-1}
+                  size="small"
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </Button>
+              ),
+            },
+          }}
         />
         <FormControl fullWidth margin="normal" required>
           <InputLabel>Role</InputLabel>
-          <Select
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-          >
+          <Select value={role} onChange={(e) => setRole(e.target.value)}>
             <MenuItem value="Admin">Admin</MenuItem>
             <MenuItem value="Teacher">Teacher</MenuItem>
             <MenuItem value="Therapist">Therapist</MenuItem>
@@ -90,16 +137,19 @@ const SignUp: React.FC = () => {
           color="primary"
           sx={{ marginTop: 2 }}
           fullWidth
+          disabled={loading}
         >
-          Sign Up
+          {id ? "Edit" : "Sign Up"}
         </Button>
       </form>
-      <Typography variant="body2" sx={{ marginTop: 2 }}>
-        Already have an account?{' '}
-        <Link href="/signin" variant="body2">
-          Sign In
-        </Link>
-      </Typography>
+      {!id && (
+        <Typography variant="body2" sx={{ marginTop: 2 }}>
+          Already have an account?{" "}
+          <Link href="/signin" variant="body2">
+            Sign In
+          </Link>
+        </Typography>
+      )}
     </Paper>
   );
 };
