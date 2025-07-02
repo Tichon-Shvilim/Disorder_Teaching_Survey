@@ -19,3 +19,9 @@ export const addItem = <T>(route: string, item: T) => {
 export const updateItem = <T>(route: string, id: string, item: T) => {
     return httpSrvice.put<T>(`/${route}/${id}`, item);
 };
+
+export const signIn = <T>(route: string, credentials: { email: string; password: string }) => {
+    return httpSrvice.post<T>(`/${route}/login`, credentials);
+};
+
+
