@@ -1,18 +1,63 @@
 import './App.css'
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-
+import RoleRoute from './components/RoleRoute';
 import SignIn from './components/user/signIn/SignIn';
 import SignUp from './components/user/signUp/SignUp';
 import UserList from './components/user/userManagement/UserList';
+import AdminDashboard from './components/dashboards/AdminDashboard';
+import TeacherDashboard from './components/dashboards/TeacherDashboard';
+import TherapistDashboard from './components/dashboards/TherapistDashboard';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<SignUp />} />
+        {/* Routes שכולם יכולים לגשת אליהם */}
+        <Route path="/" element={<SignIn />} />
         <Route path="/signin" element={<SignIn />} />
-        <Route path="/signup/:id?" element={<SignUp />} />
-        <Route path="/userlist" element={<UserList/>}/>
+
+        {/* דשבורד אדמין ונתיבים פנימיים */}
+        <Route
+          path="/admin/*"
+          element={
+            <RoleRoute allowedRoles={["admin"]}>
+              <AdminDashboard />
+            </RoleRoute>
+          }
+        >
+          <Route path="userlist" element={<UserList />} />
+          <Route path="signup/:id?" element={<SignUp />} />
+          {/* תוכל להוסיף כאן עוד נתיבים פנימיים לאדמין */}
+        </Route>
+
+        {/* דשבורד מורה */}
+        <Route
+          path="/teacher/*"
+          element={
+            <RoleRoute allowedRoles={["teacher"]}>
+              <TeacherDashboard />
+            </RoleRoute>
+          }
+        >
+          {/* דוגמה לנתיב פנימי */}
+          <Route path="students" element={<div>רשימת תלמידים</div>} />
+        </Route>
+
+        {/* דשבורד תרפיסט */}
+        <Route
+          path="/therapist/*"
+          element={
+            <RoleRoute allowedRoles={["therapist"]}>
+              <TherapistDashboard />
+            </RoleRoute>
+          }
+        >
+          {/* דוגמה לנתיב פנימי */}
+          <Route path="students" element={<div>רשימת מטופלים</div>} />
+        </Route>
+
+        {/* ברירת מחדל */}
+        <Route path="*" element={<SignIn />} />
       </Routes>
     </BrowserRouter>
   );

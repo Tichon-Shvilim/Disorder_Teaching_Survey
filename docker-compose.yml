@@ -41,6 +41,14 @@ services:
     environment:
       - MONGODB_URI=mongodb://mongo:27017/analyticsDB
 
+  class-service:
+    build:
+      context: ./microservices/class-service
+    ports:
+      - "3005:3005"
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/classDB
+
   mongo:
     image: mongo
     ports:

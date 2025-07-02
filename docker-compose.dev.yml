@@ -72,6 +72,19 @@ services:
       - JWT_SECRET=8f7d2b1e-4c3a-4e2b-8e7a-9c6d5b4a3f2e!@#RandomExtraStuff
     command: npm run dev
 
+  class-service:
+    build:
+      context: ./microservices/class-service
+      dockerfile: Dockerfile.dev
+    ports:
+      - "4005:3005"
+    volumes:
+      - ./microservices/class-service:/app
+      - /app/node_modules
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/classDB
+    command: npm run dev
+
   mongo:
     image: mongo
     ports:

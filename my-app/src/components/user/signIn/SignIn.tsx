@@ -17,7 +17,7 @@ const SignIn: React.FC = () => {
   try {
     // 'users' is the route, { email, password } is the credentials object
     const response = await signIn('api/users', { email, password });
-    type SignInResponse = { token: string; user: UserModel }; // Adjust 'any' to your user type if available
+    type SignInResponse = { token: string; user: UserModel }; 
     const data = response.data as SignInResponse;
     dispatch(loginSuccess({ token: data.token, user: data.user }));
     localStorage.setItem('token', data.token);
