@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
-import type UserModel from '../components/user/UserModel'; // Adjust the path as necessary
+import type UserModel from '../components/user/UserModel'; 
 
 // interface User {
 //   id: string;

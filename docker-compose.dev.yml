@@ -91,6 +91,7 @@ services:
     environment:
       # - VITE_API_URL=http://localhost:4001 # match dev ports
       - VITE_USER_SERVICE_URL=http://localhost:4001 # Add this line
+      - VITE_FORM_SERVICE_URL=http://localhost:4003
     command: npm run dev
 
 volumes:
