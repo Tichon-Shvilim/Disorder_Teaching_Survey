@@ -12,6 +12,9 @@ const AdminDashboard: React.FC = () => (
       <Button component={Link} to="signup" variant="contained" sx={{ m: 1 }}>
         הוסף משתמש חדש
       </Button>
+      <Button component={Link} to="creatform" variant="contained" sx={{ m: 1 }}>
+        edit form
+      </Button>
       {/* תוכל להוסיף כאן עוד כפתורים */}
     </nav>
     <Box sx={{ mt: 3 }}>

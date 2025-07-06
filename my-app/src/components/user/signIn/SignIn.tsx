@@ -4,12 +4,15 @@ import { useDispatch } from 'react-redux';
 import { loginSuccess } from '../../../store/authSlice'; // adjust path as needed
 import { signIn } from '../Api-Requests/genericRequests';
 import type UserModel from '../UserModel'; // adjust path as needed 
+import { useNavigate } from 'react-router-dom'; 
+
 
 const SignIn: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const dispatch = useDispatch();
+  const navigate = useNavigate(); 
 
  const handleSignIn = async (event: React.FormEvent) => {
   event.preventDefault();
@@ -23,7 +26,10 @@ const SignIn: React.FC = () => {
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(data.user));
     // Redirect or update UI as needed
-    alert("signed up sucessfully")
+    if (data.user.role === 'admin') navigate('/admin');
+      else if (data.user.role === 'teacher') navigate('/teacher');
+      else if (data.user.role === 'therapist') navigate('/therapist');
+      else navigate('/'); // fallback
   } catch {
     setError('Invalid email or password');
   }
