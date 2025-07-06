@@ -69,3 +69,13 @@ docker-compose.override.yaml
 # Optional: Ignore local frontend preview outputs
 # ----------------------------------------
 # frontend/preview/
+
+# General cache
+.cache/
+
+# Incomplete large downloads (like MongoDB ZIPs)
+*.zip.downloading
+
+# Optional: Local override files
+*.local
+
