@@ -10,8 +10,10 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import type { SelectChangeEvent } from "@mui/material/Select";
+import { getAllItems, addItem } from "./Api-Requests/genericRequests";
+import type { DomainModel } from "./models/DomainModel";
 const CreatForm: React.FC = () => {
-  const [domains, setDomains] = useState<{ _id: string; name: string }[]>([]);
+  const [domains, setDomains] = useState<DomainModel[]>([]);
   const [selectedDomain, setSelectedDomain] = useState("");
   const [showAddDomain, setShowAddDomain] = useState(false);
   const [newDomainName, setNewDomainName] = useState("");
@@ -22,21 +24,17 @@ const CreatForm: React.FC = () => {
 
   // Load domains on mount
   useEffect(() => {
-    fetch("/api/domains")
-      .then((res) => res.json())
-      .then(setDomains);
+    getAllItems<DomainModel>("/api/domains")
+      .then((res) => setDomains(Array.isArray(res.data) ? res.data : [res.data]))
+      .catch(() => setDomains([]));
   }, []);
 
   // Add new domain
   const handleAddDomain = async () => {
-    const res = await fetch("/api/domains", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: newDomainName }),
-    });
-    const newDomain = await res.json();
+    const res = await addItem<DomainModel>("/api/domains", { name: newDomainName });
+    const newDomain = res.data;
     setDomains([...domains, newDomain]);
-    setSelectedDomain(newDomain._id);
+    setSelectedDomain(newDomain._id ?? "");
     setNewDomainName("");
     setShowAddDomain(false);
     setDirty(true);
@@ -74,14 +72,10 @@ const CreatForm: React.FC = () => {
 
   // Save question
   const handleSave = async () => {
-    await fetch("/api/questions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        text: questionText,
-        domainId: selectedDomain,
-        options: options.filter((opt) => opt.label.trim() !== ""),
-      }),
+    await addItem("api/questions", {
+      text: questionText,
+      domainId: selectedDomain,
+      options: options.filter((opt) => opt.label.trim() !== ""),
     });
     setQuestionText("");
     setOptions([{ value: 1, label: "" }]);

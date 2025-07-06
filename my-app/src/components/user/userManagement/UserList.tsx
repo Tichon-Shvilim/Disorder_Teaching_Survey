@@ -1,13 +1,25 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Paper, IconButton, Typography, Button, Box
-} from '@mui/material';
-import { Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
-import {getAllItems, deleteItem } from '../Api-Requests/genericRequests';
-import type UserModel  from '../UserModel';
-
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  IconButton,
+  Typography,
+  Button,
+  Box,
+} from "@mui/material";
+import {
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  Add as AddIcon,
+} from "@mui/icons-material";
+import { getAllItems, deleteItem } from "../Api-Requests/genericRequests";
+import type UserModel from "../UserModel";
 
 const UsersList: React.FC = () => {
   const navigate = useNavigate();
@@ -17,12 +29,12 @@ const UsersList: React.FC = () => {
   const fetchUsers = async () => {
     try {
       // "users" is the route for your API, adjust if needed
-      const response = await getAllItems<UserModel[]>('api/users/');
+      const response = await getAllItems<UserModel[]>("api/users/");
       setUsers(response.data); // If your httpService returns { data: [...] }
       //console.log('Fetched users:', response.data[1].id);
-      console.log('Fetched users:', response.data);
+      console.log("Fetched users:", response.data);
     } catch (error) {
-      console.error('Failed to fetch users:', error);
+      console.error("Failed to fetch users:", error);
     }
   };
 
@@ -30,33 +42,39 @@ const UsersList: React.FC = () => {
     fetchUsers();
   }, []);
 
+  const onEdit = (id: number) => {
+    navigate(`/signup/${id}`);
+  };
 
-const onEdit = (id: number) => {
-  navigate(`/signup/${id}`);
-};
-
-const onDelete = async (id: number) => {
-;
-  const confirmed = window.confirm('Are you sure you want to delete this user?');
-  if (!confirmed) return;
-  try {
-    await deleteItem<UserModel>('api/users', id.toString());
-    fetchUsers();
-    console.log(`Deleted user with ID: ${id}`);
-  } catch (error) {
-    console.error('Failed to delete user:', error);
-  }
-};
+  const onDelete = async (id: number) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this user?"
+    );
+    if (!confirmed) return;
+    try {
+      await deleteItem<UserModel>("api/users", id.toString());
+      fetchUsers();
+      console.log(`Deleted user with ID: ${id}`);
+    } catch (error) {
+      console.error("Failed to delete user:", error);
+    }
+  };
 
   return (
     <Box sx={{ padding: 2 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: 2,
+        }}
+      >
         <Typography variant="h6">Users</Typography>
         <Button
           variant="contained"
           color="primary"
           startIcon={<AddIcon />}
-          href="/signup"
+          onClick={() => navigate("/admin/signup")}
         >
           Add User
         </Button>
