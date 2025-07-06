@@ -1,0 +1,81 @@
+# ----------------------------------------
+# Global node.js
+# ----------------------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ----------------------------------------
+# Build outputs
+# ----------------------------------------
+dist/
+build/
+
+# Vite cache
+.vite/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# ----------------------------------------
+# Logs
+# ----------------------------------------
+logs/
+*.log
+*.log.*
+
+# ----------------------------------------
+# Environment files
+# ----------------------------------------
+.env
+.env.*
+!.env.example
+
+# ----------------------------------------
+# OS-specific files
+# ----------------------------------------
+.DS_Store
+Thumbs.db
+
+# ----------------------------------------
+# IDE/editor settings
+# ----------------------------------------
+.vscode/
+.idea/
+
+# ----------------------------------------
+# Docker
+# ----------------------------------------
+**/.docker/
+docker-compose.override.yml
+docker-compose.override.yaml
+
+# ----------------------------------------
+# MongoDB Memory Server (testing/dev cache)
+# ----------------------------------------
+**/.cache/mongodb-memory-server/
+
+# ----------------------------------------
+# Optional: Ignore local data/db/storage folders
+# Uncomment if you persist dev DB files or local volumes
+# ----------------------------------------
+# data/
+# db/
+# storage/
+
+# ----------------------------------------
+# Optional: Ignore local frontend preview outputs
+# ----------------------------------------
+# frontend/preview/
+
+# General cache
+.cache/
+
+# Incomplete large downloads (like MongoDB ZIPs)
+*.zip.downloading
+
+# Optional: Local override files
+*.local
+

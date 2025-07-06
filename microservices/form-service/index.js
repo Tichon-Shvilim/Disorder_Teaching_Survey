@@ -7,10 +7,11 @@ app.use(express.json());
 
 mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
-app.use('/api/domains', require('./routes/domainRoutes'));
-app.use('/api/questions', require('./routes/questionRoutes'));
-app.use('/api/subquestions', require('./routes/subQuestionRoutes'));
-app.use('/api/forms', require('./routes/Questionnaire'));
+app.use('/api/forms', require('./routes/formRoutes'));
+
+app.get('/healthz', (req, res) => {
+  res.status(200).send('OK');
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

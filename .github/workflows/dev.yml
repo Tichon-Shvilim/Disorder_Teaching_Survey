@@ -30,26 +30,46 @@ jobs:
         run: |
           docker-compose -f docker-compose.dev.yml up -d --build
 
-      - name: Wait for services
-        run: sleep 10
+      # 🕒 Wait for services to be ready
+      - name: Wait for MongoDB
+        run: bash scripts/wait-for-service.sh mongo localhost mongo 30
 
+      - name: Wait for admin-service
+        run: bash scripts/wait-for-service.sh admin-service http://localhost:4006/healthz http 30
+
+      - name: Wait for user-service
+        run: bash scripts/wait-for-service.sh user-service http://localhost:4001/healthz http 30
+
+      - name: Wait for student-service
+        run: bash scripts/wait-for-service.sh student-service http://localhost:4002/healthz http 30
+
+      - name: Wait for form-service
+        run: bash scripts/wait-for-service.sh form-service http://localhost:4003/healthz http 30
+
+      - name: Wait for analytics-service
+        run: bash scripts/wait-for-service.sh analytics-service http://localhost:4004/healthz http 30
+
+      - name: Wait for frontend
+        run: bash scripts/wait-for-service.sh frontend http://localhost:5173 http 30
+
+      # 🧪 Run tests (skip if no test script is defined)
       - name: Run tests (admin-service)
-        run: docker-compose exec -T admin-service npm test || echo "No tests yet"
+        run: docker-compose exec -T admin-service npm run test --if-present
 
       - name: Run tests (user-service)
-        run: docker-compose exec -T user-service npm test || echo "No tests yet"
+        run: docker-compose exec -T user-service npm run test --if-present
 
       - name: Run tests (student-service)
-        run: docker-compose exec -T student-service npm test || echo "No tests yet"
+        run: docker-compose exec -T student-service npm run test --if-present
 
       - name: Run tests (form-service)
-        run: docker-compose exec -T form-service npm test || echo "No tests yet"
+        run: docker-compose exec -T form-service npm run test --if-present
 
       - name: Run tests (analytics-service)
-        run: docker-compose exec -T analytics-service npm test || echo "No tests yet"
+        run: docker-compose exec -T analytics-service npm run test --if-present
 
       - name: Run tests (frontend)
-        run: docker-compose exec -T frontend npm test || echo "No tests yet"
+        run: docker-compose exec -T frontend npm run test --if-present
 
       - name: Tear down containers
         run: docker-compose -f docker-compose.dev.yml down

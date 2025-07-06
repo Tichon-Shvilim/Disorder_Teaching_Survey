@@ -21,7 +21,7 @@ function App() {
         <Route
           path="/admin/*"
           element={
-            <RoleRoute allowedRoles={["admin"]}>
+            <RoleRoute allowedRoles={["Admin"]}>
               <AdminDashboard />
             </RoleRoute>
           }
@@ -36,7 +36,7 @@ function App() {
         <Route
           path="/teacher/*"
           element={
-            <RoleRoute allowedRoles={["teacher"]}>
+            <RoleRoute allowedRoles={["Teacher"]}>
               <TeacherDashboard />
             </RoleRoute>
           }
@@ -49,7 +49,7 @@ function App() {
         <Route
           path="/therapist/*"
           element={
-            <RoleRoute allowedRoles={["therapist"]}>
+            <RoleRoute allowedRoles={["Therapist"]}>
               <TherapistDashboard />
             </RoleRoute>
           }
