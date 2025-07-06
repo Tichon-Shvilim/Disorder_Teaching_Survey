@@ -1,15 +1,20 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { TextField, Button, Paper, Typography, Link } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import { loginSuccess } from '../../../store/authSlice'; // adjust path as needed
 import { signIn } from '../Api-Requests/genericRequests';
 import type UserModel from '../UserModel'; // adjust path as needed 
+import type { RootState } from "../../../store"; 
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 const SignIn: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const dispatch = useDispatch();
+  const user = useSelector((state: RootState) => state.auth.user);
+  const navigate = useNavigate();
 
  const handleSignIn = async (event: React.FormEvent) => {
   event.preventDefault();
@@ -17,17 +22,25 @@ const SignIn: React.FC = () => {
   try {
     // 'users' is the route, { email, password } is the credentials object
     const response = await signIn('api/users', { email, password });
-    type SignInResponse = { token: string; user: UserModel }; // Adjust 'any' to your user type if available
+    type SignInResponse = { token: string; user: UserModel };
     const data = response.data as SignInResponse;
     dispatch(loginSuccess({ token: data.token, user: data.user }));
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(data.user));
     // Redirect or update UI as needed
-    alert("signed up sucessfully")
+    console.log('Sign in successful:', data.user);
   } catch {
     setError('Invalid email or password');
   }
 };
+
+useEffect(() => {
+  if (user) {
+    const route = `/${user.role.toLowerCase()}/`;
+    console.log('Navigating to:', route);
+    navigate(route);
+  }
+}, [user, navigate]);
 
   return (
     <Paper
