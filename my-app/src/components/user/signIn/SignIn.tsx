@@ -36,9 +36,10 @@ const SignIn: React.FC = () => {
 
 useEffect(() => {
   if (user) {
-    const route = `/${user.role.toLowerCase()}/`;
-    console.log('Navigating to:', route);
-    navigate(route);
+    // const route = `/${user.role.toLowerCase()}/`;
+    // console.log('Navigating to:', route);
+    // navigate(route);
+    navigate('/layout'); 
   }
 }, [user, navigate]);
 
