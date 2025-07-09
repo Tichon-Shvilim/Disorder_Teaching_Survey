@@ -1,88 +1,71 @@
-import './App.css'
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import RoleRoute from './components/RoleRoute';
-import SignIn from './components/user/signIn/SignIn';
-import SignUp from './components/user/signUp/SignUp';
-import UserList from './components/user/userManagement/UserList';
-import AdminDashboard from './components/dashboards/AdminDashboard';
-import TeacherDashboard from './components/dashboards/TeacherDashboard';
-import TherapistDashboard from './components/dashboards/TherapistDashboard';
-import CreatForm from './components/formManagement/CreatForm';
-import StudentList from './components/studentManagement/StudentList';
-import AddStudent from './components/studentManagement/AddStudent';
-import EditStudent from './components/studentManagement/EditStudent';
-import ClassList from './components/classManagement/ClassList';
-import AddClass from './components/classManagement/AddClass';
-import EditClass from './components/classManagement/EditClass';
-import ClassDetails from './components/classManagement/ClassDetails';
+// src/App.tsx
+import React from "react";
+import "./App.css";
+import "./index.css";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Layout from "./components/layout/Layout";
+import ProtectedRoute from "./components/ProtectedRoute";
+import RoleRoute from "./components/RoleRoute";
 
-function App() {
+// Pages
+// import DashboardPage from "./pages/DashboardPage";
+// import StudentsPage from "./pages/StudentsPage";
+// import AssessmentsPage from "./pages/AssessmentsPage";
+// import ReportsPage from "./pages/ReportsPage";
+// import AssessmentFormsPage from "./pages/AssessmentFormsPage";
+// import UserListPage from "./pages/UserListPage";
+import SignIn from "./components/user/signIn/SignIn";
+import CreatForm from "./components/formManagement/CreatForm";
+
+const App: React.FC = () => {
   return (
-    <BrowserRouter>
+    <Router>
       <Routes>
-        {/* Routes שכולם יכולים לגשת אליהם */}
-        <Route path="/" element={<SignIn />} />
+        {/* Public Route */}
         <Route path="/signin" element={<SignIn />} />
+        <Route path="/" element={<SignIn />} />
 
-        {/* דשבורד אדמין ונתיבים פנימיים */}
+        {/* Protected Routes (require login) */}
         <Route
-          path="/admin/*"
+          path="/layout/*"
           element={
-            <RoleRoute allowedRoles={["Admin"]}>
-              <AdminDashboard />
-            </RoleRoute>
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
           }
         >
-          <Route path="userlist" element={<UserList />} />
-          <Route path="signup/:id?" element={<SignUp />} />
-          <Route path='creatform' element={<CreatForm/>}/>
-          <Route path="students" element={<StudentList />} />
-          <Route path="students/add" element={<AddStudent />} />
-          <Route path="students/:id/edit" element={<EditStudent />} />
-          <Route path="classes" element={<ClassList />} />
-          <Route path="classes/add" element={<AddClass />} />
-          <Route path="classes/:id" element={<ClassDetails />} />
-          <Route path="classes/:id/edit" element={<EditClass />} />
-          {/* תוכל להוסיף כאן עוד נתיבים פנימיים לאדמין */}
+          {/* Accessible by all logged-in users */}
+          {/* <Route index element={<DashboardPage />} />
+          <Route path="students" element={<StudentsPage />} />
+          <Route path="assessments" element={<AssessmentsPage />} />
+          <Route path="reports" element={<ReportsPage />} /> */}
+
+          {/* Role-specific routes */}
+          <Route
+            path="creatform"
+            element={
+              <RoleRoute allowedRoles={["Admin"]}>
+                {/* <AssessmentFormsPage /> */}
+                <CreatForm/>
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="userlist"
+            element={
+              <RoleRoute allowedRoles={["Admin"]}>
+                {/* <UserListPage /> */}
+                <div>userManagement</div>
+              </RoleRoute>
+            }
+          />
         </Route>
 
-        {/* דשבורד מורה */}
-        <Route
-          path="/teacher/*"
-          element={
-            <RoleRoute allowedRoles={["Teacher"]}>
-              <TeacherDashboard />
-            </RoleRoute>
-          }
-        >
-          <Route path="students" element={<StudentList />} />
-          <Route path="students/add" element={<AddStudent />} />
-          <Route path="students/:id/edit" element={<EditStudent />} />
-          <Route path="classes" element={<ClassList />} />
-          <Route path="classes/add" element={<AddClass />} />
-          <Route path="classes/:id" element={<ClassDetails />} />
-          <Route path="classes/:id/edit" element={<EditClass />} />
-        </Route>
-
-        {/* דשבורד תרפיסט */}
-        <Route
-          path="/therapist/*"
-          element={
-            <RoleRoute allowedRoles={["Therapist"]}>
-              <TherapistDashboard />
-            </RoleRoute>
-          }
-        >
-          <Route path="students" element={<StudentList />} />
-          <Route path="students/add" element={<AddStudent />} />
-          <Route path="students/:id/edit" element={<EditStudent />} />
-        </Route>
-
-        {/* ברירת מחדל */}
-        <Route path="*" element={<SignIn />} />
+        {/* Catch-all / 404 */}
+        <Route path="*" element={<div>Page not found</div>} />
       </Routes>
-    </BrowserRouter>
+    </Router>
   );
-}
+};
 
 export default App;

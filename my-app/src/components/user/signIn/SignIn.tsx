@@ -36,13 +36,14 @@ const SignIn: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    if (user) {
-      const route = `/${user.role.toLowerCase()}/`;
-      console.log("Navigating to:", route);
-      navigate(route);
-    }
-  }, [user, navigate]);
+useEffect(() => {
+  if (user) {
+    // const route = `/${user.role.toLowerCase()}/`;
+    // console.log('Navigating to:', route);
+    // navigate(route);
+    navigate('/layout'); 
+  }
+}, [user, navigate]);
 
   return (
     <Paper

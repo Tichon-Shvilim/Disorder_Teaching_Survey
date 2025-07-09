@@ -10,12 +10,6 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
-    services:
-      mongo:
-        image: mongo
-        ports:
-          - 27017:27017
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -32,7 +26,7 @@ jobs:
 
       # 🕒 Wait for services to be ready
       - name: Wait for MongoDB
-        run: bash scripts/wait-for-service.sh mongo localhost mongo 30
+        run: bash scripts/wait-for-service.sh mongo localhost:27018 mongo 30
 
       - name: Wait for admin-service
         run: bash scripts/wait-for-service.sh admin-service http://localhost:4006/healthz http 30
