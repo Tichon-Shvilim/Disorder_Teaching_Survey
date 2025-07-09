@@ -10,6 +10,7 @@ import TherapistDashboard from './components/dashboards/TherapistDashboard';
 import CreatForm from './components/formManagement/CreatForm';
 import StudentList from './components/studentManagement/StudentList';
 import AddStudent from './components/studentManagement/AddStudent';
+import EditStudent from './components/studentManagement/EditStudent';
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
           <Route path='creatform' element={<CreatForm/>}/>
           <Route path="students" element={<StudentList />} />
           <Route path="students/add" element={<AddStudent />} />
+          <Route path="students/:id/edit" element={<EditStudent />} />
           {/* תוכל להוסיף כאן עוד נתיבים פנימיים לאדמין */}
         </Route>
 
@@ -47,6 +49,7 @@ function App() {
         >
           <Route path="students" element={<StudentList />} />
           <Route path="students/add" element={<AddStudent />} />
+          <Route path="students/:id/edit" element={<EditStudent />} />
         </Route>
 
         {/* דשבורד תרפיסט */}
@@ -60,6 +63,7 @@ function App() {
         >
           <Route path="students" element={<StudentList />} />
           <Route path="students/add" element={<AddStudent />} />
+          <Route path="students/:id/edit" element={<EditStudent />} />
         </Route>
 
         {/* ברירת מחדל */}

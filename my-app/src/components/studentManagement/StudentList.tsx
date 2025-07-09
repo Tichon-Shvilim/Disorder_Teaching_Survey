@@ -83,20 +83,56 @@ const StudentList: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent"></div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '256px' }}>
+        <div style={{
+          width: '64px',
+          height: '64px',
+          border: '4px solid #e5e7eb',
+          borderTop: '4px solid #2563eb',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite'
+        }}></div>
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-6 bg-gray-50 min-h-screen">
-        <div className="max-w-md mx-auto mt-8 bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg shadow-sm">
-          <p className="font-medium">{error}</p>
+      <div style={{ padding: '24px', backgroundColor: '#f9fafb', minHeight: '100vh' }}>
+        <div style={{
+          maxWidth: '448px',
+          margin: '32px auto 0',
+          backgroundColor: '#fef2f2',
+          border: '1px solid #fecaca',
+          color: '#b91c1c',
+          padding: '24px',
+          borderRadius: '8px',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+        }}>
+          <p style={{ fontWeight: '500', margin: '0 0 12px 0' }}>{error}</p>
           <button 
             onClick={fetchStudents}
-            className="mt-3 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+            style={{
+              backgroundColor: '#dc2626',
+              color: 'white',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'background-color 0.2s'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.backgroundColor = '#b91c1c';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.backgroundColor = '#dc2626';
+            }}
           >
             Retry
           </button>
@@ -106,80 +142,237 @@ const StudentList: React.FC = () => {
   }
 
   return (
-    <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
-      <div className="max-w-7xl mx-auto">
+    <div style={{ padding: '24px', background: 'linear-gradient(135deg, #f0f7ff 0%, #e6f2ff 100%)', minHeight: '100vh' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center space-x-3">
-            <GraduationCap className="h-8 w-8 text-blue-600" />
-            <h1 className="text-4xl font-bold text-gray-900">Students</h1>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <GraduationCap style={{ height: '32px', width: '32px', color: '#2563eb' }} />
+            <h1 style={{ fontSize: '36px', fontWeight: 'bold', color: '#111827', margin: 0 }}>Students</h1>
           </div>
           <button
             onClick={handleAddStudent}
-            className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+            style={{
+              background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+              color: 'white',
+              padding: '12px 24px',
+              borderRadius: '8px',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '14px',
+              fontWeight: '500',
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+              transition: 'all 0.2s'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.15)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+            }}
           >
-            <Plus className="h-5 w-5" />
-            <span className="font-medium">Add Student</span>
+            <Plus style={{ height: '20px', width: '20px' }} />
+            <span>Add Student</span>
           </button>
         </div>
 
-        {/* Search */}
-        <div className="mb-8">
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+        {/* Search and Filter */}
+        <div style={{ marginBottom: '32px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+          <div style={{ position: 'relative', flex: '1', maxWidth: '384px' }}>
+            <Search style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', height: '20px', width: '20px', color: '#9ca3af' }} />
             <input
               type="text"
-              placeholder="Search students by name..."
+              placeholder="Search students..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm"
+              style={{
+                width: '100%',
+                paddingLeft: '40px',
+                paddingRight: '16px',
+                paddingTop: '12px',
+                paddingBottom: '12px',
+                border: '1px solid #d1d5db',
+                borderRadius: '8px',
+                fontSize: '14px',
+                outline: 'none',
+                backgroundColor: 'white',
+                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = '#2563eb';
+                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = '#d1d5db';
+                e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
+              }}
             />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '12px 16px',
+              border: '1px solid #d1d5db',
+              borderRadius: '8px',
+              backgroundColor: 'white',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500',
+              color: '#374151',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+            }}>
+              <span>All Grades</span>
+              <svg style={{ height: '16px', width: '16px', color: '#6b7280' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
           </div>
         </div>
 
         {/* Students Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
           {filteredStudents.map((student) => (
             <div
               key={student._id}
-              className="bg-white rounded-xl shadow-sm p-6 hover:shadow-xl transition-all duration-300 border border-gray-100 transform hover:-translate-y-1"
+              style={{
+                backgroundColor: 'white',
+                borderRadius: '12px',
+                padding: '24px',
+                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                border: '1px solid #e5e7eb',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
             >
               {/* Student Header */}
-              <div className="flex items-start space-x-4 mb-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-lg shadow-lg">
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', marginBottom: '16px' }}>
+                <div style={{
+                  width: '64px',
+                  height: '64px',
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontWeight: '600',
+                  fontSize: '18px',
+                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                }}>
                   {student.name.charAt(0).toUpperCase()}
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-lg text-gray-900 mb-1">{student.name}</h3>
-                  <p className="text-blue-600 font-medium">Age {student.age}</p>
-                  <p className="text-gray-500 text-sm">
-                    DOB: {new Date(student.DOB).toLocaleDateString()}
-                  </p>
+                <div style={{ flex: 1 }}>
+                  <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#111827', margin: '0 0 4px 0' }}>{student.name}</h3>
+                  <p style={{ fontSize: '14px', color: '#4b5563', margin: '0 0 8px 0' }}>Grade {Math.floor((student.age || 0) / 2) + 1} • Age {student.age || 0}</p>
+                  <div style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    padding: '4px 8px',
+                    borderRadius: '9999px',
+                    fontSize: '12px',
+                    fontWeight: '500',
+                    backgroundColor: '#dcfce7',
+                    color: '#166534'
+                  }}>
+                    Active
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleEditStudent(student._id)}
+                  style={{
+                    padding: '8px',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    borderRadius: '8px',
+                    color: '#9ca3af',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.backgroundColor = '#f3f4f6';
+                    e.currentTarget.style.color = '#4b5563';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = '#9ca3af';
+                  }}
+                  title="Edit Student"
+                >
+                  <Edit style={{ height: '16px', width: '16px' }} />
+                </button>
+              </div>
+
+              {/* Student Info */}
+              <div style={{ marginBottom: '24px' }}>
+                <div style={{ fontSize: '14px', color: '#4b5563' }}>
+                  <span style={{ fontWeight: '500' }}>Date of Birth:</span> {new Date(student.DOB).toLocaleDateString()}
                 </div>
               </div>
 
               {/* Actions */}
-              <div className="flex space-x-2">
+              <div style={{ display: 'flex', gap: '8px' }}>
                 <button
                   onClick={() => handleViewDetails(student._id)}
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-3 py-2 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 text-sm font-medium flex items-center justify-center space-x-2 shadow-md hover:shadow-lg"
+                  style={{
+                    flex: 1,
+                    backgroundColor: '#2563eb',
+                    color: 'white',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.backgroundColor = '#1d4ed8';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = '#2563eb';
+                  }}
                 >
-                  <Eye className="h-4 w-4" />
-                  <span>View</span>
-                </button>
-                <button
-                  onClick={() => handleEditStudent(student._id)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md"
-                  title="Edit Student"
-                >
-                  <Edit className="h-4 w-4 text-gray-600" />
+                  <Eye style={{ height: '16px', width: '16px' }} />
+                  <span>View Details</span>
                 </button>
                 <button
                   onClick={() => handleDeleteStudent(student._id)}
-                  className="px-3 py-2 border border-red-300 rounded-lg hover:bg-red-50 transition-colors shadow-sm hover:shadow-md"
+                  style={{
+                    padding: '8px 12px',
+                    border: '1px solid #fca5a5',
+                    borderRadius: '8px',
+                    backgroundColor: 'white',
+                    color: '#dc2626',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.backgroundColor = '#fef2f2';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = 'white';
+                  }}
                   title="Delete Student"
                 >
-                  <Trash2 className="h-4 w-4 text-red-600" />
+                  <Trash2 style={{ height: '16px', width: '16px' }} />
                 </button>
               </div>
             </div>
@@ -188,10 +381,10 @@ const StudentList: React.FC = () => {
 
         {/* Empty State */}
         {filteredStudents.length === 0 && (
-          <div className="text-center py-16">
-            <GraduationCap className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <div className="text-gray-500 text-xl mb-2">No students found</div>
-            <p className="text-gray-400">Try adjusting your search criteria or add a new student</p>
+          <div style={{ textAlign: 'center', padding: '64px 0' }}>
+            <GraduationCap style={{ height: '64px', width: '64px', color: '#9ca3af', margin: '0 auto 16px' }} />
+            <div style={{ color: '#6b7280', fontSize: '20px', marginBottom: '8px' }}>No students found</div>
+            <p style={{ color: '#9ca3af', margin: 0 }}>Try adjusting your search criteria or add a new student</p>
           </div>
         )}
       </div>
