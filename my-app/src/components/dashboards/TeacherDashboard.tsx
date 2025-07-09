@@ -9,6 +9,9 @@ const TeacherDashboard: React.FC = () => (
       <Button component={Link} to="students" variant="contained" sx={{ m: 1 }}>
         התלמידים שלי
       </Button>
+      <Button component={Link} to="classes" variant="contained" sx={{ m: 1 }}>
+        הכיתות שלי
+      </Button>
       {/* תוכל להוסיף כאן עוד כפתורים */}
     </nav>
     <Box sx={{ mt: 3 }}>

@@ -72,6 +72,7 @@ services:
       - JWT_SECRET=8f7d2b1e-4c3a-4e2b-8e7a-9c6d5b4a3f2e!@#RandomExtraStuff
     command: npm run dev
 
+  
   mongo:
     image: mongo
     ports:
@@ -90,8 +91,11 @@ services:
       - /app/node_modules
     environment:
       # - VITE_API_URL=http://localhost:4001 # match dev ports
-      - VITE_USER_SERVICE_URL=http://localhost:4001 # Add this line
+      - VITE_USER_SERVICE_URL=http://localhost:4001
+      - VITE_STUDENT_SERVICE_URL=http://localhost:4002
       - VITE_FORM_SERVICE_URL=http://localhost:4003
+      - VITE_ANALYTICS_SERVICE_URL=http://localhost:4004
+      - VITE_ADMIN_SERVICE_URL=http://localhost:4006
     command: npm run dev
 
 volumes:

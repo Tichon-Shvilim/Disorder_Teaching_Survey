@@ -6,14 +6,45 @@ const AdminDashboard: React.FC = () => (
   <Box sx={{ p: 3 }}>
     <h2>דשבורד אדמין</h2>
     <nav>
-      <Button component={Link} to="userlist" variant="contained" sx={{ m: 1 }}>
+      <Button
+        component={Link}
+        to="/admin/userlist"
+        variant="contained"
+        sx={{ m: 1 }}
+      >
         רשימת משתמשים
       </Button>
-      <Button component={Link} to="signup" variant="contained" sx={{ m: 1 }}>
+      <Button
+        component={Link}
+        to="/admin/signup"
+        variant="contained"
+        sx={{ m: 1 }}
+      >
         הוסף משתמש חדש
       </Button>
-      <Button component={Link} to="creatform" variant="contained" sx={{ m: 1 }}>
+      <Button
+        component={Link}
+        to="/admin/creatform"
+        variant="contained"
+        sx={{ m: 1 }}
+      >
         edit form
+      </Button>
+      <Button
+        component={Link}
+        to="/admin/students"
+        variant="contained"
+        sx={{ m: 1 }}
+      >
+        רשימת תלמידים
+      </Button>
+      <Button
+        component={Link}
+        to="/admin/classes"
+        variant="contained"
+        sx={{ m: 1 }}
+      >
+        ניהול כיתות
       </Button>
       {/* תוכל להוסיף כאן עוד כפתורים */}
     </nav>
