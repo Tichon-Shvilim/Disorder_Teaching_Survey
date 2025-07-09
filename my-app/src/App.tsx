@@ -8,6 +8,8 @@ import AdminDashboard from './components/dashboards/AdminDashboard';
 import TeacherDashboard from './components/dashboards/TeacherDashboard';
 import TherapistDashboard from './components/dashboards/TherapistDashboard';
 import CreatForm from './components/formManagement/CreatForm';
+import StudentList from './components/studentManagement/StudentList';
+import AddStudent from './components/studentManagement/AddStudent';
 
 function App() {
   return (
@@ -29,6 +31,8 @@ function App() {
           <Route path="userlist" element={<UserList />} />
           <Route path="signup/:id?" element={<SignUp />} />
           <Route path='creatform' element={<CreatForm/>}/>
+          <Route path="students" element={<StudentList />} />
+          <Route path="students/add" element={<AddStudent />} />
           {/* תוכל להוסיף כאן עוד נתיבים פנימיים לאדמין */}
         </Route>
 
@@ -41,8 +45,8 @@ function App() {
             </RoleRoute>
           }
         >
-          {/* דוגמה לנתיב פנימי */}
-          <Route path="students" element={<div>רשימת תלמידים</div>} />
+          <Route path="students" element={<StudentList />} />
+          <Route path="students/add" element={<AddStudent />} />
         </Route>
 
         {/* דשבורד תרפיסט */}
@@ -54,8 +58,8 @@ function App() {
             </RoleRoute>
           }
         >
-          {/* דוגמה לנתיב פנימי */}
-          <Route path="students" element={<div>רשימת מטופלים</div>} />
+          <Route path="students" element={<StudentList />} />
+          <Route path="students/add" element={<AddStudent />} />
         </Route>
 
         {/* ברירת מחדל */}

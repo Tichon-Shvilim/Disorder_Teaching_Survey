@@ -30,6 +30,14 @@ const AdminDashboard: React.FC = () => (
       >
         edit form
       </Button>
+      <Button
+        component={Link}
+        to="/admin/students"
+        variant="contained"
+        sx={{ m: 1 }}
+      >
+        רשימת תלמידים
+      </Button>
       {/* תוכל להוסיף כאן עוד כפתורים */}
     </nav>
     <Box sx={{ mt: 3 }}>
