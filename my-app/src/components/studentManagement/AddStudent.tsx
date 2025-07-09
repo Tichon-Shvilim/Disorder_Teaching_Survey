@@ -77,29 +77,47 @@ const AddStudent: React.FC = () => {
   };
 
   return (
-    <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
-      <div className="max-w-2xl mx-auto">
+    <div style={{ padding: '24px', background: 'linear-gradient(135deg, #f0f7ff 0%, #e6f2ff 100%)', minHeight: '100vh' }}>
+      <div style={{ maxWidth: '512px', margin: '0 auto' }}>
         {/* Header */}
-        <div className="flex items-center mb-8">
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '32px' }}>
           <button
             onClick={handleCancel}
-            className="mr-4 p-2 text-gray-600 hover:text-gray-900 hover:bg-white rounded-lg transition-colors shadow-sm"
+            style={{
+              marginRight: '16px',
+              padding: '8px',
+              color: '#4b5563',
+              backgroundColor: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.color = '#111827';
+              e.currentTarget.style.backgroundColor = '#f9fafb';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.color = '#4b5563';
+              e.currentTarget.style.backgroundColor = 'white';
+            }}
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft style={{ height: '20px', width: '20px' }} />
           </button>
-          <div className="flex items-center space-x-3">
-            <GraduationCap className="h-8 w-8 text-blue-600" />
-            <h1 className="text-3xl font-bold text-gray-900">Add New Student</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <GraduationCap style={{ height: '32px', width: '32px', color: '#2563eb' }} />
+            <h1 style={{ fontSize: '30px', fontWeight: 'bold', color: '#111827', margin: 0 }}>Add New Student</h1>
           </div>
         </div>
 
         {/* Form */}
-        <div className="bg-white rounded-xl shadow-lg p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <div style={{ backgroundColor: 'white', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', padding: '32px' }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             {/* Student Name */}
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                <User className="h-4 w-4 inline mr-1" />
+              <label htmlFor="name" style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
+                <User style={{ height: '16px', width: '16px', display: 'inline', marginRight: '4px' }} />
                 Student Name
               </label>
               <input
@@ -109,19 +127,38 @@ const AddStudent: React.FC = () => {
                 value={formData.name}
                 onChange={handleInputChange}
                 placeholder="Enter student's full name"
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                  errors.name ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                }`}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  border: `1px solid ${errors.name ? '#ef4444' : '#d1d5db'}`,
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  backgroundColor: errors.name ? '#fef2f2' : 'white',
+                  outline: 'none',
+                  transition: 'all 0.2s'
+                }}
+                onFocus={(e) => {
+                  if (!errors.name) {
+                    e.currentTarget.style.borderColor = '#2563eb';
+                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                  }
+                }}
+                onBlur={(e) => {
+                  if (!errors.name) {
+                    e.currentTarget.style.borderColor = '#d1d5db';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }
+                }}
               />
               {errors.name && (
-                <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                <p style={{ marginTop: '4px', fontSize: '14px', color: '#dc2626' }}>{errors.name}</p>
               )}
             </div>
 
             {/* Date of Birth */}
             <div>
-              <label htmlFor="DOB" className="block text-sm font-medium text-gray-700 mb-2">
-                <Calendar className="h-4 w-4 inline mr-1" />
+              <label htmlFor="DOB" style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
+                <Calendar style={{ height: '16px', width: '16px', display: 'inline', marginRight: '4px' }} />
                 Date of Birth
               </label>
               <input
@@ -130,27 +167,81 @@ const AddStudent: React.FC = () => {
                 name="DOB"
                 value={formData.DOB}
                 onChange={handleInputChange}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                  errors.DOB ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                }`}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  border: `1px solid ${errors.DOB ? '#ef4444' : '#d1d5db'}`,
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  backgroundColor: errors.DOB ? '#fef2f2' : 'white',
+                  outline: 'none',
+                  transition: 'all 0.2s'
+                }}
+                onFocus={(e) => {
+                  if (!errors.DOB) {
+                    e.currentTarget.style.borderColor = '#2563eb';
+                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                  }
+                }}
+                onBlur={(e) => {
+                  if (!errors.DOB) {
+                    e.currentTarget.style.borderColor = '#d1d5db';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }
+                }}
               />
               {errors.DOB && (
-                <p className="mt-1 text-sm text-red-600">{errors.DOB}</p>
+                <p style={{ marginTop: '4px', fontSize: '14px', color: '#dc2626' }}>{errors.DOB}</p>
               )}
             </div>
 
             {/* Action Buttons */}
-            <div className="flex space-x-4 pt-6">
+            <div style={{ display: 'flex', gap: '16px', paddingTop: '24px' }}>
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-3 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                style={{
+                  flex: 1,
+                  background: loading ? '#9ca3af' : 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                  color: 'white',
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                  transition: 'all 0.2s'
+                }}
+                onMouseOver={(e) => {
+                  if (!loading) {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.15)';
+                  }
+                }}
+                onMouseOut={(e) => {
+                  if (!loading) {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+                  }
+                }}
               >
                 {loading ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                  <div style={{
+                    width: '20px',
+                    height: '20px',
+                    border: '2px solid #ffffff',
+                    borderTop: '2px solid transparent',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                  }}></div>
                 ) : (
                   <>
-                    <Save className="h-5 w-5" />
+                    <Save style={{ height: '20px', width: '20px' }} />
                     <span>Add Student</span>
                   </>
                 )}
@@ -158,8 +249,30 @@ const AddStudent: React.FC = () => {
               <button
                 type="button"
                 onClick={handleCancel}
-                className="flex-1 bg-gray-200 text-gray-700 px-4 py-3 rounded-lg hover:bg-gray-300 transition-colors shadow-md hover:shadow-lg"
                 disabled={loading}
+                style={{
+                  flex: 1,
+                  backgroundColor: '#e5e7eb',
+                  color: '#374151',
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                  transition: 'all 0.2s'
+                }}
+                onMouseOver={(e) => {
+                  if (!loading) {
+                    e.currentTarget.style.backgroundColor = '#d1d5db';
+                  }
+                }}
+                onMouseOut={(e) => {
+                  if (!loading) {
+                    e.currentTarget.style.backgroundColor = '#e5e7eb';
+                  }
+                }}
               >
                 Cancel
               </button>
@@ -169,28 +282,47 @@ const AddStudent: React.FC = () => {
 
         {/* Preview Card */}
         {(formData.name || formData.DOB) && (
-          <div className="mt-8 bg-white rounded-xl shadow-lg p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Preview</h3>
-            <div className="flex items-start space-x-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-lg shadow-lg">
+          <div style={{ marginTop: '32px', backgroundColor: 'white', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', padding: '24px' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: '500', color: '#111827', marginBottom: '16px' }}>Preview</h3>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
+              <div style={{
+                width: '64px',
+                height: '64px',
+                background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontWeight: '600',
+                fontSize: '18px',
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+              }}>
                 {formData.name ? formData.name.charAt(0).toUpperCase() : 'S'}
               </div>
-              <div className="flex-1">
-                <h4 className="font-semibold text-lg text-gray-900">
+              <div style={{ flex: 1 }}>
+                <h4 style={{ fontSize: '18px', fontWeight: '600', color: '#111827', margin: '0 0 4px 0' }}>
                   {formData.name || 'Student Name'}
                 </h4>
                 {formData.DOB && (
-                  <p className="text-blue-600 font-medium">
+                  <p style={{ color: '#2563eb', fontWeight: '500', margin: '0 0 4px 0' }}>
                     Age {Math.floor((new Date().getTime() - new Date(formData.DOB).getTime()) / (1000 * 60 * 60 * 24 * 365))}
                   </p>
                 )}
-                <p className="text-gray-500 text-sm">
+                <p style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>
                   DOB: {formData.DOB ? new Date(formData.DOB).toLocaleDateString() : 'Not set'}
                 </p>
               </div>
             </div>
           </div>
         )}
+        
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
       </div>
     </div>
   );
