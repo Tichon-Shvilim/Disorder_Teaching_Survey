@@ -1,16 +1,20 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Eye, Edit, Search, Plus, Trash2, GraduationCap } from 'lucide-react';
+import { Eye, Edit, Search, Plus, Trash2, GraduationCap, Filter } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { 
   getAllStudents, 
   deleteStudent, 
 } from './Api-Requests/StudentAPIService';
 import type { Student } from './Api-Requests/StudentAPIService';
+import { getAllClasses } from './Api-Requests/ClassAPIService';
+import type { Class } from './Api-Requests/ClassAPIService';
 import { toast } from 'react-toastify';
 
 const StudentList: React.FC = () => {
   const [students, setStudents] = useState<Student[]>([]);
+  const [classes, setClasses] = useState<Class[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedClass, setSelectedClass] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -35,9 +39,21 @@ const StudentList: React.FC = () => {
     }
   }, []);
 
+  // Fetch classes from API
+  const fetchClasses = useCallback(async () => {
+    try {
+      const response = await getAllClasses();
+      setClasses(response.data);
+    } catch (err: unknown) {
+      console.error('Error fetching classes:', err);
+      // Don't show error toast for classes as it's not critical
+    }
+  }, []);
+
   useEffect(() => {
     fetchStudents();
-  }, [fetchStudents]);
+    fetchClasses();
+  }, [fetchStudents, fetchClasses]);
 
   const calculateAge = (dob: string) => {
     const today = new Date();
@@ -66,7 +82,9 @@ const StudentList: React.FC = () => {
   };
 
   const filteredStudents = students.filter(student => {
-    return student.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesClass = selectedClass === '' || student.classNumber === selectedClass;
+    return matchesSearch && matchesClass;
   });
 
   const handleViewDetails = (studentId: string) => {
@@ -213,26 +231,60 @@ const StudentList: React.FC = () => {
               }}
             />
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <button style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '12px 16px',
-              border: '1px solid #d1d5db',
-              borderRadius: '8px',
-              backgroundColor: 'white',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '500',
-              color: '#374151',
-              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
-            }}>
-              <span>All Grades</span>
-              <svg style={{ height: '16px', width: '16px', color: '#6b7280' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+          
+          <div style={{ position: 'relative', minWidth: '200px' }}>
+            <Filter style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', height: '20px', width: '20px', color: '#9ca3af' }} />
+            <select
+              value={selectedClass}
+              onChange={(e) => setSelectedClass(e.target.value)}
+              style={{
+                width: '100%',
+                paddingLeft: '40px',
+                paddingRight: '40px',
+                paddingTop: '12px',
+                paddingBottom: '12px',
+                border: '1px solid #d1d5db',
+                borderRadius: '8px',
+                fontSize: '14px',
+                outline: 'none',
+                backgroundColor: 'white',
+                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                appearance: 'none',
+                cursor: 'pointer'
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = '#2563eb';
+                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = '#d1d5db';
+                e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
+              }}
+            >
+              <option value="">All Classes</option>
+              {classes.map((classItem) => (
+                <option key={classItem._id} value={classItem.classNumber}>
+                  {classItem.classNumber}
+                </option>
+              ))}
+            </select>
+            <svg 
+              style={{ 
+                position: 'absolute', 
+                right: '12px', 
+                top: '50%', 
+                transform: 'translateY(-50%)', 
+                height: '16px', 
+                width: '16px', 
+                color: '#6b7280',
+                pointerEvents: 'none'
+              }} 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
           </div>
         </div>
 
@@ -277,7 +329,9 @@ const StudentList: React.FC = () => {
                 </div>
                 <div style={{ flex: 1 }}>
                   <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#111827', margin: '0 0 4px 0' }}>{student.name}</h3>
-                  <p style={{ fontSize: '14px', color: '#4b5563', margin: '0 0 8px 0' }}>Grade {Math.floor((student.age || 0) / 2) + 1} • Age {student.age || 0}</p>
+                  <p style={{ fontSize: '14px', color: '#4b5563', margin: '0 0 8px 0' }}>
+                    {student.classNumber ? `Class ${student.classNumber}` : `Grade ${Math.floor((student.age || 0) / 2) + 1}`} • Age {student.age || 0}
+                  </p>
                   <div style={{
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -318,9 +372,14 @@ const StudentList: React.FC = () => {
 
               {/* Student Info */}
               <div style={{ marginBottom: '24px' }}>
-                <div style={{ fontSize: '14px', color: '#4b5563' }}>
+                <div style={{ fontSize: '14px', color: '#4b5563', marginBottom: '4px' }}>
                   <span style={{ fontWeight: '500' }}>Date of Birth:</span> {new Date(student.DOB).toLocaleDateString()}
                 </div>
+                {student.classNumber && (
+                  <div style={{ fontSize: '14px', color: '#4b5563' }}>
+                    <span style={{ fontWeight: '500' }}>Class:</span> {student.classNumber}
+                  </div>
+                )}
               </div>
 
               {/* Actions */}

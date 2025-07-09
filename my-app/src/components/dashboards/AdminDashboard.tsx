@@ -38,6 +38,14 @@ const AdminDashboard: React.FC = () => (
       >
         רשימת תלמידים
       </Button>
+      <Button
+        component={Link}
+        to="/admin/classes"
+        variant="contained"
+        sx={{ m: 1 }}
+      >
+        ניהול כיתות
+      </Button>
       {/* תוכל להוסיף כאן עוד כפתורים */}
     </nav>
     <Box sx={{ mt: 3 }}>

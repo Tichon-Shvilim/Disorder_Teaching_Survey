@@ -1,13 +1,10 @@
 const mongoose = require('mongoose');
 
 const ClassSchema = new mongoose.Schema({
-  grade: { 
-    type: String, 
-    required: true
-  },
   classNumber: { 
-    type: Number, 
-    required: true
+    type: String, 
+    required: true,
+    unique: true // Ensure each class number is unique
   },
   teachers: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -22,6 +19,6 @@ const ClassSchema = new mongoose.Schema({
 });
 
 // Index for better performance
-ClassSchema.index({ grade: 1, classNumber: 1 });
+ClassSchema.index({ classNumber: 1 });
 
 module.exports = mongoose.model('Class', ClassSchema);
