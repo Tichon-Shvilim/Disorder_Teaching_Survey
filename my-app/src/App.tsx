@@ -11,6 +11,10 @@ import CreatForm from './components/formManagement/CreatForm';
 import StudentList from './components/studentManagement/StudentList';
 import AddStudent from './components/studentManagement/AddStudent';
 import EditStudent from './components/studentManagement/EditStudent';
+import ClassList from './components/classManagement/ClassList';
+import AddClass from './components/classManagement/AddClass';
+import EditClass from './components/classManagement/EditClass';
+import ClassDetails from './components/classManagement/ClassDetails';
 
 function App() {
   return (
@@ -35,6 +39,10 @@ function App() {
           <Route path="students" element={<StudentList />} />
           <Route path="students/add" element={<AddStudent />} />
           <Route path="students/:id/edit" element={<EditStudent />} />
+          <Route path="classes" element={<ClassList />} />
+          <Route path="classes/add" element={<AddClass />} />
+          <Route path="classes/:id" element={<ClassDetails />} />
+          <Route path="classes/:id/edit" element={<EditClass />} />
           {/* תוכל להוסיף כאן עוד נתיבים פנימיים לאדמין */}
         </Route>
 
@@ -50,6 +58,10 @@ function App() {
           <Route path="students" element={<StudentList />} />
           <Route path="students/add" element={<AddStudent />} />
           <Route path="students/:id/edit" element={<EditStudent />} />
+          <Route path="classes" element={<ClassList />} />
+          <Route path="classes/add" element={<AddClass />} />
+          <Route path="classes/:id" element={<ClassDetails />} />
+          <Route path="classes/:id/edit" element={<EditClass />} />
         </Route>
 
         {/* דשבורד תרפיסט */}

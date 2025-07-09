@@ -4,12 +4,14 @@ export interface Student {
   _id: string;
   name: string;
   DOB: string;
+  classNumber?: string; // Optional class number field
   age?: number; // This will be calculated on frontend
 }
 
 export interface CreateStudentRequest {
   name: string;
   DOB: string;
+  classNumber?: string; // Optional class number field
 }
 
 export interface UpdateStudentRequest extends CreateStudentRequest {

@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save, User, Calendar, GraduationCap } from 'lucide-react';
 import { getStudentById, updateStudent } from './Api-Requests/StudentAPIService';
 import type { UpdateStudentRequest } from './Api-Requests/StudentAPIService';
+import { getAllClasses } from './Api-Requests/ClassAPIService';
+import type { Class } from './Api-Requests/ClassAPIService';
 import { toast } from 'react-toastify';
 
 const EditStudent: React.FC = () => {
@@ -10,12 +12,29 @@ const EditStudent: React.FC = () => {
   const [formData, setFormData] = useState<UpdateStudentRequest>({
     _id: id || '',
     name: '',
-    DOB: ''
+    DOB: '',
+    classNumber: ''
   });
+  const [classes, setClasses] = useState<Class[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingStudent, setLoadingStudent] = useState(true);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
+
+  // Fetch classes from API
+  const fetchClasses = useCallback(async () => {
+    try {
+      const response = await getAllClasses();
+      setClasses(response.data);
+    } catch (err: unknown) {
+      console.error('Error fetching classes:', err);
+      // Don't show error toast for classes as it's not critical
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchClasses();
+  }, [fetchClasses]);
 
   useEffect(() => {
     const fetchStudent = async () => {
@@ -26,7 +45,8 @@ const EditStudent: React.FC = () => {
         setFormData({
           _id: student._id,
           name: student.name,
-          DOB: student.DOB.split('T')[0] // Format date for input
+          DOB: student.DOB.split('T')[0], // Format date for input
+          classNumber: student.classNumber || ''
         });
       } catch (error) {
         console.error('Error fetching student:', error);
@@ -63,7 +83,7 @@ const EditStudent: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -244,6 +264,54 @@ const EditStudent: React.FC = () => {
               )}
             </div>
 
+            {/* Class Number */}
+            <div>
+              <label htmlFor="classNumber" style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
+                <GraduationCap style={{ height: '16px', width: '16px', display: 'inline', marginRight: '4px' }} />
+                Class Number
+              </label>
+              <select
+                id="classNumber"
+                name="classNumber"
+                value={formData.classNumber}
+                onChange={handleInputChange}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  border: `1px solid ${errors.classNumber ? '#ef4444' : '#d1d5db'}`,
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  backgroundColor: errors.classNumber ? '#fef2f2' : 'white',
+                  outline: 'none',
+                  transition: 'all 0.2s',
+                  appearance: 'none',
+                  cursor: 'pointer'
+                }}
+                onFocus={(e) => {
+                  if (!errors.classNumber) {
+                    e.currentTarget.style.borderColor = '#2563eb';
+                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                  }
+                }}
+                onBlur={(e) => {
+                  if (!errors.classNumber) {
+                    e.currentTarget.style.borderColor = '#d1d5db';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }
+                }}
+              >
+                <option value="">Select a class (optional)</option>
+                {classes.map((classItem) => (
+                  <option key={classItem._id} value={classItem.classNumber}>
+                    {classItem.classNumber}
+                  </option>
+                ))}
+              </select>
+              {errors.classNumber && (
+                <p style={{ marginTop: '4px', fontSize: '14px', color: '#dc2626' }}>{errors.classNumber}</p>
+              )}
+            </div>
+
             {/* Action Buttons */}
             <div style={{ display: 'flex', gap: '16px', paddingTop: '24px' }}>
               <button
@@ -330,7 +398,7 @@ const EditStudent: React.FC = () => {
         </div>
 
         {/* Preview Card */}
-        {(formData.name || formData.DOB) && (
+        {(formData.name || formData.DOB || formData.classNumber) && (
           <div style={{ marginTop: '32px', backgroundColor: 'white', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', padding: '24px' }}>
             <h3 style={{ fontSize: '18px', fontWeight: '500', color: '#111827', marginBottom: '16px' }}>Preview</h3>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
@@ -353,6 +421,11 @@ const EditStudent: React.FC = () => {
                 <h4 style={{ fontSize: '18px', fontWeight: '600', color: '#111827', margin: '0 0 4px 0' }}>
                   {formData.name || 'Student Name'}
                 </h4>
+                {formData.classNumber && (
+                  <p style={{ color: '#10b981', fontWeight: '500', margin: '0 0 4px 0' }}>
+                    Class {formData.classNumber}
+                  </p>
+                )}
                 {formData.DOB && (
                   <p style={{ color: '#2563eb', fontWeight: '500', margin: '0 0 4px 0' }}>
                     Age {Math.floor((new Date().getTime() - new Date(formData.DOB).getTime()) / (1000 * 60 * 60 * 24 * 365))}
