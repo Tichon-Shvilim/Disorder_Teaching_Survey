@@ -1,10 +1,10 @@
 // src/components/layout/Header.tsx
 import React from "react";
-import { AppBar, Toolbar, Typography, Box, Button, IconButton } from "@mui/material";
-import { Logout, Person } from "@mui/icons-material";
+import { AppBar, Toolbar, Typography, Box, Button } from "@mui/material";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "../../store";
-import {logout} from "../../store/authSlice"; 
+import { logout } from "../../store/authSlice";
+import { LogOut, User } from "lucide-react";
 
 const Header: React.FC = () => {
   const user = useSelector((state: RootState) => state.auth.user);
@@ -15,83 +15,43 @@ const Header: React.FC = () => {
   };
 
   return (
-    <AppBar 
-      position="static" 
-      sx={{ 
-        bgcolor: '#ffffff',
-        color: '#1f2937',
-        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-        borderBottom: '1px solid #e5e7eb'
+    <AppBar
+      position="static"
+      color="inherit"
+      elevation={0}
+      sx={{
+        height: "100%",
+        justifyContent: "center",
+        bgcolor: "background.paper",
+        borderBottom: "0.5px solid #e0e0e0",
       }}
     >
-      <Toolbar sx={{ justifyContent: "space-between", minHeight: '64px !important' }}>
+      <Toolbar sx={{ justifyContent: "space-between" }}>
         <Box>
-          <Typography 
-            variant="h5" 
-            sx={{ 
-              fontWeight: 600,
-              color: '#1f2937',
-              fontSize: '1.5rem'
-            }}
-          >
+          <Typography variant="h5" fontWeight="bold">
             Special Needs Progress Tracker
           </Typography>
-          <Typography 
-            variant="body2" 
-            sx={{ 
-              color: '#6b7280',
-              fontSize: '0.875rem',
-              marginTop: '2px'
-            }}
-          >
-            Welcome back, {user?.name || 'Dr. Sarah Wilson'}
+          <Typography variant="body1" color="text.secondary">
+            Welcome back, {user?.name}
           </Typography>
         </Box>
-        
-        <Box display="flex" alignItems="center" gap={3}>
-          {/* User Info */}
+        <Box display="flex" alignItems="center" gap={4} sx={{ px: 2 }}>
           <Box display="flex" alignItems="center" gap={1}>
-            <IconButton
-              sx={{
-                bgcolor: '#f3f4f6',
-                width: 40,
-                height: 40,
-                '&:hover': {
-                  bgcolor: '#e5e7eb'
-                }
-              }}
-            >
-              <Person sx={{ color: '#6b7280', fontSize: 20 }} />
-            </IconButton>
-            <Typography 
-              sx={{ 
-                color: '#374151',
-                fontWeight: 500,
-                fontSize: '0.875rem'
-              }}
-            >
-              {user?.role || 'admin'}
+            <User size={24} color="gray" />
+            <Typography fontWeight="bold" color="text.secondary">
+              {user?.role}
             </Typography>
           </Box>
-
-          {/* Logout Button */}
           <Button
-            variant="outlined"
-            onClick={handleLogout}
-            startIcon={<Logout />}
             sx={{
-              color: '#dc2626',
-              borderColor: '#dc2626',
-              fontSize: '0.875rem',
-              fontWeight: 500,
-              textTransform: 'none',
-              px: 2,
-              py: 1,
-              '&:hover': {
-                bgcolor: '#fef2f2',
-                borderColor: '#dc2626',
-              }
+              color: "text.secondary",
+              "&:hover": { bgcolor: "#fff5f5", color: "#b71c1c" },
+              borderRadius: 2,
+              px: 4,
+              py: 2, 
             }}
+            startIcon={<LogOut />}
+            onClick={handleLogout}
           >
             Logout
           </Button>

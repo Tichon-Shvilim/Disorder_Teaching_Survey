@@ -8,14 +8,12 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import RoleRoute from "./components/RoleRoute";
 
 // Pages
-// import DashboardPage from "./pages/DashboardPage";
-// import StudentsPage from "./pages/StudentsPage";
-// import AssessmentsPage from "./pages/AssessmentsPage";
-// import ReportsPage from "./pages/ReportsPage";
-// import AssessmentFormsPage from "./pages/AssessmentFormsPage";
-// import UserListPage from "./pages/UserListPage";
 import SignIn from "./components/user/signIn/SignIn";
 import CreatForm from "./components/formManagement/CreatForm";
+import StudentList from "./components/studentManagement/StudentList";
+import ClassList from "./components/classManagement/ClassList";
+import AddStudent from "./components/studentManagement/AddStudent";
+import AddClass from "./components/classManagement/AddClass";
 
 const App: React.FC = () => {
   return (
@@ -35,10 +33,10 @@ const App: React.FC = () => {
           }
         >
           {/* Accessible by all logged-in users */}
-          {/* <Route index element={<DashboardPage />} />
-          <Route path="students" element={<StudentsPage />} />
-          <Route path="assessments" element={<AssessmentsPage />} />
-          <Route path="reports" element={<ReportsPage />} /> */}
+          <Route path="students" element={<StudentList />} />
+          <Route path="classes" element={<ClassList/>} />
+          <Route path="addStudent" element={<AddStudent />} />
+          <Route path="addClass" element={<AddClass />} />
 
           {/* Role-specific routes */}
           <Route
