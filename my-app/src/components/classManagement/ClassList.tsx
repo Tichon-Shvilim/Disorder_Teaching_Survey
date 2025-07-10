@@ -59,7 +59,7 @@ const ClassList: React.FC = () => {
   );
 
   const handleAddClass = () => {
-    navigate('add');
+    navigate('../addClass');
   };
 
   const handleEditClass = (classId: string) => {
@@ -145,7 +145,7 @@ const ClassList: React.FC = () => {
   return (
     <div style={{ 
       padding: '24px', 
-      background: 'linear-gradient(135deg, #f0f7ff 0%, #e6f2ff 100%)', 
+      //background: 'linear-gradient(135deg, #f0f7ff 0%, #e6f2ff 100%)', 
       minHeight: '100vh' 
     }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>

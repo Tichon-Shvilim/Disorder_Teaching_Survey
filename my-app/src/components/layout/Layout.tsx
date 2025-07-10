@@ -44,7 +44,7 @@ const Layout: React.FC = () => {
             height: `calc(100vh - ${headerHeight}px)`,
             width: "100%",
             overflowY: "auto",
-            bgcolor: "#fbfdff",
+            bgcolor: "#f9fbfe",
             pt: `${headerHeight}px`,
             px: 3,
             pb: 3,
