@@ -9,13 +9,13 @@ import RoleRoute from "./components/RoleRoute";
 
 // Pages
 // import DashboardPage from "./pages/DashboardPage";
-// import StudentsPage from "./pages/StudentsPage";
 // import AssessmentsPage from "./pages/AssessmentsPage";
 // import ReportsPage from "./pages/ReportsPage";
 // import AssessmentFormsPage from "./pages/AssessmentFormsPage";
 // import UserListPage from "./pages/UserListPage";
 import SignIn from "./components/user/signIn/SignIn";
 import CreatForm from "./components/formManagement/CreatForm";
+import StudentList from "./components/studentManagement/StudentList";
 
 const App: React.FC = () => {
   return (
@@ -35,9 +35,9 @@ const App: React.FC = () => {
           }
         >
           {/* Accessible by all logged-in users */}
-          {/* <Route index element={<DashboardPage />} />
-          <Route path="students" element={<StudentsPage />} />
-          <Route path="assessments" element={<AssessmentsPage />} />
+          {/* <Route index element={<DashboardPage />} /> */}
+          <Route path="students" element={<StudentList />} />
+          {/* <Route path="assessments" element={<AssessmentsPage />} />
           <Route path="reports" element={<ReportsPage />} /> */}
 
           {/* Role-specific routes */}

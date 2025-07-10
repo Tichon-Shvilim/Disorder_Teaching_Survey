@@ -29,7 +29,7 @@ const Sidebar: React.FC = () => {
 
   const navItems = [
     { name: "Dashboard", path: "/admin", icon: <SpaceDashboardOutlined /> },
-    { name: "Students", path: "/admin/students", icon: <SchoolOutlined /> },
+    { name: "Students", path: "/layout/students", icon: <SchoolOutlined /> },
     {
       name: "Assessments",
       path: "/admin/assessments",
