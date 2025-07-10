@@ -25,8 +25,22 @@ jobs:
           docker-compose -f docker-compose.dev.yml up -d --build
 
       # 🕒 Wait for services to be ready
-      - name: Wait for MongoDB
-        run: bash scripts/wait-for-service.sh mongo localhost:27018 mongo 30
+      - name: Wait for MongoDB to become healthy
+        run: |
+          echo "Waiting for MongoDB to be healthy..."
+          for i in {1..30}; do
+            STATUS=$(docker inspect --format='{{.State.Health.Status}}' $(docker-compose ps -q mongo))
+            echo "MongoDB health status: $STATUS"
+            if [ "$STATUS" == "healthy" ]; then
+              echo "✅ MongoDB is healthy!"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "❌ MongoDB did not become healthy in time."
+          docker-compose logs mongo
+          exit 1
+
 
       - name: Wait for admin-service
         run: bash scripts/wait-for-service.sh admin-service http://localhost:4006/healthz http 30
