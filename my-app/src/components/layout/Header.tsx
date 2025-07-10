@@ -52,6 +52,20 @@ const Header: React.FC = () => {
             }}
             startIcon={<LogOut />}
             onClick={handleLogout}
+            startIcon={<Logout />}
+            sx={{
+              color: '#dc2626',
+              borderColor: '#dc2626',
+              fontSize: '0.875rem',
+              fontWeight: 500,
+              textTransform: 'none',
+              px: 2,
+              py: 1,
+              '&:hover': {
+                bgcolor: '#fef2f2',
+                borderColor: '#dc2626',
+              }
+            }}
           >
             Logout
           </Button>

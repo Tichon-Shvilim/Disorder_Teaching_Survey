@@ -1,5 +1,5 @@
 // src/components/layout/Sidebar.tsx
-import React from "react";
+import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../store";
@@ -12,6 +12,7 @@ import {
   Toolbar,
   Box,
   Typography,
+  Collapse,
 } from "@mui/material";
 import {
   SpaceDashboardOutlined,
@@ -20,22 +21,37 @@ import {
   DescriptionOutlined,
   AssignmentOutlined,
   SchoolOutlined,
+  ExpandLess,
+  ExpandMore,
+  PersonAdd,
+  ClassOutlined,
+  Add,
+  ViewList,
 } from "@mui/icons-material";
 
 const drawerWidth = 280;
 
 const Sidebar: React.FC = () => {
   const user = useSelector((state: RootState) => state.auth.user);
+  const [studentMenuOpen, setStudentMenuOpen] = useState(false);
+  const [classMenuOpen, setClassMenuOpen] = useState(false);
 
-  const navItems = [
-    { name: "Dashboard", path: "/admin", icon: <SpaceDashboardOutlined /> },
-    { name: "Students", path: "/layout/students", icon: <SchoolOutlined /> },
+  const handleStudentMenuClick = () => {
+    setStudentMenuOpen(!studentMenuOpen);
+  };
+
+  const handleClassMenuClick = () => {
+    setClassMenuOpen(!classMenuOpen);
+  };
+
+  const mainNavItems = [
+    { name: "Dashboard", path: "/layout", icon: <SpaceDashboardOutlined /> },
     {
       name: "Assessments",
-      path: "/admin/assessments",
+      path: "/layout/assessments",
       icon: <DescriptionOutlined />,
     },
-    { name: "Reports", path: "/admin/reports", icon: <BarChartOutlined /> },
+    { name: "Reports", path: "/layout/reports", icon: <BarChartOutlined /> },
     ...(user?.role === "Admin"
       ? [
           {
@@ -51,6 +67,48 @@ const Sidebar: React.FC = () => {
         ]
       : []),
   ];
+
+  const studentSubItems = [
+    { name: "All Students", path: "/layout/students", icon: <ViewList /> },
+    { name: "Add Student", path: "/layout/students/add", icon: <PersonAdd /> },
+  ];
+
+  const classSubItems = [
+    { name: "All Classes", path: "/layout/classes", icon: <ViewList /> },
+    { name: "Add Class", path: "/layout/classes/add", icon: <Add /> },
+  ];
+
+  const renderNavItem = (item: { name: string; path: string; icon: React.ReactNode }, isSubItem = false) => (
+    <NavLink
+      to={item.path}
+      key={item.name}
+      style={{ textDecoration: "none", color: "inherit" }}
+    >
+      {({ isActive }) => (
+        <ListItemButton
+          selected={isActive}
+          sx={{
+            bgcolor: isActive ? "#e3eafc" : "transparent",
+            "&:hover": { bgcolor: "#e3eafc", color: "#64b5f6" },
+            "&:hover .MuiListItemIcon-root .MuiSvgIcon-root": {
+              color: "#64b5f6",
+            },
+            borderRight: isActive ? "3px solid #64b5f6" : "none",
+            color: "#667A93",
+            paddingY: isSubItem ? 1 : 2,
+            paddingX: isSubItem ? 5 : 3,
+            paddingLeft: isSubItem ? 6 : 3,
+          }}
+        >
+          <ListItemIcon sx={{ minWidth: 36 }}>{item.icon}</ListItemIcon>
+          <ListItemText
+            primary={item.name}
+            sx={{ fontWeight: isActive ? "bold" : "normal" }}
+          />
+        </ListItemButton>
+      )}
+    </NavLink>
+  );
 
   return (
     <Drawer
@@ -71,7 +129,7 @@ const Sidebar: React.FC = () => {
         <Box display="flex" alignItems="center" gap={1}>
           <Box
             sx={{
-              backgroundColor: "#1976d2",
+              backgroundColor: "#64b5f6",
               borderRadius: 4,
               padding: 0.75,
               px: 1.25,
@@ -86,36 +144,58 @@ const Sidebar: React.FC = () => {
       </Toolbar>
       <Box sx={{ overflow: "auto", pt: 4 }}>
         <List>
-          {navItems.map((item) => (
-            <NavLink
-              to={item.path}
-              key={item.name}
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
-              {({ isActive }) => (
-                <ListItemButton
-                  selected={isActive}
-                  sx={{
-                    bgcolor: isActive ? "#e3eafc" : "transparent",
-                    "&:hover": { bgcolor: "#e3eafc", color: "#1976d2" },
-                    "&:hover .MuiListItemIcon-root .MuiSvgIcon-root": {
-                      color: "#1976d2",
-                    },
-                    borderRight: isActive ? "3px solid #1976d2" : "none",
-                    color: "#667A93",
-                    paddingY: 2,
-                    paddingX: 3,
-                  }}
-                >
-                  <ListItemIcon sx={{ minWidth: 36 }}>{item.icon}</ListItemIcon>
-                  <ListItemText
-                    primary={item.name}
-                    sx={{ fontWeight: isActive ? "bold" : "normal" }}
-                  />
-                </ListItemButton>
-              )}
-            </NavLink>
-          ))}
+          {/* Main Navigation Items */}
+          {mainNavItems.map((item) => renderNavItem(item))}
+
+          {/* Student Management with Submenu */}
+          <ListItemButton
+            onClick={handleStudentMenuClick}
+            sx={{
+              "&:hover": { bgcolor: "#e3eafc", color: "#64b5f6" },
+              "&:hover .MuiListItemIcon-root .MuiSvgIcon-root": {
+                color: "#64b5f6",
+              },
+              color: "#667A93",
+              paddingY: 2,
+              paddingX: 3,
+            }}
+          >
+            <ListItemIcon sx={{ minWidth: 36 }}>
+              <SchoolOutlined />
+            </ListItemIcon>
+            <ListItemText primary="Student Management" />
+            {studentMenuOpen ? <ExpandLess /> : <ExpandMore />}
+          </ListItemButton>
+          <Collapse in={studentMenuOpen} timeout="auto" unmountOnExit>
+            <List component="div" disablePadding>
+              {studentSubItems.map((item) => renderNavItem(item, true))}
+            </List>
+          </Collapse>
+
+          {/* Class Management with Submenu */}
+          <ListItemButton
+            onClick={handleClassMenuClick}
+            sx={{
+              "&:hover": { bgcolor: "#e3eafc", color: "#64b5f6" },
+              "&:hover .MuiListItemIcon-root .MuiSvgIcon-root": {
+                color: "#64b5f6",
+              },
+              color: "#667A93",
+              paddingY: 2,
+              paddingX: 3,
+            }}
+          >
+            <ListItemIcon sx={{ minWidth: 36 }}>
+              <ClassOutlined />
+            </ListItemIcon>
+            <ListItemText primary="Class Management" />
+            {classMenuOpen ? <ExpandLess /> : <ExpandMore />}
+          </ListItemButton>
+          <Collapse in={classMenuOpen} timeout="auto" unmountOnExit>
+            <List component="div" disablePadding>
+              {classSubItems.map((item) => renderNavItem(item, true))}
+            </List>
+          </Collapse>
         </List>
       </Box>
     </Drawer>
