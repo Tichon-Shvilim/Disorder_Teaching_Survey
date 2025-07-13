@@ -69,7 +69,7 @@ const Sidebar: React.FC = () => {
   ];
 
   const studentSubItems = [
-    { name: "All Students", path: "/layout/students", icon: <ViewList /> },
+    { name: "All Students", path: "/layout/studentlist", icon: <ViewList /> },
     { name: "Add Student", path: "/layout/students/add", icon: <PersonAdd /> },
   ];
 

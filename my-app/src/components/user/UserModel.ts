@@ -4,6 +4,7 @@ export default interface UserModel {
     password?: string,
     email: string,
     role: string,
+    status?: 'active' | 'inactive',
 }
 
 
