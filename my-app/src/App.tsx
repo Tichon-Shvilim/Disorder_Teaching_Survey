@@ -14,6 +14,7 @@ import StudentList from "./components/studentManagement/StudentList";
 import ClassList from "./components/classManagement/ClassList";
 import AddStudent from "./components/studentManagement/AddStudent";
 import AddClass from "./components/classManagement/AddClass";
+import EditClass from "./components/classManagement/EditClass";
 import ModernClassManagement from "./components/classManagement/ModernClassManagement";
 import UserList from "./components/user/userManagement/UserList";
 import SignUp from "./components/user/signUp/SignUp";
@@ -39,6 +40,7 @@ const App: React.FC = () => {
           <Route path="students" element={<StudentList />} />
           <Route path="classes" element={<ClassList/>} />
           <Route path="classes/:id" element={<ModernClassManagement />} />
+          <Route path="classes/:id/edit" element={<EditClass />} />
           <Route path="addStudent" element={<AddStudent />} />
           <Route path="addClass" element={<AddClass />} />
           <Route path="signup" element={<SignUp/>} />

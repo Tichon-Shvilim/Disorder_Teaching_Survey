@@ -26,7 +26,6 @@ import {
   Delete as DeleteIcon,
   Add as AddIcon,
   Search as SearchIcon,
-  ExpandMore as ExpandMoreIcon,
   School as SchoolIcon,
   Person as PersonIcon,
 } from "@mui/icons-material";
@@ -231,7 +230,7 @@ const UsersList: React.FC = () => {
               <TableCell sx={{ fontWeight: 600, color: '#4a5568', fontSize: '14px', padding: '16px 24px' }}>
                 Status
               </TableCell>
-              <TableCell sx={{ fontWeight: 600, color: '#4a5568', fontSize: '14px', padding: '16px 24px' }}>
+              <TableCell sx={{ fontWeight: 600, color: '#4a5568', fontSize: '14px', padding: '16px 24px', width: '280px' }}>
                 Assignments
               </TableCell>
               <TableCell align="right" sx={{ fontWeight: 600, color: '#4a5568', fontSize: '14px', padding: '16px 24px' }}>
@@ -300,29 +299,93 @@ const UsersList: React.FC = () => {
                     }}
                   />
                 </TableCell>
-                <TableCell sx={{ padding: '16px 24px' }}>
-                  {(user.role.toLowerCase() === 'teacher' && user.classes && user.classes.length > 0) ||
-                   (user.role.toLowerCase() === 'therapist' && user.students && user.students.length > 0) ? (
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      endIcon={<ExpandMoreIcon />}
-                      onClick={(e) => handleMenuClick(e, user)}
-                      sx={{
-                        textTransform: 'none',
-                        borderColor: '#e2e8f0',
-                        color: '#4a5568',
-                        '&:hover': {
-                          borderColor: '#cbd5e0',
-                          backgroundColor: '#f7fafc',
-                        },
-                      }}
-                    >
-                      {user.role.toLowerCase() === 'teacher' 
-                        ? `${user.classes?.length || 0} Classes`
-                        : `${user.students?.length || 0} Students`
-                      }
-                    </Button>
+                <TableCell sx={{ padding: '16px 24px', maxWidth: '300px' }}>
+                  {user.role.toLowerCase() === 'teacher' && user.classes && user.classes.length > 0 ? (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                      {user.classes.slice(0, 3).map((classItem) => (
+                        <Box
+                          key={classItem._id}
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            padding: '4px 8px',
+                            backgroundColor: '#ebf8ff',
+                            borderRadius: 1,
+                            cursor: 'pointer',
+                            '&:hover': {
+                              backgroundColor: '#bee3f8',
+                            },
+                          }}
+                          onClick={() => handleClassClick(classItem._id)}
+                        >
+                          <SchoolIcon sx={{ fontSize: 14, color: '#3182ce' }} />
+                          <Typography sx={{ fontSize: '12px', fontWeight: 500, color: '#2c5aa0' }}>
+                            Class {classItem.classNumber}
+                          </Typography>
+                        </Box>
+                      ))}
+                      {user.classes.length > 3 && (
+                        <Button
+                          variant="text"
+                          size="small"
+                          onClick={(e) => handleMenuClick(e, user)}
+                          sx={{
+                            fontSize: '11px',
+                            color: '#3182ce',
+                            textTransform: 'none',
+                            padding: '2px 8px',
+                            minHeight: 'auto',
+                            justifyContent: 'flex-start',
+                          }}
+                        >
+                          +{user.classes.length - 3} more classes
+                        </Button>
+                      )}
+                    </Box>
+                  ) : user.role.toLowerCase() === 'therapist' && user.students && user.students.length > 0 ? (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                      {user.students.slice(0, 3).map((student) => (
+                        <Box
+                          key={student._id}
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            padding: '4px 8px',
+                            backgroundColor: '#f0fff4',
+                            borderRadius: 1,
+                            cursor: 'pointer',
+                            '&:hover': {
+                              backgroundColor: '#c6f6d5',
+                            },
+                          }}
+                          onClick={() => handleStudentClick(student._id)}
+                        >
+                          <PersonIcon sx={{ fontSize: 14, color: '#38a169' }} />
+                          <Typography sx={{ fontSize: '12px', fontWeight: 500, color: '#22543d' }}>
+                            {student.name}
+                          </Typography>
+                        </Box>
+                      ))}
+                      {user.students.length > 3 && (
+                        <Button
+                          variant="text"
+                          size="small"
+                          onClick={(e) => handleMenuClick(e, user)}
+                          sx={{
+                            fontSize: '11px',
+                            color: '#38a169',
+                            textTransform: 'none',
+                            padding: '2px 8px',
+                            minHeight: 'auto',
+                            justifyContent: 'flex-start',
+                          }}
+                        >
+                          +{user.students.length - 3} more students
+                        </Button>
+                      )}
+                    </Box>
                   ) : (
                     <Typography sx={{ color: '#a0aec0', fontSize: '12px', fontStyle: 'italic' }}>
                       No assignments
@@ -382,7 +445,7 @@ const UsersList: React.FC = () => {
         </Box>
       )}
 
-      {/* Assignments Dropdown Menu */}
+      {/* Assignments Dropdown Menu - for additional items beyond first 3 */}
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -396,7 +459,7 @@ const UsersList: React.FC = () => {
           },
         }}
       >
-        {selectedUser?.role.toLowerCase() === 'teacher' && selectedUser.classes?.map((classItem) => (
+        {selectedUser?.role.toLowerCase() === 'teacher' && selectedUser.classes?.slice(3).map((classItem) => (
           <MenuItem
             key={classItem._id}
             onClick={() => handleClassClick(classItem._id)}
@@ -420,7 +483,7 @@ const UsersList: React.FC = () => {
           </MenuItem>
         ))}
         
-        {selectedUser?.role.toLowerCase() === 'therapist' && selectedUser.students?.map((student) => (
+        {selectedUser?.role.toLowerCase() === 'therapist' && selectedUser.students?.slice(3).map((student) => (
           <MenuItem
             key={student._id}
             onClick={() => handleStudentClick(student._id)}
@@ -444,11 +507,21 @@ const UsersList: React.FC = () => {
           </MenuItem>
         ))}
 
-        {(!selectedUser?.classes || selectedUser.classes.length === 0) &&
-         (!selectedUser?.students || selectedUser.students.length === 0) && (
+        {/* Show message if no additional items */}
+        {selectedUser?.role.toLowerCase() === 'teacher' && 
+         (!selectedUser.classes || selectedUser.classes.length <= 3) && (
           <MenuItem disabled sx={{ padding: '12px 16px' }}>
             <Typography sx={{ color: '#a0aec0', fontSize: '14px', fontStyle: 'italic' }}>
-              No assignments
+              No additional classes
+            </Typography>
+          </MenuItem>
+        )}
+        
+        {selectedUser?.role.toLowerCase() === 'therapist' && 
+         (!selectedUser.students || selectedUser.students.length <= 3) && (
+          <MenuItem disabled sx={{ padding: '12px 16px' }}>
+            <Typography sx={{ color: '#a0aec0', fontSize: '14px', fontStyle: 'italic' }}>
+              No additional students
             </Typography>
           </MenuItem>
         )}
