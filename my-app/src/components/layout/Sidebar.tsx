@@ -67,7 +67,7 @@ const Sidebar: React.FC = () => {
           },
           {
             name: "User Management",
-            path: "/layout/userlist",
+            path: "/layout/user-management",
             icon: <PeopleOutlineRounded />,
           },
         ]

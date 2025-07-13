@@ -11,11 +11,14 @@ import RoleRoute from "./components/RoleRoute";
 import SignIn from "./components/user/signIn/SignIn";
 import CreatForm from "./components/formManagement/CreatForm";
 import StudentList from "./components/studentManagement/StudentList";
+import StudentDetails from "./components/studentManagement/StudentDetails";
 import ClassList from "./components/classManagement/ClassList";
 import AddStudent from "./components/studentManagement/AddStudent";
 import AddClass from "./components/classManagement/AddClass";
+import EditClass from "./components/classManagement/EditClass";
 import ModernClassManagement from "./components/classManagement/ModernClassManagement";
 import UserList from "./components/user/userManagement/UserList";
+import EditUser from "./components/user/editUser/EditUser";
 import SignUp from "./components/user/signUp/SignUp";
 
 const App: React.FC = () => {
@@ -37,8 +40,10 @@ const App: React.FC = () => {
         >
           {/* Accessible by all logged-in users */}
           <Route path="students" element={<StudentList />} />
+          <Route path="students/:id" element={<StudentDetails />} />
           <Route path="classes" element={<ClassList/>} />
           <Route path="classes/:id" element={<ModernClassManagement />} />
+          <Route path="classes/:id/edit" element={<EditClass />} />
           <Route path="addStudent" element={<AddStudent />} />
           <Route path="addClass" element={<AddClass />} />
           <Route path="signup" element={<SignUp/>} />
@@ -54,10 +59,18 @@ const App: React.FC = () => {
             }
           />
           <Route
-            path="userlist"
+            path="user-management"
             element={
               <RoleRoute allowedRoles={["Admin"]}>
                 <UserList/>
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="user-management/:id/edit"
+            element={
+              <RoleRoute allowedRoles={["Admin"]}>
+                <EditUser/>
               </RoleRoute>
             }
           />

@@ -12,10 +12,13 @@ import {
 } from 'lucide-react';
 import { getAllClasses, deleteClass } from '../studentManagement/Api-Requests/ClassAPIService';
 import type { Class } from '../studentManagement/Api-Requests/ClassAPIService';
+import { getAllItems } from '../user/Api-Requests/genericRequests';
+import type UserModel from '../user/UserModel';
 import { toast } from 'react-toastify';
 
 const ClassList: React.FC = () => {
   const [classes, setClasses] = useState<Class[]>([]);
+  const [teachers, setTeachers] = useState<UserModel[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -26,8 +29,18 @@ const ClassList: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await getAllClasses();
-      setClasses(response.data);
+      const [classesResponse, usersResponse] = await Promise.all([
+        getAllClasses(),
+        getAllItems<UserModel[]>('api/users/')
+      ]);
+      
+      setClasses(classesResponse.data);
+      
+      // Filter only teachers
+      const teacherUsers = usersResponse.data.filter(user => 
+        user.role.toLowerCase() === 'teacher'
+      );
+      setTeachers(teacherUsers);
     } catch (err: unknown) {
       console.error('Error fetching classes:', err);
       setError('Failed to load classes');
@@ -36,6 +49,12 @@ const ClassList: React.FC = () => {
       setLoading(false);
     }
   }, []);
+
+  // Helper function to get teacher name by ID
+  const getTeacherName = (teacherId: string): string => {
+    const teacher = teachers.find(t => t.id?.toString() === teacherId);
+    return teacher ? teacher.name : 'Unknown Teacher';
+  };
 
   useEffect(() => {
     fetchClasses();
@@ -423,9 +442,9 @@ const ClassList: React.FC = () => {
                     </h4>
                     <div style={{ fontSize: '14px', color: '#1f2937' }}>
                       {classItem.teachers.length > 0 ? (
-                        classItem.teachers.slice(0, 2).map((teacherId, index) => (
+                        classItem.teachers.slice(0, 2).map((teacherId) => (
                           <div key={teacherId} style={{ marginBottom: '2px' }}>
-                            Teacher {index + 1}
+                            {getTeacherName(teacherId)}
                           </div>
                         ))
                       ) : (

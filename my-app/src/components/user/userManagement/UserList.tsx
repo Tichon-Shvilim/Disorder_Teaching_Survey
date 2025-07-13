@@ -26,7 +26,6 @@ import {
   Delete as DeleteIcon,
   Add as AddIcon,
   Search as SearchIcon,
-  ExpandMore as ExpandMoreIcon,
   School as SchoolIcon,
   Person as PersonIcon,
 } from "@mui/icons-material";
@@ -39,6 +38,7 @@ const UsersList: React.FC = () => {
   const [searchTerm, setSearchTerm] = React.useState<string>("");
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [selectedUser, setSelectedUser] = React.useState<UserModel | null>(null);
+  const [showInactive, setShowInactive] = React.useState<boolean>(false);
 
   // Function to fetch all users
   const fetchUsers = async () => {
@@ -69,7 +69,7 @@ const UsersList: React.FC = () => {
   }, []);
 
   const onEdit = (id: number) => {
-    navigate(`/signup/${id}`);
+    navigate(`/layout/user-management/${id}/edit`);
   };
 
   const onDelete = async (id: number) => {
@@ -88,6 +88,25 @@ const UsersList: React.FC = () => {
       }
     } catch (error) {
       console.error("Failed to deactivate user:", error);
+    }
+  };
+
+  const onActivate = async (id: number) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to activate this user?"
+    );
+    if (!confirmed) return;
+    try {
+      // Update the user status to active
+      const userToUpdate = users.find(u => u.id === id);
+      if (userToUpdate) {
+        const updatedUser = { ...userToUpdate, status: 'active' as const };
+        await updateItem<UserModel>("api/users", id.toString(), updatedUser);
+        fetchUsers();
+        console.log(`Activated user with ID: ${id}`);
+      }
+    } catch (error) {
+      console.error("Failed to activate user:", error);
     }
   };
 
@@ -115,12 +134,16 @@ const UsersList: React.FC = () => {
     }
   };
 
-  // Filter users based on search term
-  const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.role.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filter users based on search term and active/inactive status
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.role.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = showInactive ? user.status === 'inactive' : user.status !== 'inactive';
+    
+    return matchesSearch && matchesStatus;
+  });
 
   // Handle dropdown menu
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>, user: UserModel) => {
@@ -134,13 +157,15 @@ const UsersList: React.FC = () => {
   };
 
   const handleClassClick = (classId: string) => {
+    console.log('Navigating to class details:', classId);
     handleMenuClose();
-    navigate(`/admin/class-management/classes/${classId}`);
+    navigate(`/layout/classes/${classId}`);
   };
 
   const handleStudentClick = (studentId: string) => {
+    console.log('Navigating to student details:', studentId);
     handleMenuClose();
-    navigate(`/admin/student-management/students/${studentId}`);
+    navigate(`/layout/students/${studentId}`);
   };
 
   return (
@@ -154,9 +179,52 @@ const UsersList: React.FC = () => {
           marginBottom: 3,
         }}
       >
-        <Typography variant="h4" sx={{ fontWeight: 600, color: '#1a202c' }}>
-          User Management
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Typography variant="h4" sx={{ fontWeight: 600, color: '#1a202c' }}>
+            {showInactive ? 'Inactive Users' : 'User Management'}
+          </Typography>
+          
+          {/* Toggle Buttons */}
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              variant={!showInactive ? "contained" : "outlined"}
+              onClick={() => setShowInactive(false)}
+              sx={{
+                backgroundColor: !showInactive ? '#3182ce' : 'transparent',
+                color: !showInactive ? 'white' : '#3182ce',
+                borderColor: '#3182ce',
+                '&:hover': {
+                  backgroundColor: !showInactive ? '#2c5aa0' : '#f0f9ff',
+                },
+                borderRadius: 2,
+                textTransform: 'none',
+                fontSize: '14px',
+                padding: '8px 16px'
+              }}
+            >
+              Active Users
+            </Button>
+            <Button
+              variant={showInactive ? "contained" : "outlined"}
+              onClick={() => setShowInactive(true)}
+              sx={{
+                backgroundColor: showInactive ? '#dc2626' : 'transparent',
+                color: showInactive ? 'white' : '#dc2626',
+                borderColor: '#dc2626',
+                '&:hover': {
+                  backgroundColor: showInactive ? '#b91c1c' : '#fef2f2',
+                },
+                borderRadius: 2,
+                textTransform: 'none',
+                fontSize: '14px',
+                padding: '8px 16px'
+              }}
+            >
+              Inactive Users
+            </Button>
+          </Box>
+        </Box>
+        
         <Button
           variant="contained"
           startIcon={<AddIcon />}
@@ -177,9 +245,9 @@ const UsersList: React.FC = () => {
       </Box>
 
       {/* Search Bar */}
-      <Box sx={{ marginBottom: 3 }}>
+      <Box sx={{ marginBottom: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
         <TextField
-          placeholder="Search users..."
+          placeholder={`Search ${showInactive ? 'inactive' : 'active'} users...`}
           variant="outlined"
           size="medium"
           value={searchTerm}
@@ -208,6 +276,11 @@ const UsersList: React.FC = () => {
             },
           }}
         />
+        
+        {/* User count indicator */}
+        <Typography sx={{ color: '#718096', fontSize: '14px' }}>
+          {filteredUsers.length} {showInactive ? 'inactive' : 'active'} user{filteredUsers.length !== 1 ? 's' : ''} found
+        </Typography>
       </Box>
 
       {/* Users Table */}
@@ -231,11 +304,11 @@ const UsersList: React.FC = () => {
               <TableCell sx={{ fontWeight: 600, color: '#4a5568', fontSize: '14px', padding: '16px 24px' }}>
                 Status
               </TableCell>
-              <TableCell sx={{ fontWeight: 600, color: '#4a5568', fontSize: '14px', padding: '16px 24px' }}>
+              <TableCell sx={{ fontWeight: 600, color: '#4a5568', fontSize: '14px', padding: '16px 24px', width: '280px' }}>
                 Assignments
               </TableCell>
               <TableCell align="right" sx={{ fontWeight: 600, color: '#4a5568', fontSize: '14px', padding: '16px 24px' }}>
-                Actions
+                {showInactive ? 'Activate' : 'Actions'}
               </TableCell>
             </TableRow>
           </TableHead>
@@ -300,29 +373,93 @@ const UsersList: React.FC = () => {
                     }}
                   />
                 </TableCell>
-                <TableCell sx={{ padding: '16px 24px' }}>
-                  {(user.role.toLowerCase() === 'teacher' && user.classes && user.classes.length > 0) ||
-                   (user.role.toLowerCase() === 'therapist' && user.students && user.students.length > 0) ? (
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      endIcon={<ExpandMoreIcon />}
-                      onClick={(e) => handleMenuClick(e, user)}
-                      sx={{
-                        textTransform: 'none',
-                        borderColor: '#e2e8f0',
-                        color: '#4a5568',
-                        '&:hover': {
-                          borderColor: '#cbd5e0',
-                          backgroundColor: '#f7fafc',
-                        },
-                      }}
-                    >
-                      {user.role.toLowerCase() === 'teacher' 
-                        ? `${user.classes?.length || 0} Classes`
-                        : `${user.students?.length || 0} Students`
-                      }
-                    </Button>
+                <TableCell sx={{ padding: '16px 24px', maxWidth: '300px' }}>
+                  {user.role.toLowerCase() === 'teacher' && user.classes && user.classes.length > 0 ? (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                      {user.classes.slice(0, 3).map((classItem) => (
+                        <Box
+                          key={classItem._id}
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            padding: '4px 8px',
+                            backgroundColor: '#ebf8ff',
+                            borderRadius: 1,
+                            cursor: 'pointer',
+                            '&:hover': {
+                              backgroundColor: '#bee3f8',
+                            },
+                          }}
+                          onClick={() => handleClassClick(classItem._id)}
+                        >
+                          <SchoolIcon sx={{ fontSize: 14, color: '#3182ce' }} />
+                          <Typography sx={{ fontSize: '12px', fontWeight: 500, color: '#2c5aa0' }}>
+                            Class {classItem.classNumber}
+                          </Typography>
+                        </Box>
+                      ))}
+                      {user.classes.length > 3 && (
+                        <Button
+                          variant="text"
+                          size="small"
+                          onClick={(e) => handleMenuClick(e, user)}
+                          sx={{
+                            fontSize: '11px',
+                            color: '#3182ce',
+                            textTransform: 'none',
+                            padding: '2px 8px',
+                            minHeight: 'auto',
+                            justifyContent: 'flex-start',
+                          }}
+                        >
+                          +{user.classes.length - 3} more classes
+                        </Button>
+                      )}
+                    </Box>
+                  ) : user.role.toLowerCase() === 'therapist' && user.students && user.students.length > 0 ? (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                      {user.students.slice(0, 3).map((student) => (
+                        <Box
+                          key={student._id}
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            padding: '4px 8px',
+                            backgroundColor: '#f0fff4',
+                            borderRadius: 1,
+                            cursor: 'pointer',
+                            '&:hover': {
+                              backgroundColor: '#c6f6d5',
+                            },
+                          }}
+                          onClick={() => handleStudentClick(student._id)}
+                        >
+                          <PersonIcon sx={{ fontSize: 14, color: '#38a169' }} />
+                          <Typography sx={{ fontSize: '12px', fontWeight: 500, color: '#22543d' }}>
+                            {student.name}
+                          </Typography>
+                        </Box>
+                      ))}
+                      {user.students.length > 3 && (
+                        <Button
+                          variant="text"
+                          size="small"
+                          onClick={(e) => handleMenuClick(e, user)}
+                          sx={{
+                            fontSize: '11px',
+                            color: '#38a169',
+                            textTransform: 'none',
+                            padding: '2px 8px',
+                            minHeight: 'auto',
+                            justifyContent: 'flex-start',
+                          }}
+                        >
+                          +{user.students.length - 3} more students
+                        </Button>
+                      )}
+                    </Box>
                   ) : (
                     <Typography sx={{ color: '#a0aec0', fontSize: '12px', fontStyle: 'italic' }}>
                       No assignments
@@ -343,18 +480,38 @@ const UsersList: React.FC = () => {
                   >
                     <EditIcon fontSize="small" />
                   </IconButton>
-                  <IconButton
-                    onClick={() => user.id !== undefined && onDelete(user.id)}
-                    disabled={user.id === undefined || user.status === 'inactive'}
-                    sx={{
-                      color: user.status === 'inactive' ? '#a0aec0' : '#e53e3e',
-                      '&:hover': {
-                        backgroundColor: user.status === 'inactive' ? 'transparent' : '#fed7d7',
-                      },
-                    }}
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
+                  
+                  {showInactive ? (
+                    // Show Activate button for inactive users
+                    <IconButton
+                      onClick={() => user.id !== undefined && onActivate(user.id)}
+                      disabled={user.id === undefined}
+                      sx={{
+                        color: '#22c55e',
+                        '&:hover': {
+                          backgroundColor: '#f0fdf4',
+                        },
+                      }}
+                      title="Activate User"
+                    >
+                      <AddIcon fontSize="small" />
+                    </IconButton>
+                  ) : (
+                    // Show Deactivate button for active users
+                    <IconButton
+                      onClick={() => user.id !== undefined && onDelete(user.id)}
+                      disabled={user.id === undefined}
+                      sx={{
+                        color: '#e53e3e',
+                        '&:hover': {
+                          backgroundColor: '#fed7d7',
+                        },
+                      }}
+                      title="Deactivate User"
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  )}
                 </TableCell>
               </TableRow>
             ))}
@@ -377,12 +534,29 @@ const UsersList: React.FC = () => {
           }}
         >
           <Typography sx={{ color: '#718096', fontSize: '16px' }}>
-            {searchTerm ? 'No users found matching your search.' : 'No users available.'}
+            {searchTerm 
+              ? `No ${showInactive ? 'inactive' : 'active'} users found matching your search.`
+              : showInactive 
+                ? 'No inactive users found.'
+                : 'No active users available.'
+            }
           </Typography>
+          {showInactive && users.filter(u => u.status !== 'inactive').length > 0 && (
+            <Button
+              onClick={() => setShowInactive(false)}
+              sx={{
+                marginTop: 2,
+                color: '#3182ce',
+                textTransform: 'none'
+              }}
+            >
+              View Active Users
+            </Button>
+          )}
         </Box>
       )}
 
-      {/* Assignments Dropdown Menu */}
+      {/* Assignments Dropdown Menu - for additional items beyond first 3 */}
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -396,7 +570,7 @@ const UsersList: React.FC = () => {
           },
         }}
       >
-        {selectedUser?.role.toLowerCase() === 'teacher' && selectedUser.classes?.map((classItem) => (
+        {selectedUser?.role.toLowerCase() === 'teacher' && selectedUser.classes?.slice(3).map((classItem) => (
           <MenuItem
             key={classItem._id}
             onClick={() => handleClassClick(classItem._id)}
@@ -420,7 +594,7 @@ const UsersList: React.FC = () => {
           </MenuItem>
         ))}
         
-        {selectedUser?.role.toLowerCase() === 'therapist' && selectedUser.students?.map((student) => (
+        {selectedUser?.role.toLowerCase() === 'therapist' && selectedUser.students?.slice(3).map((student) => (
           <MenuItem
             key={student._id}
             onClick={() => handleStudentClick(student._id)}
@@ -444,11 +618,21 @@ const UsersList: React.FC = () => {
           </MenuItem>
         ))}
 
-        {(!selectedUser?.classes || selectedUser.classes.length === 0) &&
-         (!selectedUser?.students || selectedUser.students.length === 0) && (
+        {/* Show message if no additional items */}
+        {selectedUser?.role.toLowerCase() === 'teacher' && 
+         (!selectedUser.classes || selectedUser.classes.length <= 3) && (
           <MenuItem disabled sx={{ padding: '12px 16px' }}>
             <Typography sx={{ color: '#a0aec0', fontSize: '14px', fontStyle: 'italic' }}>
-              No assignments
+              No additional classes
+            </Typography>
+          </MenuItem>
+        )}
+        
+        {selectedUser?.role.toLowerCase() === 'therapist' && 
+         (!selectedUser.students || selectedUser.students.length <= 3) && (
+          <MenuItem disabled sx={{ padding: '12px 16px' }}>
+            <Typography sx={{ color: '#a0aec0', fontSize: '14px', fontStyle: 'italic' }}>
+              No additional students
             </Typography>
           </MenuItem>
         )}
