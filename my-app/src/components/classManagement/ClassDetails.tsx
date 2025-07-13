@@ -1,17 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { 
-  ArrowLeft, 
-  Edit, 
-  Users, 
-  UserCheck, 
+import { useParams, useNavigate } from 'react-router-dom';
+import {
+  ArrowLeft,
+  Users,
+  UserCheck,
+  Edit,
   Plus,
   X,
   Save
 } from 'lucide-react';
 import { getClassById, updateClass } from '../studentManagement/Api-Requests/ClassAPIService';
-import type { Class, UpdateClassRequest } from '../studentManagement/Api-Requests/ClassAPIService';
 import { getAllStudents } from '../studentManagement/Api-Requests/StudentAPIService';
+import type { Class, UpdateClassRequest } from '../studentManagement/Api-Requests/ClassAPIService';
 import type { Student } from '../studentManagement/Api-Requests/StudentAPIService';
 import { toast } from 'react-toastify';
 
@@ -108,7 +108,7 @@ const ClassDetails: React.FC = () => {
   };
 
   const handleBack = () => {
-    navigate('../classes');
+    navigate('/layout/classes');
   };
 
   const handleEdit = () => {

@@ -16,12 +16,19 @@ import {
   Chip,
   TextField,
   InputAdornment,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material";
 import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   Add as AddIcon,
   Search as SearchIcon,
+  ExpandMore as ExpandMoreIcon,
+  School as SchoolIcon,
+  Person as PersonIcon,
 } from "@mui/icons-material";
 import { getAllItems, updateItem } from "../Api-Requests/genericRequests";
 import type UserModel from "../UserModel";
@@ -30,6 +37,8 @@ const UsersList: React.FC = () => {
   const navigate = useNavigate();
   const [users, setUsers] = React.useState<UserModel[]>([]);
   const [searchTerm, setSearchTerm] = React.useState<string>("");
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [selectedUser, setSelectedUser] = React.useState<UserModel | null>(null);
 
   // Function to fetch all users
   const fetchUsers = async () => {
@@ -37,10 +46,21 @@ const UsersList: React.FC = () => {
       // "users" is the route for your API, adjust if needed
       const response = await getAllItems<UserModel[]>("api/users/");
       setUsers(response.data); // If your httpService returns { data: [...] }
-      //console.log('Fetched users:', response.data[1].id);
       console.log("Fetched users:", response.data);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Failed to fetch users:", error);
+      
+      // Check if it's an authentication error
+      const axiosError = error as { response?: { status?: number; data?: { message?: string } }; message?: string };
+      if (axiosError.response?.status === 401 || axiosError.response?.status === 403) {
+        console.error("Authentication error - user may need to log in");
+        // You could redirect to login page here
+        // navigate('/login');
+      } else if (axiosError.response?.status === 500) {
+        console.error("Server error:", axiosError.response?.data?.message || axiosError.message);
+      } else {
+        console.error("Network or other error:", axiosError.message);
+      }
     }
   };
 
@@ -102,6 +122,27 @@ const UsersList: React.FC = () => {
     user.role.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Handle dropdown menu
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, user: UserModel) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedUser(user);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedUser(null);
+  };
+
+  const handleClassClick = (classId: string) => {
+    handleMenuClose();
+    navigate(`/admin/class-management/classes/${classId}`);
+  };
+
+  const handleStudentClick = (studentId: string) => {
+    handleMenuClose();
+    navigate(`/admin/student-management/students/${studentId}`);
+  };
+
   return (
     <Box sx={{ padding: 3, backgroundColor: '#f8fafc', minHeight: '100vh' }}>
       {/* Header Section */}
@@ -119,7 +160,7 @@ const UsersList: React.FC = () => {
         <Button
           variant="contained"
           startIcon={<AddIcon />}
-          onClick={() => navigate("/admin/signup")}
+          onClick={() => navigate("../signup")}
           sx={{
             backgroundColor: '#3182ce',
             '&:hover': {
@@ -190,6 +231,9 @@ const UsersList: React.FC = () => {
               <TableCell sx={{ fontWeight: 600, color: '#4a5568', fontSize: '14px', padding: '16px 24px' }}>
                 Status
               </TableCell>
+              <TableCell sx={{ fontWeight: 600, color: '#4a5568', fontSize: '14px', padding: '16px 24px' }}>
+                Assignments
+              </TableCell>
               <TableCell align="right" sx={{ fontWeight: 600, color: '#4a5568', fontSize: '14px', padding: '16px 24px' }}>
                 Actions
               </TableCell>
@@ -256,6 +300,35 @@ const UsersList: React.FC = () => {
                     }}
                   />
                 </TableCell>
+                <TableCell sx={{ padding: '16px 24px' }}>
+                  {(user.role.toLowerCase() === 'teacher' && user.classes && user.classes.length > 0) ||
+                   (user.role.toLowerCase() === 'therapist' && user.students && user.students.length > 0) ? (
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      endIcon={<ExpandMoreIcon />}
+                      onClick={(e) => handleMenuClick(e, user)}
+                      sx={{
+                        textTransform: 'none',
+                        borderColor: '#e2e8f0',
+                        color: '#4a5568',
+                        '&:hover': {
+                          borderColor: '#cbd5e0',
+                          backgroundColor: '#f7fafc',
+                        },
+                      }}
+                    >
+                      {user.role.toLowerCase() === 'teacher' 
+                        ? `${user.classes?.length || 0} Classes`
+                        : `${user.students?.length || 0} Students`
+                      }
+                    </Button>
+                  ) : (
+                    <Typography sx={{ color: '#a0aec0', fontSize: '12px', fontStyle: 'italic' }}>
+                      No assignments
+                    </Typography>
+                  )}
+                </TableCell>
                 <TableCell align="right" sx={{ padding: '16px 24px' }}>
                   <IconButton
                     onClick={() => user.id !== undefined && onEdit(user.id)}
@@ -308,6 +381,78 @@ const UsersList: React.FC = () => {
           </Typography>
         </Box>
       )}
+
+      {/* Assignments Dropdown Menu */}
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+        PaperProps={{
+          sx: {
+            maxHeight: 300,
+            minWidth: 200,
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+            borderRadius: 2,
+          },
+        }}
+      >
+        {selectedUser?.role.toLowerCase() === 'teacher' && selectedUser.classes?.map((classItem) => (
+          <MenuItem
+            key={classItem._id}
+            onClick={() => handleClassClick(classItem._id)}
+            sx={{
+              padding: '12px 16px',
+              '&:hover': {
+                backgroundColor: '#f7fafc',
+              },
+            }}
+          >
+            <ListItemIcon sx={{ minWidth: 36 }}>
+              <SchoolIcon sx={{ fontSize: 18, color: '#3182ce' }} />
+            </ListItemIcon>
+            <ListItemText
+              primary={`Class ${classItem.classNumber}`}
+              primaryTypographyProps={{
+                fontSize: '14px',
+                fontWeight: 500,
+              }}
+            />
+          </MenuItem>
+        ))}
+        
+        {selectedUser?.role.toLowerCase() === 'therapist' && selectedUser.students?.map((student) => (
+          <MenuItem
+            key={student._id}
+            onClick={() => handleStudentClick(student._id)}
+            sx={{
+              padding: '12px 16px',
+              '&:hover': {
+                backgroundColor: '#f7fafc',
+              },
+            }}
+          >
+            <ListItemIcon sx={{ minWidth: 36 }}>
+              <PersonIcon sx={{ fontSize: 18, color: '#38a169' }} />
+            </ListItemIcon>
+            <ListItemText
+              primary={student.name}
+              primaryTypographyProps={{
+                fontSize: '14px',
+                fontWeight: 500,
+              }}
+            />
+          </MenuItem>
+        ))}
+
+        {(!selectedUser?.classes || selectedUser.classes.length === 0) &&
+         (!selectedUser?.students || selectedUser.students.length === 0) && (
+          <MenuItem disabled sx={{ padding: '12px 16px' }}>
+            <Typography sx={{ color: '#a0aec0', fontSize: '14px', fontStyle: 'italic' }}>
+              No assignments
+            </Typography>
+          </MenuItem>
+        )}
+      </Menu>
     </Box>
   );
 };

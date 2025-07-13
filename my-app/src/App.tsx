@@ -14,6 +14,9 @@ import StudentList from "./components/studentManagement/StudentList";
 import ClassList from "./components/classManagement/ClassList";
 import AddStudent from "./components/studentManagement/AddStudent";
 import AddClass from "./components/classManagement/AddClass";
+import ModernClassManagement from "./components/classManagement/ModernClassManagement";
+import UserList from "./components/user/userManagement/UserList";
+import SignUp from "./components/user/signUp/SignUp";
 
 const App: React.FC = () => {
   return (
@@ -35,8 +38,10 @@ const App: React.FC = () => {
           {/* Accessible by all logged-in users */}
           <Route path="students" element={<StudentList />} />
           <Route path="classes" element={<ClassList/>} />
+          <Route path="classes/:id" element={<ModernClassManagement />} />
           <Route path="addStudent" element={<AddStudent />} />
           <Route path="addClass" element={<AddClass />} />
+          <Route path="signup" element={<SignUp/>} />
 
           {/* Role-specific routes */}
           <Route
