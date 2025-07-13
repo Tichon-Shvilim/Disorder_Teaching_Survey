@@ -18,7 +18,7 @@ app.get('/healthz', (req, res) => {
   res.status(200).send('OK');
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3003;
 app.listen(PORT, () => {
   console.log(`Form Service running on port ${PORT}`);
 });
