@@ -74,16 +74,17 @@ services:
 
   
   mongo:
-    image: mongo
+    image: mongo:8.0
     ports:
       - "27018:27017"
     volumes:
       - mongo-dev-data:/data/db
     healthcheck:
-      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD-SHELL", "mongosh --quiet --eval 'db.adminCommand(\"ping\").ok' || exit 1"]
       interval: 5s
-      timeout: 5s
-      retries: 6
+      timeout: 10s
+      retries: 10
+      start_period: 5s
 
 
   frontend:
