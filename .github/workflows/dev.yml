@@ -51,6 +51,15 @@ jobs:
       - name: Wait for student-service
         run: bash scripts/wait-for-service.sh student-service http://localhost:4002/healthz http 30
 
+        #debug form-service container
+      - name: Debug form-service container
+        run: |
+          echo "🔍 Checking form-service container environment..."
+          docker exec $(docker-compose ps -q form-service) printenv | grep PORT
+
+          echo "🌐 Checking listening ports..."
+          docker exec $(docker-compose ps -q form-service) netstat -tulpn
+
       - name: Wait for form-service
         run: bash scripts/wait-for-service.sh form-service http://localhost:4003/healthz http 30
 
