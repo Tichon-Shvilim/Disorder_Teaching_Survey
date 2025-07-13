@@ -6,13 +6,20 @@ import Sidebar from "./Sidebar";
 import Box from "@mui/material/Box";
 
 const drawerWidth = 280;
-const headerHeight = 80;
+const headerHeight = 120;
 
 const Layout: React.FC = () => {
   return (
     <Box sx={{ display: "flex", height: "100vh" }}>
       <Sidebar />
-      <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1, minWidth: 0 }}>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          flexGrow: 1,
+          minWidth: 0,
+        }}
+      >
         {/* Fixed Header */}
         <Box
           sx={{
@@ -22,7 +29,6 @@ const Layout: React.FC = () => {
             width: `calc(100% - ${drawerWidth}px)`,
             height: `${headerHeight}px`,
             zIndex: 1200,
-            bgcolor: "background.paper",
             display: "flex",
             alignItems: "center",
           }}
@@ -36,8 +42,9 @@ const Layout: React.FC = () => {
             flexGrow: 1,
             minWidth: 0,
             height: `calc(100vh - ${headerHeight}px)`,
+            width: "100%",
             overflowY: "auto",
-            bgcolor: "#fff",
+            bgcolor: "#f9fbfe",
             pt: `${headerHeight}px`,
             px: 3,
             pb: 3,

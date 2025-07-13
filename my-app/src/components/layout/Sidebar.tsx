@@ -38,14 +38,20 @@ const Sidebar: React.FC = () => {
 
   const handleStudentMenuClick = () => {
     setStudentMenuOpen(!studentMenuOpen);
+    if(classMenuOpen) {
+      setClassMenuOpen(false); // Close class menu if student menu is opened
+    }
   };
 
   const handleClassMenuClick = () => {
     setClassMenuOpen(!classMenuOpen);
+    if(studentMenuOpen) {
+      setStudentMenuOpen(false); // Close student menu if class menu is opened
+    }
   };
 
   const mainNavItems = [
-    { name: "Dashboard", path: "/layout", icon: <SpaceDashboardOutlined /> },
+    { name: "Dashboard", path: "/layout/dashboard", icon: <SpaceDashboardOutlined /> },
     {
       name: "Assessments",
       path: "/layout/assessments",
@@ -69,13 +75,13 @@ const Sidebar: React.FC = () => {
   ];
 
   const studentSubItems = [
-    { name: "All Students", path: "/layout/studentlist", icon: <ViewList /> },
-    { name: "Add Student", path: "/layout/students/add", icon: <PersonAdd /> },
+    { name: "All Students", path: "/layout/students", icon: <ViewList /> },
+    { name: "Add Student", path: "/layout/addStudent", icon: <PersonAdd /> },
   ];
 
   const classSubItems = [
     { name: "All Classes", path: "/layout/classes", icon: <ViewList /> },
-    { name: "Add Class", path: "/layout/classes/add", icon: <Add /> },
+    { name: "Add Class", path: "/layout/addClass", icon: <Add /> },
   ];
 
   const renderNavItem = (item: { name: string; path: string; icon: React.ReactNode }, isSubItem = false) => (

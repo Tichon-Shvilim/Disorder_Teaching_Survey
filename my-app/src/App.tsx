@@ -6,10 +6,14 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Layout from "./components/layout/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import RoleRoute from "./components/RoleRoute";
+
+// Pages
 import SignIn from "./components/user/signIn/SignIn";
 import CreatForm from "./components/formManagement/CreatForm";
-import UserList from "./components/user/userManagement/UserList";
 import StudentList from "./components/studentManagement/StudentList";
+import ClassList from "./components/classManagement/ClassList";
+import AddStudent from "./components/studentManagement/AddStudent";
+import AddClass from "./components/classManagement/AddClass";
 
 const App: React.FC = () => {
   return (
@@ -29,10 +33,10 @@ const App: React.FC = () => {
           }
         >
           {/* Accessible by all logged-in users */}
-          {/* <Route index element={<DashboardPage />} />
-          <Route path="students" element={<StudentsPage />} />
-          <Route path="assessments" element={<AssessmentsPage />} />
-          <Route path="reports" element={<ReportsPage />} /> */}
+          <Route path="students" element={<StudentList />} />
+          <Route path="classes" element={<ClassList/>} />
+          <Route path="addStudent" element={<AddStudent />} />
+          <Route path="addClass" element={<AddClass />} />
 
           {/* Role-specific routes */}
           <Route
