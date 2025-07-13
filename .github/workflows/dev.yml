@@ -20,9 +20,14 @@ jobs:
           sudo chmod +x /usr/local/bin/docker-compose
           docker-compose version
 
-      - name: Set up Docker
+      # - name: Set up Docker
+      #   run: |
+      #     docker-compose -f docker-compose.dev.yml up -d --build
+      - name: Set up Docker (force no cache)
         run: |
-          docker-compose -f docker-compose.dev.yml up -d --build
+          docker-compose -f docker-compose.dev.yml build --no-cache
+          docker-compose -f docker-compose.dev.yml up -d
+
 
       # 🕒 Wait for services to be ready
       - name: Wait for MongoDB to become healthy
