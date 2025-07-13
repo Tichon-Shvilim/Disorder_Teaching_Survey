@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { getClassById, updateClass } from '../studentManagement/Api-Requests/ClassAPIService';
 import { getAllStudents } from '../studentManagement/Api-Requests/StudentAPIService';
-import { getAllItems } from '../user/Api-Requests/genericRequests';
+import { getAllItems, updateItem } from '../user/Api-Requests/genericRequests';
 import type { Class, UpdateClassRequest } from '../studentManagement/Api-Requests/ClassAPIService';
 import type { Student } from '../studentManagement/Api-Requests/StudentAPIService';
 import type UserModel from '../user/UserModel';
@@ -131,6 +131,7 @@ const ModernClassManagement: React.FC = () => {
     if (!classData || selectedTeachers.length === 0) return;
 
     try {
+      // Update the class with new teachers
       const updatedClassData: UpdateClassRequest = {
         _id: classData._id,
         classNumber: classData.classNumber,
@@ -140,6 +141,38 @@ const ModernClassManagement: React.FC = () => {
 
       await updateClass(classData._id, updatedClassData);
       
+      // Update each teacher's class assignments
+      for (const teacherId of selectedTeachers) {
+        try {
+          const teacher = allTeachers.find(t => t.id?.toString() === teacherId);
+          if (teacher) {
+            const existingClasses = teacher.classes || [];
+            
+            // Check if class is already assigned to avoid duplicates
+            const classAlreadyAssigned = existingClasses.some(c => c._id === classData._id);
+            
+            if (!classAlreadyAssigned) {
+              const updatedTeacher = {
+                ...teacher,
+                classes: [
+                  ...existingClasses,
+                  {
+                    _id: classData._id,
+                    classNumber: classData.classNumber
+                  }
+                ]
+              };
+              
+              await updateItem<UserModel>('api/users', teacherId, updatedTeacher);
+              console.log(`Updated teacher ${teacher.name} with class ${classData.classNumber}`);
+            }
+          }
+        } catch (teacherUpdateError) {
+          console.error(`Failed to update teacher ${teacherId}:`, teacherUpdateError);
+          // Continue with other teachers even if one fails
+        }
+      }
+      
       setClassData({
         ...classData,
         teachers: [...classData.teachers, ...selectedTeachers]
@@ -147,7 +180,7 @@ const ModernClassManagement: React.FC = () => {
       
       setSelectedTeachers([]);
       setTeacherDialogOpen(false);
-      toast.success(`Added ${selectedTeachers.length} teacher(s) to class`);
+      toast.success(`Added ${selectedTeachers.length} teacher(s) to class and updated their assignments`);
     } catch (err) {
       console.error('Error adding teachers:', err);
       toast.error('Failed to add teachers to class');
@@ -196,12 +229,31 @@ const ModernClassManagement: React.FC = () => {
 
       await updateClass(classData._id, updatedClassData);
       
+      // Remove the class from the teacher's assignments
+      try {
+        const teacher = allTeachers.find(t => t.id?.toString() === teacherId);
+        if (teacher) {
+          const updatedClasses = (teacher.classes || []).filter(c => c._id !== classData._id);
+          
+          const updatedTeacher = {
+            ...teacher,
+            classes: updatedClasses
+          };
+          
+          await updateItem<UserModel>('api/users', teacherId, updatedTeacher);
+          console.log(`Removed class ${classData.classNumber} from teacher ${teacher.name}`);
+        }
+      } catch (teacherUpdateError) {
+        console.error(`Failed to update teacher ${teacherId}:`, teacherUpdateError);
+        // Continue even if teacher update fails
+      }
+      
       setClassData({
         ...classData,
         teachers: updatedTeachers
       });
       
-      toast.success('Teacher removed from class');
+      toast.success('Teacher removed from class and their assignments updated');
     } catch (err) {
       console.error('Error removing teacher:', err);
       toast.error('Failed to remove teacher from class');

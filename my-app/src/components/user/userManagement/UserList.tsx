@@ -38,6 +38,7 @@ const UsersList: React.FC = () => {
   const [searchTerm, setSearchTerm] = React.useState<string>("");
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [selectedUser, setSelectedUser] = React.useState<UserModel | null>(null);
+  const [showInactive, setShowInactive] = React.useState<boolean>(false);
 
   // Function to fetch all users
   const fetchUsers = async () => {
@@ -68,7 +69,7 @@ const UsersList: React.FC = () => {
   }, []);
 
   const onEdit = (id: number) => {
-    navigate(`/signup/${id}`);
+    navigate(`/layout/user-management/${id}/edit`);
   };
 
   const onDelete = async (id: number) => {
@@ -87,6 +88,25 @@ const UsersList: React.FC = () => {
       }
     } catch (error) {
       console.error("Failed to deactivate user:", error);
+    }
+  };
+
+  const onActivate = async (id: number) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to activate this user?"
+    );
+    if (!confirmed) return;
+    try {
+      // Update the user status to active
+      const userToUpdate = users.find(u => u.id === id);
+      if (userToUpdate) {
+        const updatedUser = { ...userToUpdate, status: 'active' as const };
+        await updateItem<UserModel>("api/users", id.toString(), updatedUser);
+        fetchUsers();
+        console.log(`Activated user with ID: ${id}`);
+      }
+    } catch (error) {
+      console.error("Failed to activate user:", error);
     }
   };
 
@@ -114,12 +134,16 @@ const UsersList: React.FC = () => {
     }
   };
 
-  // Filter users based on search term
-  const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.role.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filter users based on search term and active/inactive status
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.role.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = showInactive ? user.status === 'inactive' : user.status !== 'inactive';
+    
+    return matchesSearch && matchesStatus;
+  });
 
   // Handle dropdown menu
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>, user: UserModel) => {
@@ -133,13 +157,15 @@ const UsersList: React.FC = () => {
   };
 
   const handleClassClick = (classId: string) => {
+    console.log('Navigating to class details:', classId);
     handleMenuClose();
-    navigate(`/admin/class-management/classes/${classId}`);
+    navigate(`/layout/classes/${classId}`);
   };
 
   const handleStudentClick = (studentId: string) => {
+    console.log('Navigating to student details:', studentId);
     handleMenuClose();
-    navigate(`/admin/student-management/students/${studentId}`);
+    navigate(`/layout/students/${studentId}`);
   };
 
   return (
@@ -153,9 +179,52 @@ const UsersList: React.FC = () => {
           marginBottom: 3,
         }}
       >
-        <Typography variant="h4" sx={{ fontWeight: 600, color: '#1a202c' }}>
-          User Management
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Typography variant="h4" sx={{ fontWeight: 600, color: '#1a202c' }}>
+            {showInactive ? 'Inactive Users' : 'User Management'}
+          </Typography>
+          
+          {/* Toggle Buttons */}
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              variant={!showInactive ? "contained" : "outlined"}
+              onClick={() => setShowInactive(false)}
+              sx={{
+                backgroundColor: !showInactive ? '#3182ce' : 'transparent',
+                color: !showInactive ? 'white' : '#3182ce',
+                borderColor: '#3182ce',
+                '&:hover': {
+                  backgroundColor: !showInactive ? '#2c5aa0' : '#f0f9ff',
+                },
+                borderRadius: 2,
+                textTransform: 'none',
+                fontSize: '14px',
+                padding: '8px 16px'
+              }}
+            >
+              Active Users
+            </Button>
+            <Button
+              variant={showInactive ? "contained" : "outlined"}
+              onClick={() => setShowInactive(true)}
+              sx={{
+                backgroundColor: showInactive ? '#dc2626' : 'transparent',
+                color: showInactive ? 'white' : '#dc2626',
+                borderColor: '#dc2626',
+                '&:hover': {
+                  backgroundColor: showInactive ? '#b91c1c' : '#fef2f2',
+                },
+                borderRadius: 2,
+                textTransform: 'none',
+                fontSize: '14px',
+                padding: '8px 16px'
+              }}
+            >
+              Inactive Users
+            </Button>
+          </Box>
+        </Box>
+        
         <Button
           variant="contained"
           startIcon={<AddIcon />}
@@ -176,9 +245,9 @@ const UsersList: React.FC = () => {
       </Box>
 
       {/* Search Bar */}
-      <Box sx={{ marginBottom: 3 }}>
+      <Box sx={{ marginBottom: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
         <TextField
-          placeholder="Search users..."
+          placeholder={`Search ${showInactive ? 'inactive' : 'active'} users...`}
           variant="outlined"
           size="medium"
           value={searchTerm}
@@ -207,6 +276,11 @@ const UsersList: React.FC = () => {
             },
           }}
         />
+        
+        {/* User count indicator */}
+        <Typography sx={{ color: '#718096', fontSize: '14px' }}>
+          {filteredUsers.length} {showInactive ? 'inactive' : 'active'} user{filteredUsers.length !== 1 ? 's' : ''} found
+        </Typography>
       </Box>
 
       {/* Users Table */}
@@ -234,7 +308,7 @@ const UsersList: React.FC = () => {
                 Assignments
               </TableCell>
               <TableCell align="right" sx={{ fontWeight: 600, color: '#4a5568', fontSize: '14px', padding: '16px 24px' }}>
-                Actions
+                {showInactive ? 'Activate' : 'Actions'}
               </TableCell>
             </TableRow>
           </TableHead>
@@ -406,18 +480,38 @@ const UsersList: React.FC = () => {
                   >
                     <EditIcon fontSize="small" />
                   </IconButton>
-                  <IconButton
-                    onClick={() => user.id !== undefined && onDelete(user.id)}
-                    disabled={user.id === undefined || user.status === 'inactive'}
-                    sx={{
-                      color: user.status === 'inactive' ? '#a0aec0' : '#e53e3e',
-                      '&:hover': {
-                        backgroundColor: user.status === 'inactive' ? 'transparent' : '#fed7d7',
-                      },
-                    }}
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
+                  
+                  {showInactive ? (
+                    // Show Activate button for inactive users
+                    <IconButton
+                      onClick={() => user.id !== undefined && onActivate(user.id)}
+                      disabled={user.id === undefined}
+                      sx={{
+                        color: '#22c55e',
+                        '&:hover': {
+                          backgroundColor: '#f0fdf4',
+                        },
+                      }}
+                      title="Activate User"
+                    >
+                      <AddIcon fontSize="small" />
+                    </IconButton>
+                  ) : (
+                    // Show Deactivate button for active users
+                    <IconButton
+                      onClick={() => user.id !== undefined && onDelete(user.id)}
+                      disabled={user.id === undefined}
+                      sx={{
+                        color: '#e53e3e',
+                        '&:hover': {
+                          backgroundColor: '#fed7d7',
+                        },
+                      }}
+                      title="Deactivate User"
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  )}
                 </TableCell>
               </TableRow>
             ))}
@@ -440,8 +534,25 @@ const UsersList: React.FC = () => {
           }}
         >
           <Typography sx={{ color: '#718096', fontSize: '16px' }}>
-            {searchTerm ? 'No users found matching your search.' : 'No users available.'}
+            {searchTerm 
+              ? `No ${showInactive ? 'inactive' : 'active'} users found matching your search.`
+              : showInactive 
+                ? 'No inactive users found.'
+                : 'No active users available.'
+            }
           </Typography>
+          {showInactive && users.filter(u => u.status !== 'inactive').length > 0 && (
+            <Button
+              onClick={() => setShowInactive(false)}
+              sx={{
+                marginTop: 2,
+                color: '#3182ce',
+                textTransform: 'none'
+              }}
+            >
+              View Active Users
+            </Button>
+          )}
         </Box>
       )}
 
