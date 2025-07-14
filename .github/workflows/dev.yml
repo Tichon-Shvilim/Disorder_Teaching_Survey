@@ -65,6 +65,10 @@ jobs:
           echo "🌐 Checking listening ports..."
           docker exec $(docker-compose ps -q form-service) netstat -tulpn
 
+      - name: Debug form-service connectivity
+        run: |
+          docker exec $(docker-compose ps -q form-service) curl -i http://localhost:3003/healthz
+
       - name: Wait for form-service
         run: bash scripts/wait-for-service.sh form-service http://localhost:4003/healthz http 30
 
