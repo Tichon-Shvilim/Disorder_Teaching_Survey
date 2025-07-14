@@ -67,8 +67,13 @@ router.use(authenticateJWT);
 
 // Get all users (protected)
 router.get('/', async (req, res) => {
-  const users = await User.find();
-  res.send(users);
+  try {
+    const users = await User.find();
+    res.send(users);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).send({ message: 'Failed to fetch users', error: error.message });
+  }
 });
 
 // Get a user by ID (protected)
@@ -78,15 +83,16 @@ router.get('/:id', async (req, res) => {
     if (!user) return res.status(404).send({ message: 'User not found' });
     res.send(user);
   } catch (error) {
-    res.status(400).send(error);
+    console.error('Error fetching user:', error);
+    res.status(400).send({ message: 'Failed to fetch user', error: error.message });
   }
 });
 
 // Update a user by ID (protected)
 router.put('/:id', async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
-    const updateData = { name, email, role };
+    const { name, email, password, role, status, classes, students } = req.body;
+    const updateData = { name, email, role, status, classes, students };
 
     if (password) {
       updateData.password = await bcrypt.hash(password, 10);
@@ -96,7 +102,102 @@ router.put('/:id', async (req, res) => {
     if (!user) return res.status(404).send({ message: 'User not found' });
     res.send(user);
   } catch (error) {
-    res.status(400).send(error);
+    console.error('Error updating user:', error);
+    res.status(400).send({ message: 'Failed to update user', error: error.message });
+  }
+});
+
+// Add class assignment to teacher (protected)
+router.post('/:id/classes', async (req, res) => {
+  try {
+    const { classId, classNumber } = req.body;
+    const user = await User.findById(req.params.id);
+    
+    if (!user) return res.status(404).send({ message: 'User not found' });
+    if (user.role !== 'teacher') return res.status(400).send({ message: 'User is not a teacher' });
+    
+    // Check if class is already assigned
+    const existingClass = user.classes.find(c => c._id.toString() === classId);
+    if (existingClass) {
+      return res.status(400).send({ message: 'Class already assigned to this teacher' });
+    }
+    
+    user.classes.push({ _id: classId, classNumber });
+    await user.save();
+    
+    const updatedUser = await User.findById(req.params.id);
+    
+    res.send(updatedUser);
+  } catch (error) {
+    console.error('Error adding class assignment:', error);
+    res.status(400).send({ message: 'Failed to add class assignment', error: error.message });
+  }
+});
+
+// Remove class assignment from teacher (protected)
+router.delete('/:id/classes/:classId', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    
+    if (!user) return res.status(404).send({ message: 'User not found' });
+    if (user.role !== 'teacher') return res.status(400).send({ message: 'User is not a teacher' });
+    
+    user.classes = user.classes.filter(c => c._id.toString() !== req.params.classId);
+    await user.save();
+    
+    const updatedUser = await User.findById(req.params.id);
+    
+    res.send(updatedUser);
+  } catch (error) {
+    console.error('Error removing class assignment:', error);
+    res.status(400).send({ message: 'Failed to remove class assignment', error: error.message });
+  }
+});
+
+// Add student assignment to therapist (protected)
+router.post('/:id/students', async (req, res) => {
+  try {
+    const { studentId, studentName } = req.body;
+    const user = await User.findById(req.params.id);
+    
+    if (!user) return res.status(404).send({ message: 'User not found' });
+    if (user.role !== 'therapist') return res.status(400).send({ message: 'User is not a therapist' });
+    
+    // Check if student is already assigned
+    const existingStudent = user.students.find(s => s._id.toString() === studentId);
+    if (existingStudent) {
+      return res.status(400).send({ message: 'Student already assigned to this therapist' });
+    }
+    
+    user.students.push({ _id: studentId, name: studentName });
+    await user.save();
+    
+    const updatedUser = await User.findById(req.params.id);
+    
+    res.send(updatedUser);
+  } catch (error) {
+    console.error('Error adding student assignment:', error);
+    res.status(400).send({ message: 'Failed to add student assignment', error: error.message });
+  }
+});
+
+// Remove student assignment from therapist (protected)
+router.delete('/:id/students/:studentId', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    
+    if (!user) return res.status(404).send({ message: 'User not found' });
+    if (user.role !== 'therapist') return res.status(400).send({ message: 'User is not a therapist' });
+    
+    user.students = user.students.filter(s => s._id.toString() !== req.params.studentId);
+    await user.save();
+    
+    const updatedUser = await User.findById(req.params.id);
+    
+    res.send(updatedUser);
+  } catch (error) {
+    console.error('Error removing student assignment:', error);
+    res.status(400).send({ message: 'Failed to remove student assignment', error: error.message });
   }
 });
 
