@@ -9,7 +9,8 @@ import RoleRoute from "./components/RoleRoute";
 
 // Pages
 import SignIn from "./components/user/signIn/SignIn";
-import CreatForm from "./components/formManagement/CreatForm";
+import QuestionnaireList from "./components/formManagement/QuestionnaireList";
+import CreateQuestionnaire from "./components/formManagement/CreateQuestionnaire";
 import StudentList from "./components/studentManagement/StudentList";
 import StudentDetails from "./components/studentManagement/StudentDetails";
 import ClassList from "./components/classManagement/ClassList";
@@ -50,11 +51,18 @@ const App: React.FC = () => {
 
           {/* Role-specific routes */}
           <Route
-            path="creatform"
+            path="questionnaires"
             element={
               <RoleRoute allowedRoles={["Admin"]}>
-                {/* <AssessmentFormsPage /> */}
-                <CreatForm/>
+                <QuestionnaireList />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="create-questionnaire"
+            element={
+              <RoleRoute allowedRoles={["Admin"]}>
+                <CreateQuestionnaire/>
               </RoleRoute>
             }
           />
