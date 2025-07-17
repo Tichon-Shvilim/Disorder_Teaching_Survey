@@ -12,6 +12,7 @@ services:
       - /app/node_modules
     environment:
       - MONGODB_URI=mongodb://mongo:27017/adminDB
+      - PORT=3006
       - JWT_SECRET=8f7d2b1e-4c3a-4e2b-8e7a-9c6d5b4a3f2e!@#RandomExtraStuff
     command: npm run dev
 
@@ -41,6 +42,7 @@ services:
       - /app/node_modules
     environment:
       - MONGODB_URI=mongodb://mongo:27017/studentDB
+      - PORT=3002
       - JWT_SECRET=8f7d2b1e-4c3a-4e2b-8e7a-9c6d5b4a3f2e!@#RandomExtraStuff
     command: npm run dev
 
@@ -55,6 +57,7 @@ services:
       - /app/node_modules
     environment:
       - MONGODB_URI=mongodb://mongo:27017/formDB
+      - PORT=3003
       - JWT_SECRET=8f7d2b1e-4c3a-4e2b-8e7a-9c6d5b4a3f2e!@#RandomExtraStuff
     command: npm run dev
 
@@ -69,16 +72,24 @@ services:
       - /app/node_modules
     environment:
       - MONGODB_URI=mongodb://mongo:27017/analyticsDB
+      - PORT=3004
       - JWT_SECRET=8f7d2b1e-4c3a-4e2b-8e7a-9c6d5b4a3f2e!@#RandomExtraStuff
     command: npm run dev
 
   
   mongo:
-    image: mongo
+    image: mongo:8.0
     ports:
       - "27018:27017"
     volumes:
       - mongo-dev-data:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval 'db.adminCommand(\"ping\").ok' || exit 1"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+      start_period: 5s
+
 
   frontend:
     build:
