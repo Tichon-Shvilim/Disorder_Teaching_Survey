@@ -58,6 +58,12 @@ const StudentList: React.FC = () => {
     }
   }, []);
 
+  // Helper function to get class name by ID
+  const getClassNameById = (classId: string): string => {
+    const classItem = classes.find(c => c._id === classId);
+    return classItem ? classItem.classNumber : '';
+  };
+
   useEffect(() => {
     fetchStudents();
     fetchClasses();
@@ -97,7 +103,7 @@ const StudentList: React.FC = () => {
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
     const matchesClass =
-      selectedClass === "" || student.classNumber === selectedClass;
+      selectedClass === "" || student.classId === selectedClass;
     return matchesSearch && matchesClass;
   });
 
@@ -350,7 +356,7 @@ const StudentList: React.FC = () => {
             >
               <option value="">All Classes</option>
               {classes.map((classItem) => (
-                <option key={classItem._id} value={classItem.classNumber}>
+                <option key={classItem._id} value={classItem._id}>
                   {classItem.classNumber}
                 </option>
               ))}
@@ -455,8 +461,8 @@ const StudentList: React.FC = () => {
                       margin: "0 0 8px 0",
                     }}
                   >
-                    {student.classNumber
-                      ? `Class ${student.classNumber}`
+                    {student.classId
+                      ? `Class ${getClassNameById(student.classId)}`
                       : `Grade ${Math.floor((student.age || 0) / 2) + 1}`}{" "}
                     • Age {student.age || 0}
                   </p>
@@ -512,10 +518,10 @@ const StudentList: React.FC = () => {
                   <span style={{ fontWeight: "500" }}>Date of Birth:</span>{" "}
                   {new Date(student.DOB).toLocaleDateString()}
                 </div>
-                {student.classNumber && (
+                {student.classId && (
                   <div style={{ fontSize: "14px", color: "#4b5563" }}>
                     <span style={{ fontWeight: "500" }}>Class:</span>{" "}
-                    {student.classNumber}
+                    {getClassNameById(student.classId)}
                   </div>
                 )}
               </div>
