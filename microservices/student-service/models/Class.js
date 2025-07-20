@@ -18,7 +18,4 @@ const ClassSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Index for better performance
-ClassSchema.index({ classNumber: 1 });
-
 module.exports = mongoose.model('Class', ClassSchema);

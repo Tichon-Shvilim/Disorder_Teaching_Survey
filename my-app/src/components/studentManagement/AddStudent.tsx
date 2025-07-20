@@ -11,7 +11,7 @@ const AddStudent: React.FC = () => {
   const [formData, setFormData] = useState<CreateStudentRequest>({
     name: '',
     DOB: '',
-    classNumber: ''
+    classId: ''
   });
   const [classes, setClasses] = useState<Class[]>([]);
   const [loading, setLoading] = useState(false);
@@ -214,37 +214,37 @@ const AddStudent: React.FC = () => {
               )}
             </div>
 
-            {/* Class Number */}
+            {/* Class Assignment */}
             <div>
-              <label htmlFor="classNumber" style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
+              <label htmlFor="classId" style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
                 <GraduationCap style={{ height: '16px', width: '16px', display: 'inline', marginRight: '4px' }} />
-                Class Number
+                Class Assignment
               </label>
               <select
-                id="classNumber"
-                name="classNumber"
-                value={formData.classNumber}
+                id="classId"
+                name="classId"
+                value={formData.classId}
                 onChange={handleInputChange}
                 style={{
                   width: '100%',
                   padding: '12px 16px',
-                  border: `1px solid ${errors.classNumber ? '#ef4444' : '#d1d5db'}`,
+                  border: `1px solid ${errors.classId ? '#ef4444' : '#d1d5db'}`,
                   borderRadius: '8px',
                   fontSize: '14px',
-                  backgroundColor: errors.classNumber ? '#fef2f2' : 'white',
+                  backgroundColor: errors.classId ? '#fef2f2' : 'white',
                   outline: 'none',
                   transition: 'all 0.2s',
                   appearance: 'none',
                   cursor: 'pointer'
                 }}
                 onFocus={(e) => {
-                  if (!errors.classNumber) {
+                  if (!errors.classId) {
                     e.currentTarget.style.borderColor = '#2563eb';
                     e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
                   }
                 }}
                 onBlur={(e) => {
-                  if (!errors.classNumber) {
+                  if (!errors.classId) {
                     e.currentTarget.style.borderColor = '#d1d5db';
                     e.currentTarget.style.boxShadow = 'none';
                   }
@@ -252,13 +252,13 @@ const AddStudent: React.FC = () => {
               >
                 <option value="">Select a class (optional)</option>
                 {classes.map((classItem) => (
-                  <option key={classItem._id} value={classItem.classNumber}>
+                  <option key={classItem._id} value={classItem._id}>
                     {classItem.classNumber}
                   </option>
                 ))}
               </select>
-              {errors.classNumber && (
-                <p style={{ marginTop: '4px', fontSize: '14px', color: '#dc2626' }}>{errors.classNumber}</p>
+              {errors.classId && (
+                <p style={{ marginTop: '4px', fontSize: '14px', color: '#dc2626' }}>{errors.classId}</p>
               )}
             </div>
 
@@ -348,7 +348,7 @@ const AddStudent: React.FC = () => {
         </div>
 
         {/* Preview Card */}
-        {(formData.name || formData.DOB || formData.classNumber) && (
+        {(formData.name || formData.DOB || formData.classId) && (
           <div style={{ marginTop: '32px', backgroundColor: 'white', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', padding: '24px' }}>
             <h3 style={{ fontSize: '18px', fontWeight: '500', color: '#111827', marginBottom: '16px' }}>Preview</h3>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
@@ -371,9 +371,9 @@ const AddStudent: React.FC = () => {
                 <h4 style={{ fontSize: '18px', fontWeight: '600', color: '#111827', margin: '0 0 4px 0' }}>
                   {formData.name || 'Student Name'}
                 </h4>
-                {formData.classNumber && (
+                {formData.classId && (
                   <p style={{ color: '#10b981', fontWeight: '500', margin: '0 0 4px 0' }}>
-                    Class {formData.classNumber}
+                    Class {classes.find(c => c._id === formData.classId)?.classNumber || 'Selected'}
                   </p>
                 )}
                 {formData.DOB && (
