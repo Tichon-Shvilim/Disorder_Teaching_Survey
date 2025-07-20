@@ -20,14 +20,9 @@ jobs:
           sudo chmod +x /usr/local/bin/docker-compose
           docker-compose version
 
-      # - name: Set up Docker
-      #   run: |
-      #     docker-compose -f docker-compose.dev.yml up -d --build
-      - name: Set up Docker (force no cache)
+      - name: Set up Docker
         run: |
-          docker-compose -f docker-compose.dev.yml build --no-cache
-          docker-compose -f docker-compose.dev.yml up -d
-
+          docker-compose -f docker-compose.dev.yml up -d --build
 
       # 🕒 Wait for services to be ready
       - name: Wait for MongoDB to become healthy
@@ -55,19 +50,6 @@ jobs:
 
       - name: Wait for student-service
         run: bash scripts/wait-for-service.sh student-service http://localhost:4002/healthz http 30
-
-        #debug form-service container
-      - name: Debug form-service container
-        run: |
-          echo "🔍 Checking form-service container environment..."
-          docker exec $(docker-compose ps -q form-service) printenv | grep PORT
-
-          echo "🌐 Checking listening ports..."
-          docker exec $(docker-compose ps -q form-service) netstat -tulpn
-
-      - name: Debug form-service connectivity
-        run: |
-          docker exec $(docker-compose ps -q form-service) curl -i http://localhost:3003/healthz
 
       - name: Wait for form-service
         run: bash scripts/wait-for-service.sh form-service http://localhost:4003/healthz http 30
