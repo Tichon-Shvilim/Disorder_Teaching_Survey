@@ -98,15 +98,6 @@ const StudentList: React.FC = () => {
     }
   };
 
-  const filteredStudents = students.filter((student) => {
-    const matchesSearch = student.name
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    const matchesClass =
-      selectedClass === "" || student.classId === selectedClass;
-    return matchesSearch && matchesClass;
-  });
-
   const handleViewDetails = (studentId: string) => {
     navigate(`${studentId}`);
   };
@@ -118,6 +109,15 @@ const StudentList: React.FC = () => {
   const handleEditStudent = (studentId: string) => {
     navigate(`${studentId}/edit`);
   };
+
+  const filteredStudents = students.filter((student) => {
+    const matchesSearch = student.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesClass =
+      selectedClass === "" || student.classId === selectedClass;
+    return matchesSearch && matchesClass;
+  });
 
   if (loading) {
     return (

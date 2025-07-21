@@ -13,6 +13,7 @@ import QuestionnaireList from "./components/formManagement/QuestionnaireList";
 import CreateQuestionnaire from "./components/formManagement/CreateQuestionnaire";
 import StudentList from "./components/studentManagement/StudentList";
 import StudentDetails from "./components/studentManagement/StudentDetails";
+import EditStudent from "./components/studentManagement/EditStudent";
 import ClassList from "./components/classManagement/ClassList";
 import AddStudent from "./components/studentManagement/AddStudent";
 import AddClass from "./components/classManagement/AddClass";
@@ -42,6 +43,7 @@ const App: React.FC = () => {
           {/* Accessible by all logged-in users */}
           <Route path="students" element={<StudentList />} />
           <Route path="students/:id" element={<StudentDetails />} />
+          <Route path="students/:id/edit" element={<EditStudent />} />
           <Route path="classes" element={<ClassList/>} />
           <Route path="classes/:id" element={<ModernClassManagement />} />
           <Route path="classes/:id/edit" element={<EditClass />} />
