@@ -59,8 +59,13 @@ const StudentList: React.FC = () => {
   }, []);
 
   // Helper function to get class name by ID
-  const getClassNameById = (classId: string): string => {
-    const classItem = classes.find(c => c._id === classId);
+  const getClassNameById = (classId: string | { _id: string; classNumber: string }): string => {
+    // Handle case where classId might be an object (for backward compatibility)
+    const searchId = typeof classId === 'object' && classId !== null 
+      ? classId._id || classId.classNumber
+      : classId;
+    
+    const classItem = classes.find(c => c._id === searchId);
     return classItem ? classItem.classNumber : '';
   };
 
@@ -461,10 +466,7 @@ const StudentList: React.FC = () => {
                       margin: "0 0 8px 0",
                     }}
                   >
-                    {student.classId
-                      ? `Class ${getClassNameById(student.classId)}`
-                      : `Grade ${Math.floor((student.age || 0) / 2) + 1}`}{" "}
-                    • Age {student.age || 0}
+                    Age {student.age || 0}
                   </p>
                   <div
                     style={{

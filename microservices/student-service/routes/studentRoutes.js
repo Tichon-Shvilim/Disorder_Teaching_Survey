@@ -8,7 +8,7 @@ const router = express.Router();
 // GET all students - temporarily disabled authentication for testing
 router.get('/', async (req, res) => {
   try {
-    const students = await Student.find().populate('classId', 'classNumber');
+    const students = await Student.find();
     res.json(students);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -18,7 +18,7 @@ router.get('/', async (req, res) => {
 // GET a specific student by ID - temporarily disabled authentication for testing
 router.get('/:id', async (req, res) => {
   try {
-    const student = await Student.findById(req.params.id).populate('classId', 'classNumber');
+    const student = await Student.findById(req.params.id);
     if (!student) {
       return res.status(404).json({ message: 'Student not found' });
     }
