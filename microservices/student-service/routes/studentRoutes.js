@@ -31,16 +31,28 @@ router.get('/:id', async (req, res) => {
 // CREATE a new student - temporarily disabled authentication for testing
 router.post('/', async (req, res) => {
   try {
+    // Validate required fields
+    if (!req.body.name || !req.body.DOB) {
+      return res.status(400).json({ message: 'Name and date of birth are required' });
+    }
+    
+    if (!req.body.classId) {
+      return res.status(400).json({ message: 'Class assignment is required for new students' });
+    }
+    
+    // Verify the class exists
+    const classExists = await Class.findById(req.body.classId);
+    if (!classExists) {
+      return res.status(400).json({ message: 'Invalid class ID provided' });
+    }
+    
     const newStudent = new Student(req.body);
     const savedStudent = await newStudent.save();
     
-    // If student is assigned to a class, add them to the class's students array
-    if (savedStudent.classId) {
-      const classToUpdate = await Class.findById(savedStudent.classId);
-      if (classToUpdate && !classToUpdate.students.includes(savedStudent._id)) {
-        classToUpdate.students.push(savedStudent._id);
-        await classToUpdate.save();
-      }
+    // Add student to the class's students array
+    if (!classExists.students.includes(savedStudent._id)) {
+      classExists.students.push(savedStudent._id);
+      await classExists.save();
     }
     
     res.status(201).json(savedStudent);
@@ -52,6 +64,23 @@ router.post('/', async (req, res) => {
 // UPDATE a student - temporarily disabled authentication for testing
 router.put('/:id', async (req, res) => {
   try {
+    // Validate required fields
+    if (req.body.name !== undefined && !req.body.name.trim()) {
+      return res.status(400).json({ message: 'Student name cannot be empty' });
+    }
+    
+    if (req.body.classId !== undefined && !req.body.classId) {
+      return res.status(400).json({ message: 'Class assignment is required' });
+    }
+    
+    // If classId is being updated, verify the class exists
+    if (req.body.classId) {
+      const classExists = await Class.findById(req.body.classId);
+      if (!classExists) {
+        return res.status(400).json({ message: 'Invalid class ID provided' });
+      }
+    }
+    
     const originalStudent = await Student.findById(req.params.id);
     const updatedStudent = await Student.findByIdAndUpdate(
       req.params.id,

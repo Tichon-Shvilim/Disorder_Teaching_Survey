@@ -5,7 +5,7 @@ export interface Student {
   _id: string;
   name: string;
   DOB: string;
-  classId?: string; // ObjectId reference to Class
+  classId?: string; // ObjectId reference to Class - Required for new students, may be missing in legacy data
   therapists?: Array<{
     _id: string;
     name: string;
@@ -16,7 +16,7 @@ export interface Student {
 export interface CreateStudentRequest {
   name: string;
   DOB: string;
-  classId?: string; // ObjectId reference to Class
+  classId: string; // Required for NEW students only
 }
 
 export interface UpdateStudentRequest extends CreateStudentRequest {
