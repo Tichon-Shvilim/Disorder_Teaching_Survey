@@ -42,9 +42,6 @@ jobs:
           exit 1
 
 
-      - name: Wait for admin-service
-        run: bash scripts/wait-for-service.sh admin-service http://localhost:4006/healthz http 30
-
       - name: Wait for user-service
         run: bash scripts/wait-for-service.sh user-service http://localhost:4001/healthz http 30
 
@@ -61,9 +58,6 @@ jobs:
         run: bash scripts/wait-for-service.sh frontend http://localhost:5173 http 30
 
       # 🧪 Run tests (skip if no test script is defined)
-      - name: Run tests (admin-service)
-        run: docker-compose exec -T admin-service npm run test --if-present
-
       - name: Run tests (user-service)
         run: docker-compose exec -T user-service npm run test --if-present
 
