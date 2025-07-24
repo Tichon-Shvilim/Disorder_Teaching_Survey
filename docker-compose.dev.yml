@@ -44,6 +44,7 @@ services:
       - MONGODB_URI=mongodb://mongo:27017/studentDB
       - PORT=3002
       - JWT_SECRET=8f7d2b1e-4c3a-4e2b-8e7a-9c6d5b4a3f2e!@#RandomExtraStuff
+      - USER_SERVICE_URL=http://user-service:3001
     command: npm run dev
 
   form-service:
