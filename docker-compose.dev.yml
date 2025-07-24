@@ -1,20 +1,6 @@
 # version: '3.8'
 
 services:
-  admin-service:
-    build:
-      context: ./microservices/admin-service
-      dockerfile: Dockerfile.dev
-    ports:
-      - "4006:3006"
-    volumes:
-      - ./microservices/admin-service:/app
-      - /app/node_modules
-    environment:
-      - MONGODB_URI=mongodb://mongo:27017/adminDB
-      - PORT=3006
-      - JWT_SECRET=8f7d2b1e-4c3a-4e2b-8e7a-9c6d5b4a3f2e!@#RandomExtraStuff
-    command: npm run dev
 
   user-service:
     build:
@@ -107,7 +93,6 @@ services:
       - VITE_STUDENT_SERVICE_URL=http://localhost:4002
       - VITE_FORM_SERVICE_URL=http://localhost:4003
       - VITE_ANALYTICS_SERVICE_URL=http://localhost:4004
-      - VITE_ADMIN_SERVICE_URL=http://localhost:4006
     command: npm run dev
 
 volumes:
