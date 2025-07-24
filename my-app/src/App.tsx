@@ -22,6 +22,8 @@ import ModernClassManagement from "./components/classManagement/ModernClassManag
 import UserList from "./components/user/userManagement/UserList";
 import EditUser from "./components/user/editUser/EditUser";
 import SignUp from "./components/user/signUp/SignUp";
+import FillForm from "./components/formManagement/FillForm";
+import ViewSubmissions from "./components/formManagement/ViewSubmissions";
 
 const App: React.FC = () => {
   return (
@@ -44,6 +46,8 @@ const App: React.FC = () => {
           <Route path="students" element={<StudentList />} />
           <Route path="students/:id" element={<StudentDetails />} />
           <Route path="students/:id/edit" element={<EditStudent />} />
+          <Route path="forms/fill" element={<FillForm />} />
+          <Route path="forms/submissions" element={<ViewSubmissions />} />
           <Route path="classes" element={<ClassList/>} />
           <Route path="classes/:id" element={<ModernClassManagement />} />
           <Route path="classes/:id/edit" element={<EditClass />} />

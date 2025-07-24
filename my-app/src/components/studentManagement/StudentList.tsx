@@ -7,6 +7,8 @@ import {
   Trash2,
   GraduationCap,
   Filter,
+  FileText,
+  History,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -113,6 +115,14 @@ const StudentList: React.FC = () => {
 
   const handleEditStudent = (studentId: string) => {
     navigate(`${studentId}/edit`);
+  };
+
+  const handleFillForm = (studentId: string, studentName: string) => {
+    navigate(`../forms/fill`, { state: { studentId, studentName } });
+  };
+
+  const handleViewSubmissions = (studentId: string, studentName: string) => {
+    navigate(`../forms/submissions`, { state: { studentId, studentName } });
   };
 
   const filteredStudents = students.filter((student) => {
@@ -505,6 +515,54 @@ const StudentList: React.FC = () => {
                   title="Edit Student"
                 >
                   <Edit style={{ height: "16px", width: "16px" }} />
+                </button>
+                
+                <button
+                  onClick={() => handleFillForm(student._id, student.name)}
+                  style={{
+                    padding: "8px",
+                    backgroundColor: "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                    borderRadius: "8px",
+                    color: "#9ca3af",
+                    transition: "all 0.2s",
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.backgroundColor = "#f0f9ff";
+                    e.currentTarget.style.color = "#2563eb";
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                    e.currentTarget.style.color = "#9ca3af";
+                  }}
+                  title="Fill Form"
+                >
+                  <FileText style={{ height: "16px", width: "16px" }} />
+                </button>
+                
+                <button
+                  onClick={() => handleViewSubmissions(student._id, student.name)}
+                  style={{
+                    padding: "8px",
+                    backgroundColor: "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                    borderRadius: "8px",
+                    color: "#9ca3af",
+                    transition: "all 0.2s",
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.backgroundColor = "#f0fdf4";
+                    e.currentTarget.style.color = "#16a34a";
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                    e.currentTarget.style.color = "#9ca3af";
+                  }}
+                  title="View Past Forms"
+                >
+                  <History style={{ height: "16px", width: "16px" }} />
                 </button>
               </div>
 
