@@ -10,6 +10,7 @@ interface QuestionOption {
   id: string;
   value: number;
   label: string;
+  subQuestions?: Question[];
 }
 
 interface Question {
@@ -46,13 +47,10 @@ const FillForm: React.FC = () => {
     const loadQuestionnaires = async () => {
       try {
         setLoading(true);
-        console.log('Loading questionnaires...');
         const data = await FormAPIService.getQuestionnaireTemplates();
-        console.log('Questionnaires data:', data);
         
         if (Array.isArray(data) && data.length > 0) {
           setQuestionnaires(data);
-          console.log('Questionnaires loaded:', data.length);
         } else {
           console.error('No questionnaires found');
           toast.error('No questionnaires available');
@@ -76,7 +74,6 @@ const FillForm: React.FC = () => {
       try {
         setLoading(true);
         const data = await FormAPIService.getQuestionnaireTemplate(selectedQuestionnaireId);
-        console.log('Single questionnaire data:', data);
         
         setQuestionnaire(data);
         setShowQuestionnaireList(false);
@@ -113,11 +110,20 @@ const FillForm: React.FC = () => {
     setSelectedQuestionnaireId(id);
   };
 
-  const handleAnswerChange = (questionId: string, answer: string | number | (string | number)[], selectedOptions?: { id: string; label: string; value: number }[]) => {
+  const handleAnswerChange = (
+    questionId: string, 
+    answer: string | number | (string | number)[], 
+    selectedOptions?: { id: string; label: string; value: number }[], 
+    questionText?: string, 
+    questionType?: 'single-choice' | 'multiple-choice' | 'text' | 'number' | 'scale'
+  ) => {
     setAnswers(prev => ({
       ...prev,
       [questionId]: {
         ...prev[questionId],
+        questionId,
+        questionText: questionText || prev[questionId]?.questionText || '',
+        questionType: questionType || prev[questionId]?.questionType || 'text',
         answer,
         selectedOptions: selectedOptions || []
       }
@@ -130,6 +136,181 @@ const FillForm: React.FC = () => {
         [questionId]: ''
       }));
     }
+  };
+
+  // Function to render sub-questions
+  const renderSubQuestions = (subQuestions: Question[], parentQuestionId: string, parentOptionId: string) => {
+    if (!subQuestions || subQuestions.length === 0) {
+      return null;
+    }
+
+    return (
+      <div style={{ marginLeft: '24px', marginTop: '16px', paddingLeft: '16px', borderLeft: '2px solid #e5e7eb' }}>
+        {subQuestions.map((subQuestion, index) => {
+          const subQuestionId = `${parentQuestionId}_${parentOptionId}_sub_${index}`;
+          const currentSubAnswer = answers[subQuestionId];
+
+          return (
+            <div key={subQuestionId} style={{ marginBottom: '24px' }}>
+              {/* Sub-question text */}
+              <div style={{ marginBottom: '12px' }}>
+                <label style={{ 
+                  fontSize: '14px', 
+                  fontWeight: '500', 
+                  color: '#374151',
+                  display: 'block'
+                }}>
+                  {subQuestion.text}
+                  {subQuestion.required && <span style={{ color: '#ef4444', marginLeft: '4px' }}>*</span>}
+                </label>
+                {subQuestion.helpText && (
+                  <p style={{ fontSize: '12px', color: '#6b7280', margin: '4px 0 0 0' }}>
+                    {subQuestion.helpText}
+                  </p>
+                )}
+              </div>
+
+              {/* Sub-question inputs */}
+              {subQuestion.type === 'text' && (
+                <input
+                  type="text"
+                  value={currentSubAnswer?.answer as string || ''}
+                  onChange={(e) => handleAnswerChange(subQuestionId, e.target.value, [], subQuestion.text, subQuestion.type)}
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    fontSize: '14px'
+                  }}
+                />
+              )}
+
+              {subQuestion.type === 'single-choice' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {subQuestion.options.map((option) => (
+                    <label
+                      key={option.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '8px',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        backgroundColor: 'white',
+                        fontSize: '14px'
+                      }}
+                    >
+                      <input
+                        type="radio"
+                        name={subQuestionId}
+                        value={option.value}
+                        checked={currentSubAnswer?.answer === option.value}
+                        onChange={() => handleAnswerChange(subQuestionId, option.value, [option], subQuestion.text, subQuestion.type)}
+                      />
+                      <span>{option.label}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+
+              {subQuestion.type === 'multiple-choice' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {subQuestion.options.map((option) => {
+                    const currentSubAnswerArray = Array.isArray(currentSubAnswer?.answer) ? currentSubAnswer.answer : [];
+                    const isChecked = currentSubAnswerArray.includes(option.value);
+                    
+                    return (
+                      <label
+                        key={option.id}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          padding: '8px',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          backgroundColor: 'white',
+                          fontSize: '14px'
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => {
+                            const currentSelectedOptions = currentSubAnswer?.selectedOptions || [];
+                            let newAnswer: (string | number)[];
+                            let newSelectedOptions: QuestionOption[];
+                            
+                            if (isChecked) {
+                              // Remove option
+                              newAnswer = currentSubAnswerArray.filter(val => val !== option.value);
+                              newSelectedOptions = currentSelectedOptions.filter(opt => opt.id !== option.id);
+                            } else {
+                              // Add option
+                              newAnswer = [...currentSubAnswerArray, option.value];
+                              newSelectedOptions = [...currentSelectedOptions, option];
+                            }
+                            
+                            handleAnswerChange(subQuestionId, newAnswer, newSelectedOptions, subQuestion.text, subQuestion.type);
+                          }}
+                        />
+                        <span>{option.label}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+
+              {subQuestion.type === 'number' && (
+                <input
+                  type="number"
+                  value={currentSubAnswer?.answer as number || ''}
+                  onChange={(e) => handleAnswerChange(subQuestionId, parseFloat(e.target.value) || 0, [], subQuestion.text, subQuestion.type)}
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    fontSize: '14px'
+                  }}
+                />
+              )}
+
+              {subQuestion.type === 'scale' && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px' }}>
+                  <span style={{ fontSize: '12px', color: '#6b7280' }}>1</span>
+                  <input
+                    type="range"
+                    min="1"
+                    max="5"
+                    value={currentSubAnswer?.answer as number || 1}
+                    onChange={(e) => handleAnswerChange(subQuestionId, parseInt(e.target.value), [], subQuestion.text, subQuestion.type)}
+                    style={{ flex: 1 }}
+                  />
+                  <span style={{ fontSize: '12px', color: '#6b7280' }}>5</span>
+                  <div style={{
+                    minWidth: '24px',
+                    textAlign: 'center',
+                    padding: '2px 6px',
+                    backgroundColor: '#2563eb',
+                    color: 'white',
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                    fontWeight: '500'
+                  }}>
+                    {currentSubAnswer?.answer || 1}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
   };
 
   const validateForm = (): boolean => {
@@ -156,12 +337,23 @@ const FillForm: React.FC = () => {
 
     setSubmitting(true);
     try {
+      // Clean the answers by removing nested subQuestions from selectedOptions
+      const cleanedAnswers = Object.values(answers).map(answer => ({
+        ...answer,
+        selectedOptions: answer.selectedOptions?.map(option => ({
+          id: option.id,
+          value: option.value,
+          label: option.label
+          // Remove subQuestions property
+        })) || []
+      }));
+
       const submission = {
         studentId,
         studentName,
         questionnaireId: selectedQuestionnaireId,
         questionnaireTitle: questionnaire.title,
-        answers: Object.values(answers),
+        answers: cleanedAnswers,
         completedBy: 'Student',
         notes: ''
       };
@@ -375,7 +567,7 @@ const FillForm: React.FC = () => {
                     {question.type === 'text' && (
                       <textarea
                         value={currentAnswer?.answer as string || ''}
-                        onChange={(e) => handleAnswerChange(questionId, e.target.value)}
+                        onChange={(e) => handleAnswerChange(questionId, e.target.value, [], question.text, question.type)}
                         placeholder="Enter your answer..."
                         style={{
                           width: '100%',
@@ -395,7 +587,7 @@ const FillForm: React.FC = () => {
                       <input
                         type="number"
                         value={currentAnswer?.answer as number || ''}
-                        onChange={(e) => handleAnswerChange(questionId, parseFloat(e.target.value) || 0)}
+                        onChange={(e) => handleAnswerChange(questionId, parseFloat(e.target.value) || 0, [], question.text, question.type)}
                         placeholder="Enter a number..."
                         style={{
                           width: '100%',
@@ -411,33 +603,101 @@ const FillForm: React.FC = () => {
                     {/* Single Choice */}
                     {question.type === 'single-choice' && (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        {question.options.map((option) => (
-                          <label
-                            key={option.id}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '12px',
-                              padding: '12px',
-                              border: '1px solid #e5e7eb',
-                              borderRadius: '8px',
-                              cursor: 'pointer',
-                              backgroundColor: 'white',
-                              transition: 'all 0.2s'
-                            }}
-                          >
-                            <input
-                              type="radio"
-                              name={questionId}
-                              value={option.value}
-                              checked={currentAnswer?.answer === option.value}
-                              onChange={() => handleAnswerChange(questionId, option.value, [option])}
-                            />
-                            <span style={{ fontSize: '14px', color: '#374151' }}>
-                              {option.label}
-                            </span>
-                          </label>
-                        ))}
+                        {question.options.map((option) => {
+                          const isSelected = currentAnswer?.answer === option.value;
+                          
+                          return (
+                            <div key={option.id}>
+                              <label
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '12px',
+                                  padding: '12px',
+                                  border: '1px solid #e5e7eb',
+                                  borderRadius: '8px',
+                                  cursor: 'pointer',
+                                  backgroundColor: 'white',
+                                  transition: 'all 0.2s'
+                                }}
+                              >
+                                <input
+                                  type="radio"
+                                  name={questionId}
+                                  value={option.value}
+                                  checked={isSelected}
+                                  onChange={() => handleAnswerChange(questionId, option.value, [option], question.text, question.type)}
+                                />
+                                <span style={{ fontSize: '14px', color: '#374151' }}>
+                                  {option.label}
+                                </span>
+                              </label>
+                              
+                              {/* Render sub-questions if this option is selected */}
+                              {isSelected && option.subQuestions && option.subQuestions.length > 0 && (
+                                renderSubQuestions(option.subQuestions, questionId, option.id)
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Multiple Choice */}
+                    {question.type === 'multiple-choice' && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {question.options.map((option) => {
+                          const currentAnswerArray = Array.isArray(currentAnswer?.answer) ? currentAnswer.answer : [];
+                          const isChecked = currentAnswerArray.includes(option.value);
+                          
+                          return (
+                            <div key={option.id}>
+                              <label
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '12px',
+                                  padding: '12px',
+                                  border: '1px solid #e5e7eb',
+                                  borderRadius: '8px',
+                                  cursor: 'pointer',
+                                  backgroundColor: 'white',
+                                  transition: 'all 0.2s'
+                                }}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={() => {
+                                    const currentSelectedOptions = currentAnswer?.selectedOptions || [];
+                                    let newAnswer: (string | number)[];
+                                    let newSelectedOptions: QuestionOption[];
+                                    
+                                    if (isChecked) {
+                                      // Remove option
+                                      newAnswer = currentAnswerArray.filter(val => val !== option.value);
+                                      newSelectedOptions = currentSelectedOptions.filter(opt => opt.id !== option.id);
+                                    } else {
+                                      // Add option
+                                      newAnswer = [...currentAnswerArray, option.value];
+                                      newSelectedOptions = [...currentSelectedOptions, option];
+                                    }
+                                    
+                                    handleAnswerChange(questionId, newAnswer, newSelectedOptions, question.text, question.type);
+                                  }}
+                                />
+                                <span style={{ fontSize: '14px', color: '#374151' }}>
+                                  {option.label}
+                                </span>
+                              </label>
+                              
+                              {/* Render sub-questions if this option is selected */}
+                              {isChecked && option.subQuestions && option.subQuestions.length > 0 && (
+                                renderSubQuestions(option.subQuestions, questionId, option.id)
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
 
@@ -450,7 +710,7 @@ const FillForm: React.FC = () => {
                           min="1"
                           max="5"
                           value={currentAnswer?.answer as number || 1}
-                          onChange={(e) => handleAnswerChange(questionId, parseInt(e.target.value))}
+                          onChange={(e) => handleAnswerChange(questionId, parseInt(e.target.value), [], question.text, question.type)}
                           style={{ flex: 1 }}
                         />
                         <span style={{ fontSize: '14px', color: '#6b7280' }}>5</span>

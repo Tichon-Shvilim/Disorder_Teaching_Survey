@@ -48,6 +48,19 @@ export interface QuestionnaireTemplate {
       id: string;
       value: number;
       label: string;
+      subQuestions?: {
+        text: string;
+        domainId: string;
+        type: 'single-choice' | 'multiple-choice' | 'text' | 'number' | 'scale';
+        options: {
+          id: string;
+          value: number;
+          label: string;
+        }[];
+        required: boolean;
+        helpText?: string;
+        order: number;
+      }[];
     }[];
     required: boolean;
     helpText?: string;
@@ -57,20 +70,74 @@ export interface QuestionnaireTemplate {
   updatedAt: Date;
 }
 
+// Helper function to parse malformed option strings
+const parseQuestionOptions = (options: unknown): { id: string; value: number; label: string }[] => {
+  if (!options) return [];
+  if (Array.isArray(options)) {
+    return options.map(option => {
+      if (typeof option === 'string' && option.startsWith('@{')) {
+        // Parse PowerShell-style object string: "@{id=opt-0; value=1; label=1; subQuestions=System.Object[]}"
+        try {
+          const matches = option.match(/id=([^;]+).*?value=([^;]+).*?label=([^;]+)/);
+          if (matches) {
+            return {
+              id: matches[1].trim(),
+              value: parseInt(matches[2].trim()) || 0,
+              label: matches[3].trim()
+            };
+          }
+        } catch {
+          console.warn('Failed to parse option string:', option);
+        }
+        return { id: 'unknown', value: 0, label: 'Unknown Option' };
+      }
+      
+      // If it's already an object, just return it
+      if (typeof option === 'object' && option !== null) {
+        return option;
+      }
+      
+      return option;
+    });
+  }
+  return [];
+};
+
+// Helper function to fix questionnaire data structure
+const fixQuestionnaireData = (data: QuestionnaireTemplate): QuestionnaireTemplate => {
+  if (!data) return data;
+  
+  if (data.questions && Array.isArray(data.questions)) {
+    data.questions = data.questions.map((question) => ({
+      ...question,
+      options: parseQuestionOptions(question.options)
+    }));
+  }
+  
+  return data;
+};
+
 // API Functions
 export const FormAPIService = {
   // Get all questionnaire templates
   async getQuestionnaireTemplates() {
     const response = await axios.get(`${API_BASE_URL}/questionnaires/templates`);
-    // Handle the case where API response is wrapped in a 'data' property
-    return response.data.data || response.data;
+    const data = response.data.data || response.data;
+    
+    // Fix the data structure for all questionnaires
+    if (Array.isArray(data)) {
+      return data.map(fixQuestionnaireData);
+    }
+    return data;
   },
 
   // Get specific questionnaire template
   async getQuestionnaireTemplate(id: string) {
     const response = await axios.get(`${API_BASE_URL}/questionnaires/templates/${id}`);
-    // Handle the case where API response is wrapped in a 'data' property
-    return response.data.data || response.data;
+    const data = response.data.data || response.data;
+    
+    // Fix the data structure
+    return fixQuestionnaireData(data);
   },
 
   // Submit completed form
