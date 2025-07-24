@@ -19,7 +19,7 @@ export interface FormSubmission {
   _id?: string;
   studentId: string;
   studentName: string;
-  questionnaireId: string;
+  questionnaireId: string | { _id: string; title: string; description?: string };
   questionnaireTitle: string;
   answers: FormAnswer[];
   submittedAt?: Date;

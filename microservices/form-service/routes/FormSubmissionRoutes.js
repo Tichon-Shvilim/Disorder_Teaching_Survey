@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const FormSubmission = require('../models/FormSubmission');
 const QuestionnaireTemplate = require('../models/QuestionnaireTemplate');
 const router = express.Router();
@@ -52,6 +53,14 @@ router.post('/submissions', async (req, res) => {
     if (!studentId || !studentName || !questionnaireId || !answers) {
       return res.status(400).json({ 
         message: 'Missing required fields: studentId, studentName, questionnaireId, answers' 
+      });
+    }
+
+    // Validate that questionnaireId is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(questionnaireId)) {
+      console.error('Invalid questionnaireId format:', questionnaireId);
+      return res.status(400).json({ 
+        message: 'Invalid questionnaire ID format' 
       });
     }
 
