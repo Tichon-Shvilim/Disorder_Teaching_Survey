@@ -1,10 +1,11 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const QuestionnaireTemplate = require('../models/QuestionnaireTemplate');
+const { authenticateJWT, authorizeRole } = require('../middleware/auth');
 const router = express.Router();
 
-// Create new questionnaire template
-router.post('/templates', async (req, res) => {
+// Create new questionnaire template - Admin only
+router.post('/templates', authenticateJWT, authorizeRole(['Admin']), async (req, res) => {
   try {
     const { title, description, domains, questions } = req.body;
     
@@ -75,8 +76,8 @@ router.post('/templates', async (req, res) => {
   }
 });
 
-// Get all questionnaire templates
-router.get('/templates', async (req, res) => {
+// Get all questionnaire templates - All authenticated users can view
+router.get('/templates', authenticateJWT, async (req, res) => {
   try {
     const templates = await QuestionnaireTemplate.find({ isActive: true })
       .sort({ createdAt: -1 });
@@ -95,8 +96,8 @@ router.get('/templates', async (req, res) => {
   }
 });
 
-// Get questionnaire template by ID
-router.get('/templates/:id', async (req, res) => {
+// Get questionnaire template by ID - All authenticated users can view
+router.get('/templates/:id', authenticateJWT, async (req, res) => {
   try {
     const { id } = req.params;
     
@@ -132,8 +133,8 @@ router.get('/templates/:id', async (req, res) => {
   }
 });
 
-// Update questionnaire template
-router.put('/templates/:id', async (req, res) => {
+// Update questionnaire template - Admin only
+router.put('/templates/:id', authenticateJWT, authorizeRole(['Admin']), async (req, res) => {
   try {
     const { title, description, domains, questions } = req.body;
     
@@ -171,8 +172,8 @@ router.put('/templates/:id', async (req, res) => {
   }
 });
 
-// Soft delete questionnaire template
-router.delete('/templates/:id', async (req, res) => {
+// Soft delete questionnaire template - Admin only
+router.delete('/templates/:id', authenticateJWT, authorizeRole(['Admin']), async (req, res) => {
   try {
     const template = await QuestionnaireTemplate.findByIdAndUpdate(
       req.params.id,
@@ -201,8 +202,8 @@ router.delete('/templates/:id', async (req, res) => {
   }
 });
 
-// Get all domains from existing templates (for reference)
-router.get('/domains', async (req, res) => {
+// Get all domains from existing templates (for reference) - All authenticated users can view
+router.get('/domains', authenticateJWT, async (req, res) => {
   try {
     const templates = await QuestionnaireTemplate.find({ isActive: true });
     const domainsSet = new Set();

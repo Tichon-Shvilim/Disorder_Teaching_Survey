@@ -1,13 +1,6 @@
 version: '3.8'
 
 services:
-  admin-service:
-    build:
-      context: ./microservices/admin-service
-    ports:
-      - "3006:3006"
-    environment:
-      - MONGODB_URI=mongodb://mongo:27017/adminDB
 
   user-service:
     build:
