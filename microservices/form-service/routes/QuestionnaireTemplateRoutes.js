@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const QuestionnaireTemplate = require('../models/QuestionnaireTemplate');
 const { authenticateJWT, authorizeRole } = require('../middleware/auth');
 const router = express.Router();
@@ -98,7 +99,18 @@ router.get('/templates', authenticateJWT, async (req, res) => {
 // Get questionnaire template by ID - All authenticated users can view
 router.get('/templates/:id', authenticateJWT, async (req, res) => {
   try {
-    const template = await QuestionnaireTemplate.findById(req.params.id);
+    const { id } = req.params;
+    
+    // Check if the provided ID is a valid MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      console.error('Invalid ObjectId provided:', id);
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid questionnaire template ID format'
+      });
+    }
+    
+    const template = await QuestionnaireTemplate.findById(id);
     
     if (!template) {
       return res.status(404).json({

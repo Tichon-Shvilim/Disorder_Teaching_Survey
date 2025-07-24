@@ -22,12 +22,19 @@ import {
 } from "@mui/icons-material";
 import { getItemById } from "./Api-Requests/genericRequests";
 import { toast } from 'react-toastify';
+import TherapistAssignment from './TherapistAssignment';
+import { type Student as StudentType } from './Api-Requests/StudentAPIService';
 
 interface Student {
+  _id?: string;
   id?: string;
   name: string;
   email?: string;
   phone?: string;
+  therapists?: Array<{
+    _id: string;
+    name: string;
+  }>;
   class?: {
     _id: string;
     classNumber: string;
@@ -211,6 +218,16 @@ const StudentDetails: React.FC = () => {
               </Card>
             )}
           </Box>
+
+          <Divider sx={{ my: 4 }} />
+
+          {/* Therapist Assignment Section */}
+          {student._id && (
+            <TherapistAssignment 
+              student={student as StudentType} 
+              onUpdate={(updatedStudent) => setStudent(updatedStudent as Student)} 
+            />
+          )}
 
           <Divider sx={{ my: 4 }} />
 

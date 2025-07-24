@@ -79,6 +79,10 @@ const EditStudent: React.FC = () => {
       }
     }
 
+    if (!formData.classId) {
+      newErrors.classId = 'Class assignment is required';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -187,7 +191,7 @@ const EditStudent: React.FC = () => {
             <div>
               <label htmlFor="name" style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
                 <User style={{ height: '16px', width: '16px', display: 'inline', marginRight: '4px' }} />
-                Student Name
+                Student Name <span style={{ color: '#ef4444' }}>*</span>
               </label>
               <input
                 type="text"
@@ -228,7 +232,7 @@ const EditStudent: React.FC = () => {
             <div>
               <label htmlFor="DOB" style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
                 <Calendar style={{ height: '16px', width: '16px', display: 'inline', marginRight: '4px' }} />
-                Date of Birth
+                Date of Birth <span style={{ color: '#ef4444' }}>*</span>
               </label>
               <input
                 type="date"
@@ -268,7 +272,7 @@ const EditStudent: React.FC = () => {
             <div>
               <label htmlFor="classId" style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
                 <GraduationCap style={{ height: '16px', width: '16px', display: 'inline', marginRight: '4px' }} />
-                Class Assignment
+                Class Assignment <span style={{ color: '#ef4444' }}>*</span>
               </label>
               <select
                 id="classId"
@@ -300,7 +304,7 @@ const EditStudent: React.FC = () => {
                   }
                 }}
               >
-                <option value="">Select a class (optional)</option>
+                <option value="">Select a class</option>
                 {classes.map((classItem) => (
                   <option key={classItem._id} value={classItem._id}>
                     {classItem.classNumber}

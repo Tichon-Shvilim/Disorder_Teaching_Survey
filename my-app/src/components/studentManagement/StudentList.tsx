@@ -7,6 +7,8 @@ import {
   Trash2,
   GraduationCap,
   Filter,
+  FileText,
+  History,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -59,8 +61,13 @@ const StudentList: React.FC = () => {
   }, []);
 
   // Helper function to get class name by ID
-  const getClassNameById = (classId: string): string => {
-    const classItem = classes.find(c => c._id === classId);
+  const getClassNameById = (classId: string | { _id: string; classNumber: string }): string => {
+    // Handle case where classId might be an object (for backward compatibility)
+    const searchId = typeof classId === 'object' && classId !== null 
+      ? classId._id || classId.classNumber
+      : classId;
+    
+    const classItem = classes.find(c => c._id === searchId);
     return classItem ? classItem.classNumber : '';
   };
 
@@ -98,15 +105,6 @@ const StudentList: React.FC = () => {
     }
   };
 
-  const filteredStudents = students.filter((student) => {
-    const matchesSearch = student.name
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    const matchesClass =
-      selectedClass === "" || student.classId === selectedClass;
-    return matchesSearch && matchesClass;
-  });
-
   const handleViewDetails = (studentId: string) => {
     navigate(`${studentId}`);
   };
@@ -118,6 +116,23 @@ const StudentList: React.FC = () => {
   const handleEditStudent = (studentId: string) => {
     navigate(`${studentId}/edit`);
   };
+
+  const handleFillForm = (studentId: string, studentName: string) => {
+    navigate(`../forms/fill`, { state: { studentId, studentName } });
+  };
+
+  const handleViewSubmissions = (studentId: string, studentName: string) => {
+    navigate(`../forms/submissions`, { state: { studentId, studentName } });
+  };
+
+  const filteredStudents = students.filter((student) => {
+    const matchesSearch = student.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesClass =
+      selectedClass === "" || student.classId === selectedClass;
+    return matchesSearch && matchesClass;
+  });
 
   if (loading) {
     return (
@@ -461,10 +476,7 @@ const StudentList: React.FC = () => {
                       margin: "0 0 8px 0",
                     }}
                   >
-                    {student.classId
-                      ? `Class ${getClassNameById(student.classId)}`
-                      : `Grade ${Math.floor((student.age || 0) / 2) + 1}`}{" "}
-                    • Age {student.age || 0}
+                    Age {student.age || 0}
                   </p>
                   <div
                     style={{
@@ -503,6 +515,54 @@ const StudentList: React.FC = () => {
                   title="Edit Student"
                 >
                   <Edit style={{ height: "16px", width: "16px" }} />
+                </button>
+                
+                <button
+                  onClick={() => handleFillForm(student._id, student.name)}
+                  style={{
+                    padding: "8px",
+                    backgroundColor: "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                    borderRadius: "8px",
+                    color: "#9ca3af",
+                    transition: "all 0.2s",
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.backgroundColor = "#f0f9ff";
+                    e.currentTarget.style.color = "#2563eb";
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                    e.currentTarget.style.color = "#9ca3af";
+                  }}
+                  title="Fill Form"
+                >
+                  <FileText style={{ height: "16px", width: "16px" }} />
+                </button>
+                
+                <button
+                  onClick={() => handleViewSubmissions(student._id, student.name)}
+                  style={{
+                    padding: "8px",
+                    backgroundColor: "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                    borderRadius: "8px",
+                    color: "#9ca3af",
+                    transition: "all 0.2s",
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.backgroundColor = "#f0fdf4";
+                    e.currentTarget.style.color = "#16a34a";
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                    e.currentTarget.style.color = "#9ca3af";
+                  }}
+                  title="View Past Forms"
+                >
+                  <History style={{ height: "16px", width: "16px" }} />
                 </button>
               </div>
 

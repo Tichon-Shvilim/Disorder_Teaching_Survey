@@ -49,7 +49,7 @@ const ClassDetails: React.FC = () => {
       console.log("all students" + students.length);
       // Filter out students who are already in other classes or this class
       const available = students.filter(student => 
-        !student.classNumber || student.classNumber === classData?.classNumber
+        !student.classId || student.classId === classData?._id
       );
       setAvailableStudents(available);
       console.log('Total students:', students.length, 'Available:', available.length);
@@ -57,7 +57,7 @@ const ClassDetails: React.FC = () => {
       console.error('Error fetching students:', err);
       toast.error('Failed to load students');
     }
-  }, [classData?.classNumber]);
+  }, [classData?._id]);
 
   useEffect(() => {
     if (id) {
