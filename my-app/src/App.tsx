@@ -47,6 +47,7 @@ const App: React.FC = () => {
           <Route path="students/:id" element={<StudentDetails />} />
           <Route path="students/:id/edit" element={<EditStudent />} />
           <Route path="forms/fill" element={<FillForm />} />
+          <Route path="forms/fill/:questionnaireId" element={<FillForm />} />
           <Route path="forms/submissions" element={<ViewSubmissions />} />
           <Route path="classes" element={<ClassList/>} />
           <Route path="classes/:id" element={<ModernClassManagement />} />

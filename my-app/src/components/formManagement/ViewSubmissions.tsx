@@ -55,8 +55,11 @@ const ViewSubmissions: React.FC = () => {
 
   const handleFillNewForm = (questionnaireId: string | { _id: string }) => {
     const id = typeof questionnaireId === 'object' ? questionnaireId._id : questionnaireId;
-    navigate(`/fill-form/${id}`, {
-      state: { studentId: studentId, studentName }
+    navigate(`/layout/forms/fill/${id}`, {
+      state: { 
+        studentId: studentId, 
+        studentName
+      }
     });
   };
 
