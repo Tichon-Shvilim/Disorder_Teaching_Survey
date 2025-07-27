@@ -23,12 +23,14 @@ UserSchema.virtual('id').get(function () {
   return this._id.toHexString();
 });
 
-// Ensure virtual fields are serialized
+// Ensure virtual fields are serialized and passwords are never included
 UserSchema.set('toJSON', {
   virtuals: true,
   versionKey: false,
   transform: function (doc, ret) {
     delete ret._id; // Optionally remove _id from the output
+    delete ret.password; // NEVER include password in JSON responses
+    return ret;
   }
 });
 

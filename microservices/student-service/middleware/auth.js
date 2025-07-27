@@ -28,4 +28,33 @@ function authorizeRole(roles) {
     next();
   };
 }
-module.exports = { authenticateJWT, authorizeRole };
+
+// Enhanced data access authorization for students/classes
+const authorizeDataAccess = (dataType) => {
+  return async (req, res, next) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: 'Authentication required' });
+      }
+
+      const userRole = req.user.role.toLowerCase();
+      
+      // Admin has access to all data
+      if (userRole === 'admin') {
+        return next();
+      }
+
+      // For teachers and therapists, we'll need to fetch their assignments
+      // This will be used by route handlers to filter data appropriately
+      req.userRole = userRole;
+      req.userId = req.user.id;
+
+      next();
+    } catch (error) {
+      console.error('Error in data access authorization:', error);
+      res.status(500).json({ message: 'Authorization error' });
+    }
+  };
+};
+
+module.exports = { authenticateJWT, authorizeRole, authorizeDataAccess };

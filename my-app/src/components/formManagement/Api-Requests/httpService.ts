@@ -1,6 +1,6 @@
-import axios from 'axios';
+import { createAuthenticatedHttpService } from '../../../utils/httpService';
 
-export default axios.create({
-   baseURL:import.meta.env.VITE_FORM_SERVICE_URL,
-});
+const httpService = createAuthenticatedHttpService(import.meta.env.VITE_FORM_SERVICE_URL);
+
+export default httpService;
 

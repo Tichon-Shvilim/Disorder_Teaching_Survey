@@ -91,14 +91,15 @@ const App: React.FC = () => {
           />
         </Route>
 
-        <Route 
+        {/* This route should be inside the layout or handled differently */}
+        {/* <Route 
         path="studentlist"
         element={
-              <RoleRoute allowedRoles={["Admin","Techer"]}>
+              <RoleRoute allowedRoles={["Admin","Teacher"]}>
                 <StudentList/>
               </RoleRoute>
             }
-        />
+        /> */}
 
         {/* Catch-all / 404 */}
         <Route path="*" element={<div>Page not found</div>} />

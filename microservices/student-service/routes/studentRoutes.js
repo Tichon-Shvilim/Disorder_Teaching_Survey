@@ -1,35 +1,109 @@
 const express = require('express');
 const Student = require('../models/Student');
 const Class = require('../models/Class');
-const { authenticateJWT, authorizeRole } = require('../middleware/auth');
-const axios = require('axios');
+const axios = require('axios'); // For fetching user assignments
+const { authenticateJWT, authorizeRole, authorizeDataAccess } = require('../middleware/auth');
 const router = express.Router();
 
-// GET all students - temporarily disabled authentication for testing
-router.get('/', async (req, res) => {
+// GET all students - with role-based filtering
+router.get('/', authenticateJWT, authorizeDataAccess('students'), async (req, res) => {
   try {
-    const students = await Student.find();
+    let query = {};
+    const userRole = req.userRole;
+    const userId = req.userId;
+
+    // Apply role-based filtering
+    if (userRole === 'teacher') {
+      // Teachers can only see students from their assigned classes
+      try {
+        const userResponse = await axios.get(`${process.env.USER_SERVICE_URL || 'http://user-service:3001'}/api/users/${userId}`, {
+          headers: { Authorization: req.headers.authorization }
+        });
+        const user = userResponse.data;
+        const classIds = user.classes.map(c => c._id);
+        query.classId = { $in: classIds };
+      } catch (error) {
+        console.error('Error fetching user assignments:', error);
+        return res.status(500).json({ message: 'Error fetching user data' });
+      }
+    } else if (userRole === 'therapist') {
+      // Therapists can only see their assigned students
+      try {
+        const userResponse = await axios.get(`${process.env.USER_SERVICE_URL || 'http://user-service:3001'}/api/users/${userId}`, {
+          headers: { Authorization: req.headers.authorization }
+        });
+        const user = userResponse.data;
+        const studentIds = user.students.map(s => s._id);
+        query._id = { $in: studentIds };
+      } catch (error) {
+        console.error('Error fetching user assignments:', error);
+        return res.status(500).json({ message: 'Error fetching user data' });
+      }
+    }
+    // Admin sees all students (no query filter)
+
+    const students = await Student.find(query).populate('classId', 'classNumber');
     res.json(students);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// GET a specific student by ID - temporarily disabled authentication for testing
-router.get('/:id', async (req, res) => {
+// GET a specific student by ID - with role-based access control
+router.get('/:id', authenticateJWT, authorizeDataAccess('students'), async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
     if (!student) {
       return res.status(404).json({ message: 'Student not found' });
     }
+
+    const userRole = req.userRole;
+    const userId = req.userId;
+
+    // Check if user has access to this specific student
+    if (userRole === 'teacher') {
+      // Check if student is in teacher's assigned classes
+      try {
+        const userResponse = await axios.get(`${process.env.USER_SERVICE_URL || 'http://user-service:3001'}/api/users/${userId}`, {
+          headers: { Authorization: req.headers.authorization }
+        });
+        const user = userResponse.data;
+        const classIds = user.classes.map(c => c._id);
+        
+        if (!classIds.includes(student.classId?.toString())) {
+          return res.status(403).json({ message: 'Access denied. Student not in your assigned classes.' });
+        }
+      } catch (error) {
+        console.error('Error fetching user assignments:', error);
+        return res.status(500).json({ message: 'Error fetching user data' });
+      }
+    } else if (userRole === 'therapist') {
+      // Check if student is assigned to therapist
+      try {
+        const userResponse = await axios.get(`${process.env.USER_SERVICE_URL || 'http://user-service:3001'}/api/users/${userId}`, {
+          headers: { Authorization: req.headers.authorization }
+        });
+        const user = userResponse.data;
+        const studentIds = user.students.map(s => s._id);
+        
+        if (!studentIds.includes(student._id.toString())) {
+          return res.status(403).json({ message: 'Access denied. Student not assigned to you.' });
+        }
+      } catch (error) {
+        console.error('Error fetching user assignments:', error);
+        return res.status(500).json({ message: 'Error fetching user data' });
+      }
+    }
+    // Admin can access any student
+
     res.json(student);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// CREATE a new student - temporarily disabled authentication for testing
-router.post('/', async (req, res) => {
+// CREATE a new student - Admin only
+router.post('/', authenticateJWT, authorizeRole(['Admin']), async (req, res) => {
   try {
     // Validate required fields
     if (!req.body.name || !req.body.DOB) {
@@ -61,8 +135,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-// UPDATE a student - temporarily disabled authentication for testing
-router.put('/:id', async (req, res) => {
+// UPDATE a student - Admin only
+router.put('/:id', authenticateJWT, authorizeRole(['Admin']), async (req, res) => {
   try {
     // Validate required fields
     if (req.body.name !== undefined && !req.body.name.trim()) {
@@ -119,8 +193,8 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE a student - temporarily disabled authentication for testing
-router.delete('/:id', async (req, res) => {
+// DELETE a student - Admin only
+router.delete('/:id', authenticateJWT, authorizeRole(['Admin']), async (req, res) => {
   try {
     const studentToDelete = await Student.findById(req.params.id);
     

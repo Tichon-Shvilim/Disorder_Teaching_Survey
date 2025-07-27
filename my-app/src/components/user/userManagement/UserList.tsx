@@ -54,8 +54,8 @@ const UsersList: React.FC = () => {
       const axiosError = error as { response?: { status?: number; data?: { message?: string } }; message?: string };
       if (axiosError.response?.status === 401 || axiosError.response?.status === 403) {
         console.error("Authentication error - user may need to log in");
-        // You could redirect to login page here
-        // navigate('/login');
+        // You could redirect to signin page here
+        // navigate('/signin');
       } else if (axiosError.response?.status === 500) {
         console.error("Server error:", axiosError.response?.data?.message || axiosError.message);
       } else {
