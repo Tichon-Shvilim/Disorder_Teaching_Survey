@@ -672,7 +672,14 @@ const ViewSubmissions: React.FC = () => {
               </div>
               <div>
                 <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#6b7280', margin: '0 0 4px 0' }}>Completed By</h3>
-                <p style={{ fontSize: '16px', color: '#111827', margin: 0 }}>{selectedSubmission.completedBy || 'Unknown'}</p>
+                <p style={{ fontSize: '16px', color: '#111827', margin: 0 }}>
+                  {selectedSubmission.completedBy || 'Unknown'}
+                  {selectedSubmission.completedById && (
+                    <span style={{ fontSize: '14px', color: '#6b7280', marginLeft: '8px' }}>
+                      (ID: {selectedSubmission.completedById})
+                    </span>
+                  )}
+                </p>
               </div>
             </div>
           </div>
@@ -1048,6 +1055,16 @@ const ViewSubmissions: React.FC = () => {
                       <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#111827', margin: '0 0 8px 0' }}>
                         {submission.questionnaireTitle}
                       </h3>
+                      {submission.completedBy && (
+                        <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '8px' }}>
+                          <strong>Completed by:</strong> {submission.completedBy}
+                          {submission.completedById && (
+                            <span style={{ color: '#9ca3af', fontSize: '12px' }}>
+                              {' '}(ID: {submission.completedById})
+                            </span>
+                          )}
+                        </div>
+                      )}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '14px', color: '#6b7280' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <Calendar style={{ height: '16px', width: '16px' }} />

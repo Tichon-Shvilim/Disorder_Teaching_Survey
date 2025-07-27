@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { ArrowLeft, Send, AlertCircle, FileText } from 'lucide-react';
 import { FormAPIService } from './Api-Requests/FormAPIService';
 import type { QuestionnaireTemplate, FormAnswer } from './Api-Requests/FormAPIService';
 import { toast } from 'react-toastify';
+import type { RootState } from '../../store';
 
 // Type definitions
 interface QuestionOption {
@@ -28,6 +30,9 @@ const FillForm: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { questionnaireId } = useParams<{ questionnaireId?: string }>();
+  
+  // Get current user from Redux store
+  const currentUser = useSelector((state: RootState) => state.auth.user);
   
   // Get student info from navigation state
   const studentId = location.state?.studentId || '';
@@ -335,6 +340,12 @@ const FillForm: React.FC = () => {
   const handleSubmit = async () => {
     if (!validateForm() || !questionnaire) return;
 
+    // Ensure we have a current user
+    if (!currentUser) {
+      toast.error('User session expired. Please log in again.');
+      return;
+    }
+
     setSubmitting(true);
     try {
       // Clean the answers by removing nested subQuestions from selectedOptions
@@ -354,7 +365,8 @@ const FillForm: React.FC = () => {
         questionnaireId: selectedQuestionnaireId,
         questionnaireTitle: questionnaire.title,
         answers: cleanedAnswers,
-        completedBy: 'Student',
+        completedBy: currentUser.name, // User's name for display
+        completedById: currentUser.id?.toString(), // User's ID for robust identification (converted to string)
         notes: ''
       };
 

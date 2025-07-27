@@ -24,6 +24,7 @@ export interface FormSubmission {
   answers: FormAnswer[];
   submittedAt?: Date;
   completedBy?: string;
+  completedById?: string; // User ID of the person who completed the form
   status?: 'draft' | 'completed' | 'reviewed';
   notes?: string;
   createdAt?: Date;
