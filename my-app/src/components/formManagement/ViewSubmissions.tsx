@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Calendar, FileText, Eye, Plus, Edit, Trash2, Save, X } from 'lucide-react';
 import { FormAPIService } from './Api-Requests/FormAPIService';
-import type { FormSubmission, QuestionnaireTemplate } from './Api-Requests/FormAPIService';
+import type { FormSubmission, QuestionnaireTemplate } from './models/FormModels';
 import { toast } from 'react-toastify';
 
 const ViewSubmissions: React.FC = () => {
@@ -55,8 +55,11 @@ const ViewSubmissions: React.FC = () => {
 
   const handleFillNewForm = (questionnaireId: string | { _id: string }) => {
     const id = typeof questionnaireId === 'object' ? questionnaireId._id : questionnaireId;
-    navigate(`/fill-form/${id}`, {
-      state: { studentId: studentId, studentName }
+    navigate(`/layout/forms/fill/${id}`, {
+      state: { 
+        studentId: studentId, 
+        studentName
+      }
     });
   };
 
@@ -165,7 +168,296 @@ const ViewSubmissions: React.FC = () => {
   // Helper function to find the corresponding question from the questionnaire template
   const findQuestionByText = (questionText: string) => {
     if (!editingQuestionnaire) return null;
-    return editingQuestionnaire.questions.find(q => q.text === questionText);
+    
+    // First, check top-level questions
+    const topLevelQuestion = editingQuestionnaire.questions.find(q => q.text === questionText);
+    if (topLevelQuestion) {
+      return topLevelQuestion;
+    }
+    
+    // If not found, check sub-questions within options
+    for (const question of editingQuestionnaire.questions) {
+      if (question.options) {
+        for (const option of question.options) {
+          if (option.subQuestions) {
+            const subQuestion = option.subQuestions.find(sq => sq.text === questionText);
+            if (subQuestion) {
+              return subQuestion;
+            }
+          }
+        }
+      }
+    }
+    
+    return null;
+  };
+
+  // Helper function to check if a question is a sub-question (should be filtered out from main display)
+  const isSubQuestion = (questionText: string) => {
+    if (!editingQuestionnaire) return false;
+    
+    // Check if this question text appears as a sub-question in any parent option
+    for (const question of editingQuestionnaire.questions) {
+      if (question.options) {
+        for (const option of question.options) {
+          if (option.subQuestions) {
+            const isFoundAsSubQuestion = option.subQuestions.some(sq => sq.text === questionText);
+            if (isFoundAsSubQuestion) {
+              return true;
+            }
+          }
+        }
+      }
+    }
+    
+    return false;
+  };
+
+  // Helper function to render sub-questions within a parent question
+  const renderSubQuestions = (parentAnswer: FormSubmission['answers'][0], selectedOptions: { id: string; label: string; value: number }[], currentAnswers: FormSubmission['answers']) => {
+    if (!editingQuestionnaire || !selectedOptions.length) return null;
+
+    const parentQuestion = findQuestionByText(parentAnswer.questionText);
+    if (!parentQuestion || !parentQuestion.options) return null;
+
+    // Find all sub-questions for the selected options
+    type SubQuestionWithParent = {
+      text: string;
+      domainId: string;
+      type: 'single-choice' | 'multiple-choice' | 'text' | 'number' | 'scale';
+      options: { id: string; value: number; label: string; }[];
+      required: boolean;
+      helpText?: string;
+      order: number;
+      parentOptionLabel: string;
+    };
+
+    type OptionWithSubQuestions = {
+      id: string;
+      value: number;
+      label: string;
+      subQuestions?: {
+        text: string;
+        domainId: string;
+        type: 'single-choice' | 'multiple-choice' | 'text' | 'number' | 'scale';
+        options: { id: string; value: number; label: string; }[];
+        required: boolean;
+        helpText?: string;
+        order: number;
+      }[];
+    };
+    
+    const subQuestionsToShow: SubQuestionWithParent[] = [];
+    selectedOptions.forEach(selectedOption => {
+      const parentOption = parentQuestion.options.find(opt => opt.value === selectedOption.value) as OptionWithSubQuestions;
+      if (parentOption && parentOption.subQuestions) {
+        parentOption.subQuestions.forEach((subQ: {
+          text: string;
+          domainId: string;
+          type: 'single-choice' | 'multiple-choice' | 'text' | 'number' | 'scale';
+          options: { id: string; value: number; label: string; }[];
+          required: boolean;
+          helpText?: string;
+          order: number;
+        }) => {
+          if (!subQuestionsToShow.find(existing => existing.text === subQ.text)) {
+            subQuestionsToShow.push({
+              ...subQ,
+              parentOptionLabel: parentOption.label
+            });
+          }
+        });
+      }
+    });
+
+    if (!subQuestionsToShow.length) return null;
+
+    return (
+      <div style={{ 
+        marginTop: '16px', 
+        paddingTop: '16px', 
+        borderTop: '1px solid #e5e7eb',
+        backgroundColor: '#f8fafc',
+        padding: '16px',
+        borderRadius: '8px'
+      }}>
+        <h4 style={{ 
+          fontSize: '14px', 
+          fontWeight: '600', 
+          color: '#6b7280', 
+          margin: '0 0 12px 0' 
+        }}>
+          Follow-up Questions
+        </h4>
+        {subQuestionsToShow.map((subQuestion, subIndex) => {
+          // Find the answer for this sub-question
+          const subQuestionAnswer = currentAnswers.find(ans => ans.questionText === subQuestion.text);
+          if (!subQuestionAnswer) return null;
+
+          const subAnswerIndex = currentAnswers.findIndex(ans => ans.questionText === subQuestion.text);
+
+          return (
+            <div key={`${subQuestion.text}-${subIndex}`} style={{ marginBottom: '16px' }}>
+              <h5 style={{ 
+                fontSize: '14px', 
+                fontWeight: '500', 
+                color: '#374151', 
+                margin: '0 0 8px 0' 
+              }}>
+                {subQuestion.text}
+              </h5>
+              
+              <div style={{ 
+                padding: '12px', 
+                backgroundColor: '#ffffff', 
+                borderRadius: '6px',
+                border: '1px solid #e5e7eb'
+              }}>
+                {subQuestion.type === 'text' ? (
+                  <textarea
+                    value={String(subQuestionAnswer.answer)}
+                    onChange={(e) => handleAnswerChange(subAnswerIndex, e.target.value)}
+                    style={{
+                      width: '100%',
+                      minHeight: '80px',
+                      padding: '8px',
+                      border: 'none',
+                      backgroundColor: 'transparent',
+                      fontSize: '14px',
+                      resize: 'vertical',
+                      outline: 'none'
+                    }}
+                  />
+                ) : subQuestion.type === 'number' ? (
+                  <input
+                    type="number"
+                    value={Number(subQuestionAnswer.answer)}
+                    onChange={(e) => handleAnswerChange(subAnswerIndex, parseFloat(e.target.value) || 0)}
+                    style={{
+                      width: '100%',
+                      padding: '8px',
+                      border: 'none',
+                      backgroundColor: 'transparent',
+                      fontSize: '14px',
+                      outline: 'none'
+                    }}
+                  />
+                ) : subQuestion.type === 'scale' ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{ fontSize: '12px', color: '#6b7280' }}>1</span>
+                    <input
+                      type="range"
+                      min="1"
+                      max="5"
+                      value={Number(subQuestionAnswer.answer)}
+                      onChange={(e) => handleAnswerChange(subAnswerIndex, parseInt(e.target.value))}
+                      style={{ flex: 1 }}
+                    />
+                    <span style={{ fontSize: '12px', color: '#6b7280' }}>5</span>
+                    <div style={{
+                      minWidth: '24px',
+                      textAlign: 'center',
+                      padding: '2px 6px',
+                      backgroundColor: '#2563eb',
+                      color: 'white',
+                      borderRadius: '4px',
+                      fontSize: '12px',
+                      fontWeight: '500'
+                    }}>
+                      {subQuestionAnswer.answer}
+                    </div>
+                  </div>
+                ) : (subQuestion.type === 'single-choice' || subQuestion.type === 'multiple-choice') && subQuestion.options ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {subQuestion.options.map((subOption: { id: string; value: number; label: string }) => {
+                      if (subQuestion.type === 'single-choice') {
+                        const isSubSelected = Array.isArray(subQuestionAnswer.answer) 
+                          ? subQuestionAnswer.answer.includes(subOption.value)
+                          : subQuestionAnswer.answer === subOption.value;
+                        
+                        return (
+                          <label
+                            key={subOption.id}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              padding: '8px',
+                              border: '1px solid #d1d5db',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              backgroundColor: isSubSelected ? '#dbeafe' : 'white',
+                              fontSize: '14px'
+                            }}
+                          >
+                            <input
+                              type="radio"
+                              name={`subquestion-${subAnswerIndex}`}
+                              value={subOption.value}
+                              checked={isSubSelected}
+                              onChange={() => handleAnswerChange(subAnswerIndex, subOption.value, [subOption])}
+                            />
+                            <span>{subOption.label}</span>
+                          </label>
+                        );
+                      } else {
+                        // Multiple choice
+                        const currentSubAnswerArray = Array.isArray(subQuestionAnswer.answer) ? subQuestionAnswer.answer : [];
+                        const currentSubSelectedOptions = subQuestionAnswer.selectedOptions || [];
+                        const isSubChecked = currentSubAnswerArray.includes(subOption.value);
+                        
+                        return (
+                          <label
+                            key={subOption.id}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              padding: '8px',
+                              border: '1px solid #d1d5db',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              backgroundColor: isSubChecked ? '#dbeafe' : 'white',
+                              fontSize: '14px'
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isSubChecked}
+                              onChange={() => {
+                                let newSubAnswer: (string | number)[];
+                                let newSubSelectedOptions: { id: string; label: string; value: number }[];
+                                
+                                if (isSubChecked) {
+                                  // Remove option
+                                  newSubAnswer = currentSubAnswerArray.filter((val: string | number) => val !== subOption.value);
+                                  newSubSelectedOptions = currentSubSelectedOptions.filter((opt: { id: string; label: string; value: number }) => opt.id !== subOption.id);
+                                } else {
+                                  // Add option
+                                  newSubAnswer = [...currentSubAnswerArray, subOption.value];
+                                  newSubSelectedOptions = [...currentSubSelectedOptions, { id: subOption.id, label: subOption.label, value: subOption.value }];
+                                }
+                                
+                                handleAnswerChange(subAnswerIndex, newSubAnswer, newSubSelectedOptions);
+                              }}
+                            />
+                            <span>{subOption.label}</span>
+                          </label>
+                        );
+                      }
+                    })}
+                  </div>
+                ) : (
+                  <p style={{ fontSize: '14px', color: '#374151', margin: 0 }}>
+                    {String(subQuestionAnswer.answer)}
+                  </p>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
   };
 
   const formatDate = (date: Date | string) => {
@@ -380,239 +672,270 @@ const ViewSubmissions: React.FC = () => {
               </div>
               <div>
                 <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#6b7280', margin: '0 0 4px 0' }}>Completed By</h3>
-                <p style={{ fontSize: '16px', color: '#111827', margin: 0 }}>{selectedSubmission.completedBy || 'Unknown'}</p>
+                <p style={{ fontSize: '16px', color: '#111827', margin: 0 }}>
+                  {selectedSubmission.completedBy || 'Unknown'}
+                  {selectedSubmission.completedById && (
+                    <span style={{ fontSize: '14px', color: '#6b7280', marginLeft: '8px' }}>
+                      (ID: {selectedSubmission.completedById})
+                    </span>
+                  )}
+                </p>
               </div>
             </div>
           </div>
 
           {/* Answers */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            {currentAnswers.map((answer, index) => (
-              <div key={index} style={{ 
-                backgroundColor: 'white', 
-                borderRadius: '12px', 
-                padding: '24px', 
-                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' 
-              }}>
-                <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#111827', margin: '0 0 12px 0' }}>
-                  {answer.questionText}
-                </h3>
-                <div style={{ 
-                  padding: '12px', 
-                  backgroundColor: isEditing ? '#ffffff' : '#f8fafc', 
-                  borderRadius: '8px',
-                  border: isEditing ? '2px solid #e5e7eb' : '1px solid #e2e8f0'
+            {currentAnswers.filter((answer) => {
+              // In edit mode, filter out sub-questions as they're now shown within parent questions
+              if (isEditing) {
+                return !isSubQuestion(answer.questionText);
+              }
+              // In view mode, show all answers for now
+              return true;
+            }).map((answer) => {
+              // Find the original index for handleAnswerChange to work correctly
+              const originalIndex = currentAnswers.findIndex(a => a.questionText === answer.questionText);
+              
+              return (
+                <div key={originalIndex} style={{ 
+                  backgroundColor: 'white', 
+                  borderRadius: '12px', 
+                  padding: '24px', 
+                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' 
                 }}>
-                  {isEditing ? (
-                    // Edit mode
-                    answer.questionType === 'text' ? (
-                      <textarea
-                        value={String(answer.answer)}
-                        onChange={(e) => handleAnswerChange(index, e.target.value)}
-                        style={{
-                          width: '100%',
-                          minHeight: '100px',
-                          padding: '8px',
-                          border: 'none',
-                          backgroundColor: 'transparent',
-                          fontSize: '14px',
-                          resize: 'vertical',
-                          outline: 'none'
-                        }}
-                      />
-                    ) : answer.questionType === 'number' ? (
-                      <input
-                        type="number"
-                        value={Number(answer.answer)}
-                        onChange={(e) => handleAnswerChange(index, parseFloat(e.target.value) || 0)}
-                        style={{
-                          width: '100%',
-                          padding: '8px',
-                          border: 'none',
-                          backgroundColor: 'transparent',
-                          fontSize: '14px',
-                          outline: 'none'
-                        }}
-                      />
-                    ) : answer.questionType === 'scale' ? (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <span style={{ fontSize: '12px', color: '#6b7280' }}>1</span>
-                        <input
-                          type="range"
-                          min="1"
-                          max="5"
-                          value={Number(answer.answer)}
-                          onChange={(e) => handleAnswerChange(index, parseInt(e.target.value))}
-                          style={{ flex: 1 }}
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#111827', margin: '0 0 12px 0' }}>
+                    {answer.questionText}
+                  </h3>
+                  <div style={{ 
+                    padding: '12px', 
+                    backgroundColor: isEditing ? '#ffffff' : '#f8fafc', 
+                    borderRadius: '8px',
+                    border: isEditing ? '2px solid #e5e7eb' : '1px solid #e2e8f0'
+                  }}>
+                    {isEditing ? (
+                      // Edit mode
+                      answer.questionType === 'text' ? (
+                        <textarea
+                          value={String(answer.answer)}
+                          onChange={(e) => handleAnswerChange(originalIndex, e.target.value)}
+                          style={{
+                            width: '100%',
+                            minHeight: '100px',
+                            padding: '8px',
+                            border: 'none',
+                            backgroundColor: 'transparent',
+                            fontSize: '14px',
+                            resize: 'vertical',
+                            outline: 'none'
+                          }}
                         />
-                        <span style={{ fontSize: '12px', color: '#6b7280' }}>5</span>
-                        <div style={{
-                          minWidth: '24px',
-                          textAlign: 'center',
-                          padding: '2px 6px',
-                          backgroundColor: '#2563eb',
-                          color: 'white',
-                          borderRadius: '4px',
-                          fontSize: '12px',
-                          fontWeight: '500'
-                        }}>
-                          {answer.answer}
+                      ) : answer.questionType === 'number' ? (
+                        <input
+                          type="number"
+                          value={Number(answer.answer)}
+                          onChange={(e) => handleAnswerChange(originalIndex, parseFloat(e.target.value) || 0)}
+                          style={{
+                            width: '100%',
+                            padding: '8px',
+                            border: 'none',
+                            backgroundColor: 'transparent',
+                            fontSize: '14px',
+                            outline: 'none'
+                          }}
+                        />
+                      ) : answer.questionType === 'scale' ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <span style={{ fontSize: '12px', color: '#6b7280' }}>1</span>
+                          <input
+                            type="range"
+                            min="1"
+                            max="5"
+                            value={Number(answer.answer)}
+                            onChange={(e) => handleAnswerChange(originalIndex, parseInt(e.target.value))}
+                            style={{ flex: 1 }}
+                          />
+                          <span style={{ fontSize: '12px', color: '#6b7280' }}>5</span>
+                          <div style={{
+                            minWidth: '24px',
+                            textAlign: 'center',
+                            padding: '2px 6px',
+                            backgroundColor: '#2563eb',
+                            color: 'white',
+                            borderRadius: '4px',
+                            fontSize: '12px',
+                            fontWeight: '500'
+                          }}>
+                            {answer.answer}
+                          </div>
                         </div>
-                      </div>
-                    ) : (
-                      // For choice questions, render them as editable if we have the questionnaire template
-                      answer.questionType === 'single-choice' || answer.questionType === 'multiple-choice' ? (
-                        (() => {
-                          const question = findQuestionByText(answer.questionText);
-                          if (!question) {
-                            return (
-                              <div style={{ padding: '8px', backgroundColor: '#f9fafb', borderRadius: '4px' }}>
-                                <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 8px 0', fontStyle: 'italic' }}>
-                                  Question template not found. Please delete and create a new submission if needed.
-                                </p>
-                                <div>
-                                  {answer.selectedOptions?.map((option, optIndex) => (
-                                    <span key={optIndex} style={{ 
-                                      display: 'inline-block',
-                                      backgroundColor: '#d1d5db',
-                                      color: '#374151',
-                                      padding: '4px 8px',
-                                      borderRadius: '4px',
-                                      fontSize: '14px',
-                                      marginRight: '8px',
-                                      marginBottom: '4px'
-                                    }}>
-                                      {option.label}
-                                    </span>
-                                  ))}
+                      ) : (
+                        // For choice questions, render them as editable if we have the questionnaire template
+                        answer.questionType === 'single-choice' || answer.questionType === 'multiple-choice' ? (
+                          (() => {
+                            const question = findQuestionByText(answer.questionText);
+                            if (!question) {
+                              return (
+                                <div style={{ padding: '8px', backgroundColor: '#f9fafb', borderRadius: '4px' }}>
+                                  <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 8px 0', fontStyle: 'italic' }}>
+                                    Question template not found. Please delete and create a new submission if needed.
+                                  </p>
+                                  <div>
+                                    {answer.selectedOptions?.map((option, optIndex) => (
+                                      <span key={optIndex} style={{ 
+                                        display: 'inline-block',
+                                        backgroundColor: '#d1d5db',
+                                        color: '#374151',
+                                        padding: '4px 8px',
+                                        borderRadius: '4px',
+                                        fontSize: '14px',
+                                        marginRight: '8px',
+                                        marginBottom: '4px'
+                                      }}>
+                                        {option.label}
+                                      </span>
+                                    ))}
+                                  </div>
                                 </div>
-                              </div>
-                            );
-                          }
+                              );
+                            }
 
-                          if (answer.questionType === 'single-choice') {
-                            return (
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                {question.options.map((option) => {
-                                  const isSelected = Array.isArray(answer.answer) 
-                                    ? answer.answer.includes(option.value)
-                                    : answer.answer === option.value;
-                                  
-                                  return (
-                                    <label
-                                      key={option.id}
-                                      style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '8px',
-                                        padding: '8px',
-                                        border: '1px solid #e5e7eb',
-                                        borderRadius: '6px',
-                                        cursor: 'pointer',
-                                        backgroundColor: isSelected ? '#dbeafe' : 'white',
-                                        fontSize: '14px'
-                                      }}
-                                    >
-                                      <input
-                                        type="radio"
-                                        name={`question-${index}`}
-                                        value={option.value}
-                                        checked={isSelected}
-                                        onChange={() => handleAnswerChange(index, option.value, [option])}
-                                      />
-                                      <span>{option.label}</span>
-                                    </label>
-                                  );
-                                })}
-                              </div>
-                            );
-                          } else {
-                            // Multiple choice
-                            const currentAnswerArray = Array.isArray(answer.answer) ? answer.answer : [];
-                            const currentSelectedOptions = answer.selectedOptions || [];
-                            
-                            return (
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                {question.options.map((option) => {
-                                  const isChecked = currentAnswerArray.includes(option.value);
-                                  
-                                  return (
-                                    <label
-                                      key={option.id}
-                                      style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '8px',
-                                        padding: '8px',
-                                        border: '1px solid #e5e7eb',
-                                        borderRadius: '6px',
-                                        cursor: 'pointer',
-                                        backgroundColor: isChecked ? '#dbeafe' : 'white',
-                                        fontSize: '14px'
-                                      }}
-                                    >
-                                      <input
-                                        type="checkbox"
-                                        checked={isChecked}
-                                        onChange={() => {
-                                          let newAnswer: (string | number)[];
-                                          let newSelectedOptions: { id: string; label: string; value: number }[];
-                                          
-                                          if (isChecked) {
-                                            // Remove option
-                                            newAnswer = currentAnswerArray.filter(val => val !== option.value);
-                                            newSelectedOptions = currentSelectedOptions.filter(opt => opt.id !== option.id);
-                                          } else {
-                                            // Add option
-                                            newAnswer = [...currentAnswerArray, option.value];
-                                            newSelectedOptions = [...currentSelectedOptions, { id: option.id, label: option.label, value: option.value }];
-                                          }
-                                          
-                                          handleAnswerChange(index, newAnswer, newSelectedOptions);
-                                        }}
-                                      />
-                                      <span>{option.label}</span>
-                                    </label>
-                                  );
-                                })}
-                              </div>
-                            );
-                          }
-                        })()
+                            if (answer.questionType === 'single-choice') {
+                              return (
+                                <div>
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    {question.options.map((option) => {
+                                      const isSelected = Array.isArray(answer.answer) 
+                                        ? answer.answer.includes(option.value)
+                                        : answer.answer === option.value;
+                                      
+                                      return (
+                                        <label
+                                          key={option.id}
+                                          style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px',
+                                            padding: '8px',
+                                            border: '1px solid #e5e7eb',
+                                            borderRadius: '6px',
+                                            cursor: 'pointer',
+                                            backgroundColor: isSelected ? '#dbeafe' : 'white',
+                                            fontSize: '14px'
+                                          }}
+                                        >
+                                          <input
+                                            type="radio"
+                                            name={`question-${originalIndex}`}
+                                            value={option.value}
+                                            checked={isSelected}
+                                            onChange={() => handleAnswerChange(originalIndex, option.value, [option])}
+                                          />
+                                          <span>{option.label}</span>
+                                        </label>
+                                      );
+                                    })}
+                                  </div>
+                                  {/* Render sub-questions for selected option */}
+                                  {answer.selectedOptions && answer.selectedOptions.length > 0 && 
+                                    renderSubQuestions(answer, answer.selectedOptions, currentAnswers)
+                                  }
+                                </div>
+                              );
+                            } else {
+                              // Multiple choice
+                              const currentAnswerArray = Array.isArray(answer.answer) ? answer.answer : [];
+                              const currentSelectedOptions = answer.selectedOptions || [];
+                              
+                              return (
+                                <div>
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    {question.options.map((option) => {
+                                      const isChecked = currentAnswerArray.includes(option.value);
+                                      
+                                      return (
+                                        <label
+                                          key={option.id}
+                                          style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px',
+                                            padding: '8px',
+                                            border: '1px solid #e5e7eb',
+                                            borderRadius: '6px',
+                                            cursor: 'pointer',
+                                            backgroundColor: isChecked ? '#dbeafe' : 'white',
+                                            fontSize: '14px'
+                                          }}
+                                        >
+                                          <input
+                                            type="checkbox"
+                                            checked={isChecked}
+                                            onChange={() => {
+                                              let newAnswer: (string | number)[];
+                                              let newSelectedOptions: { id: string; label: string; value: number }[];
+                                              
+                                              if (isChecked) {
+                                                // Remove option
+                                                newAnswer = currentAnswerArray.filter(val => val !== option.value);
+                                                newSelectedOptions = currentSelectedOptions.filter(opt => opt.id !== option.id);
+                                              } else {
+                                                // Add option
+                                                newAnswer = [...currentAnswerArray, option.value];
+                                                newSelectedOptions = [...currentSelectedOptions, { id: option.id, label: option.label, value: option.value }];
+                                              }
+                                              
+                                              handleAnswerChange(originalIndex, newAnswer, newSelectedOptions);
+                                            }}
+                                          />
+                                          <span>{option.label}</span>
+                                        </label>
+                                      );
+                                    })}
+                                  </div>
+                                  {/* Render sub-questions for selected options */}
+                                  {currentSelectedOptions.length > 0 && 
+                                    renderSubQuestions(answer, currentSelectedOptions, currentAnswers)
+                                  }
+                                </div>
+                              );
+                            }
+                          })()
+                        ) : (
+                          <p style={{ fontSize: '14px', color: '#374151', margin: 0 }}>
+                            {String(answer.answer)}
+                          </p>
+                        )
+                      )
+                    ) : (
+                      // View mode
+                      answer.questionType === 'single-choice' || answer.questionType === 'multiple-choice' ? (
+                        <div>
+                          {answer.selectedOptions?.map((option, optIndex) => (
+                            <span key={optIndex} style={{ 
+                              display: 'inline-block',
+                              backgroundColor: '#2563eb',
+                              color: 'white',
+                              padding: '4px 8px',
+                              borderRadius: '4px',
+                              fontSize: '14px',
+                              marginRight: '8px',
+                              marginBottom: '4px'
+                            }}>
+                              {option.label}
+                            </span>
+                          ))}
+                        </div>
                       ) : (
                         <p style={{ fontSize: '14px', color: '#374151', margin: 0 }}>
                           {String(answer.answer)}
                         </p>
                       )
-                    )
-                  ) : (
-                    // View mode
-                    answer.questionType === 'single-choice' || answer.questionType === 'multiple-choice' ? (
-                      <div>
-                        {answer.selectedOptions?.map((option, optIndex) => (
-                          <span key={optIndex} style={{ 
-                            display: 'inline-block',
-                            backgroundColor: '#2563eb',
-                            color: 'white',
-                            padding: '4px 8px',
-                            borderRadius: '4px',
-                            fontSize: '14px',
-                            marginRight: '8px',
-                            marginBottom: '4px'
-                          }}>
-                            {option.label}
-                          </span>
-                        ))}
-                      </div>
-                    ) : (
-                      <p style={{ fontSize: '14px', color: '#374151', margin: 0 }}>
-                        {String(answer.answer)}
-                      </p>
-                    )
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
@@ -732,6 +1055,16 @@ const ViewSubmissions: React.FC = () => {
                       <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#111827', margin: '0 0 8px 0' }}>
                         {submission.questionnaireTitle}
                       </h3>
+                      {submission.completedBy && (
+                        <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '8px' }}>
+                          <strong>Completed by:</strong> {submission.completedBy}
+                          {submission.completedById && (
+                            <span style={{ color: '#9ca3af', fontSize: '12px' }}>
+                              {' '}(ID: {submission.completedById})
+                            </span>
+                          )}
+                        </div>
+                      )}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '14px', color: '#6b7280' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <Calendar style={{ height: '16px', width: '16px' }} />

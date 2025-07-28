@@ -1,15 +1,20 @@
-import type { CreateQuestionnaireRequest, QuestionnaireModel, DomainModel } from '../models/FormModels';
+import type { 
+  CreateQuestionnaireRequest, 
+  QuestionnaireModel, 
+  DomainModel,
+  ApiResponse 
+} from '../models/FormModels';
 import { getAllItems, getItemById, addItem, updateItem, deleteItem } from './genericRequests';
 import type { AxiosResponse, AxiosError } from 'axios';
 
-export interface ApiResponse<T> {
-  success: boolean;
-  message?: string;
-  data?: T;
-  error?: string;
-}
-
+/**
+ * Questionnaire API service for managing questionnaire templates and domains
+ * Handles API requests for questionnaire templates and domain management
+ */
 class QuestionnaireApiService {
+  /**
+   * Handle successful API responses
+   */
   private handleResponse<T>(response: AxiosResponse): ApiResponse<T> {
     try {
       // If the response has a success field, use it; otherwise assume success if data exists
@@ -30,6 +35,9 @@ class QuestionnaireApiService {
     }
   }
 
+  /**
+   * Handle API request errors
+   */
   private handleError(error: AxiosError | Error | unknown): ApiResponse<never> {
     console.error('API request failed:', error);
     
@@ -55,7 +63,9 @@ class QuestionnaireApiService {
     };
   }
 
-  // Create a new questionnaire template
+  /**
+   * Create a new questionnaire template
+   */
   async createQuestionnaire(questionnaireData: CreateQuestionnaireRequest): Promise<ApiResponse<QuestionnaireModel>> {
     try {
       const response = await addItem('api/questionnaires/templates', questionnaireData);
@@ -65,7 +75,9 @@ class QuestionnaireApiService {
     }
   }
 
-  // Get all questionnaire templates
+  /**
+   * Get all questionnaire templates
+   */
   async getQuestionnaires(): Promise<ApiResponse<QuestionnaireModel[]>> {
     try {
       const response = await getAllItems<QuestionnaireModel[]>('api/questionnaires/templates');
@@ -75,7 +87,9 @@ class QuestionnaireApiService {
     }
   }
 
-  // Get a specific questionnaire template by ID
+  /**
+   * Get a specific questionnaire template by ID
+   */
   async getQuestionnaire(id: string): Promise<ApiResponse<QuestionnaireModel>> {
     try {
       const response = await getItemById<QuestionnaireModel>('api/questionnaires/templates', id);
@@ -85,7 +99,9 @@ class QuestionnaireApiService {
     }
   }
 
-  // Update a questionnaire template
+  /**
+   * Update a questionnaire template
+   */
   async updateQuestionnaire(
     id: string, 
     questionnaireData: CreateQuestionnaireRequest
@@ -98,7 +114,9 @@ class QuestionnaireApiService {
     }
   }
 
-  // Delete a questionnaire template
+  /**
+   * Delete a questionnaire template
+   */
   async deleteQuestionnaire(id: string): Promise<ApiResponse<void>> {
     try {
       const response = await deleteItem<void>('api/questionnaires/templates', id);
@@ -108,7 +126,9 @@ class QuestionnaireApiService {
     }
   }
 
-  // Get all domains
+  /**
+   * Get all domains
+   */
   async getDomains(): Promise<ApiResponse<DomainModel[]>> {
     try {
       const response = await getAllItems<DomainModel[]>('api/questionnaires/domains');
