@@ -1,81 +1,10 @@
 import { getAllItems, getItemById, addItem, updateItem, deleteItem } from './genericRequests';
 import type { AxiosResponse, AxiosError } from 'axios';
-
-// Types for form submissions
-export interface FormAnswer {
-  questionId: string;
-  questionText: string;
-  questionType: 'single-choice' | 'multiple-choice' | 'text' | 'number' | 'scale';
-  answer: string | number | (string | number)[];
-  selectedOptions?: {
-    id: string;
-    label: string;
-    value: number;
-  }[];
-}
-
-export interface FormSubmission {
-  _id?: string;
-  studentId: string;
-  studentName: string;
-  questionnaireId: string | { _id: string; title: string; description?: string };
-  questionnaireTitle: string;
-  answers: FormAnswer[];
-  submittedAt?: Date;
-  completedBy?: string;
-  completedById?: string; // User ID of the person who completed the form
-  status?: 'draft' | 'completed' | 'reviewed';
-  notes?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
-export interface QuestionnaireTemplate {
-  _id: string;
-  title: string;
-  description: string;
-  domains: {
-    id: string;
-    name: string;
-    description: string;
-    color: string;
-  }[];
-  questions: {
-    text: string;
-    domainId: string;
-    type: 'single-choice' | 'multiple-choice' | 'text' | 'number' | 'scale';
-    options: {
-      id: string;
-      value: number;
-      label: string;
-      subQuestions?: {
-        text: string;
-        domainId: string;
-        type: 'single-choice' | 'multiple-choice' | 'text' | 'number' | 'scale';
-        options: {
-          id: string;
-          value: number;
-          label: string;
-        }[];
-        required: boolean;
-        helpText?: string;
-        order: number;
-      }[];
-    }[];
-    required: boolean;
-    helpText?: string;
-    order: number;
-  }[];
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface ApiResponse<T> {
-  success: boolean;
-  message?: string;
-  data?: T;
-  error?: string;
-}
+import type { 
+  ApiResponse, 
+  FormSubmission, 
+  QuestionnaireTemplate 
+} from '../models/FormModels';
 
 // Helper function to parse malformed option strings
 const parseQuestionOptions = (options: unknown): { id: string; value: number; label: string }[] => {
@@ -145,6 +74,9 @@ class FormApiService {
     }
   }
 
+  /**
+   * Generic error handler for API responses
+   */
   private handleError(error: AxiosError | Error | unknown): ApiResponse<never> {
     console.error('API request failed:', error);
     

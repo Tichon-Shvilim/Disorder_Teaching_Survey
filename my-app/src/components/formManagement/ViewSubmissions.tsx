@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Calendar, FileText, Eye, Plus, Edit, Trash2, Save, X } from 'lucide-react';
 import { FormAPIService } from './Api-Requests/FormAPIService';
-import type { FormSubmission, QuestionnaireTemplate } from './Api-Requests/FormAPIService';
+import type { FormSubmission, QuestionnaireTemplate } from './models/FormModels';
 import { toast } from 'react-toastify';
 
 const ViewSubmissions: React.FC = () => {

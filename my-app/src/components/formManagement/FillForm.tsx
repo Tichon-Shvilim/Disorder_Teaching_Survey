@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { ArrowLeft, Send, AlertCircle, FileText } from 'lucide-react';
 import { FormAPIService } from './Api-Requests/FormAPIService';
-import type { QuestionnaireTemplate, FormAnswer } from './Api-Requests/FormAPIService';
+import type { QuestionnaireTemplate, FormAnswer } from './models/FormModels';
 import { toast } from 'react-toastify';
 import type { RootState } from '../../store';
 
