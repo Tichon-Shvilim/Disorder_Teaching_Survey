@@ -1,0 +1,35 @@
+# Production Dockerfile for Form Service
+FROM node:20-alpine
+
+# Install curl for health checks and dumb-init for signal handling
+RUN apk add --no-cache curl dumb-init
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001 -G nodejs
+
+WORKDIR /app
+
+# Copy package files and install production dependencies only
+COPY package*.json ./
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy source code
+COPY . .
+
+# Change ownership to non-root user
+RUN chown -R nodejs:nodejs /app
+
+# Switch to non-root user
+USER nodejs
+
+# Health check using curl (more reliable than node script)
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:${PORT:-3003}/health || exit 1
+
+# Expose port (will be overridden by Render to PORT env var)
+EXPOSE 3003
+
+# Use dumb-init for proper signal handling
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["node", "index.js"]
