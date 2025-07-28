@@ -118,7 +118,7 @@ router.post('/refresh-token', async (req, res) => {
 });
 
 // All routes below this line require authentication
-// router.use(authenticateJWT); // Temporarily disabled for testing therapist assignment
+router.use(authenticateJWT);
 
 // Get all users (protected - Admin only)
 router.get('/', authorizeRoles(['Admin']), async (req, res) => {
