@@ -25,7 +25,7 @@ USER nodejs
 
 # Health check using curl (more reliable than node script)
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:${PORT:-3003}/health || exit 1
+  CMD curl -f http://localhost:${PORT:-3003}/healthz || exit 1
 
 # Expose port (will be overridden by Render to PORT env var)
 EXPOSE 3003
