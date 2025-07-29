@@ -1,5 +1,5 @@
 import { getAllItems, getItemById, addItem, updateItem, deleteItem } from './genericRequests';
-import type { AxiosResponse, AxiosError } from 'axios';
+import type { AxiosResponse } from 'axios';
 import type { 
   ApiResponse, 
   FormSubmission, 
@@ -72,34 +72,6 @@ class FormApiService {
         error: error instanceof Error ? error.message : 'Unknown error occurred'
       };
     }
-  }
-
-  /**
-   * Generic error handler for API responses
-   */
-  private handleError(error: AxiosError | Error | unknown): ApiResponse<never> {
-    console.error('API request failed:', error);
-    
-    let errorMessage = 'Unknown error occurred';
-    
-    if (error && typeof error === 'object' && 'response' in error) {
-      const axiosError = error as AxiosError;
-      if (axiosError.response?.data && typeof axiosError.response.data === 'object') {
-        const responseData = axiosError.response.data as Record<string, unknown>;
-        if (typeof responseData.message === 'string') {
-          errorMessage = responseData.message;
-        } else if (typeof responseData.error === 'string') {
-          errorMessage = responseData.error;
-        }
-      }
-    } else if (error instanceof Error) {
-      errorMessage = error.message;
-    }
-
-    return {
-      success: false,
-      error: errorMessage
-    };
   }
 
   // Get all questionnaire templates

@@ -1,0 +1,138 @@
+# Production Docker Compose for Cloud Deployment
+# This file is used for production deployment on Render
+# Development continues to use docker-compose.dev.yml
+
+version: '3.8'
+
+services:
+
+  user-service:
+    build:
+      context: ./microservices/user-service
+      dockerfile: Dockerfile.prod
+    ports:
+      - "3001:${USER_SERVICE_PORT:-3001}"
+    environment:
+      - NODE_ENV=production
+      - PORT=${USER_SERVICE_PORT:-3001}
+      - MONGODB_URI=${USER_DB_URI}
+      - JWT_SECRET=${JWT_SECRET}
+      - CORS_ORIGIN=${FRONTEND_URL}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${USER_SERVICE_PORT:-3001}/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  student-service:
+    build:
+      context: ./microservices/student-service
+      dockerfile: Dockerfile.prod
+    ports:
+      - "3002:${STUDENT_SERVICE_PORT:-3002}"
+    environment:
+      - NODE_ENV=production
+      - PORT=${STUDENT_SERVICE_PORT:-3002}
+      - MONGODB_URI=${STUDENT_DB_URI}
+      - JWT_SECRET=${JWT_SECRET}
+      - CORS_ORIGIN=${FRONTEND_URL}
+      - USER_SERVICE_URL=${USER_SERVICE_URL}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${STUDENT_SERVICE_PORT:-3002}/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    depends_on:
+      user-service:
+        condition: service_healthy
+
+  form-service:
+    build:
+      context: ./microservices/form-service
+      dockerfile: Dockerfile.prod
+    ports:
+      - "3003:${FORM_SERVICE_PORT:-3003}"
+    environment:
+      - NODE_ENV=production
+      - PORT=${FORM_SERVICE_PORT:-3003}
+      - MONGODB_URI=${FORM_DB_URI}
+      - JWT_SECRET=${JWT_SECRET}
+      - CORS_ORIGIN=${FRONTEND_URL}
+      - USER_SERVICE_URL=${USER_SERVICE_URL}
+      - STUDENT_SERVICE_URL=${STUDENT_SERVICE_URL}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${FORM_SERVICE_PORT:-3003}/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    depends_on:
+      user-service:
+        condition: service_healthy
+      student-service:
+        condition: service_healthy
+
+  analytics-service:
+    build:
+      context: ./microservices/analytics-service
+      dockerfile: Dockerfile.prod
+    ports:
+      - "3004:${ANALYTICS_SERVICE_PORT:-3004}"
+    environment:
+      - NODE_ENV=production
+      - PORT=${ANALYTICS_SERVICE_PORT:-3004}
+      - MONGODB_URI=${ANALYTICS_DB_URI}
+      - JWT_SECRET=${JWT_SECRET}
+      - CORS_ORIGIN=${FRONTEND_URL}
+      - USER_SERVICE_URL=${USER_SERVICE_URL}
+      - STUDENT_SERVICE_URL=${STUDENT_SERVICE_URL}
+      - FORM_SERVICE_URL=${FORM_SERVICE_URL}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${ANALYTICS_SERVICE_PORT:-3004}/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    depends_on:
+      user-service:
+        condition: service_healthy
+      form-service:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./my-app
+      dockerfile: Dockerfile.prod
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=production
+      - VITE_USER_SERVICE_URL=${USER_SERVICE_URL}
+      - VITE_STUDENT_SERVICE_URL=${STUDENT_SERVICE_URL}
+      - VITE_FORM_SERVICE_URL=${FORM_SERVICE_URL}
+      - VITE_ANALYTICS_SERVICE_URL=${ANALYTICS_SERVICE_URL}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    depends_on:
+      user-service:
+        condition: service_healthy
+      student-service:
+        condition: service_healthy
+      form-service:
+        condition: service_healthy
+      analytics-service:
+        condition: service_healthy
+
+# No local database in production - using MongoDB Atlas
+# No volumes needed for production images
