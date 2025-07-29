@@ -39,10 +39,18 @@ const Sidebar: React.FC = () => {
       icon: <DescriptionOutlined />,
     },
     { name: "Reports", path: "/layout/reports", icon: <BarChartOutlined /> },
-    { name: "Student Management", path: "/layout/students", icon: <SchoolOutlined /> },
-    { name: "Class Management", path: "/layout/classes", icon: <ClassOutlined /> },
+    {
+      name: "Student Management",
+      path: "/layout/students",
+      icon: <SchoolOutlined />,
+    },
     ...(user?.role === "Admin"
       ? [
+          {
+            name: "Class Management",
+            path: "/layout/classes",
+            icon: <ClassOutlined />,
+          },
           {
             name: "Assessment Forms",
             path: "/layout/questionnaires",
