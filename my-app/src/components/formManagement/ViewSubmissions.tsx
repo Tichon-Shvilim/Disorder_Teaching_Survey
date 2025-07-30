@@ -4,6 +4,7 @@ import { ArrowLeft, Calendar, FileText, Eye, Plus, Edit, Trash2, Save, X } from 
 import { FormAPIService } from './Api-Requests/FormAPIService';
 import type { FormSubmission, QuestionnaireTemplate } from './models/FormModels';
 import { toast } from 'react-toastify';
+import { usePermissions } from '../common';
 
 const ViewSubmissions: React.FC = () => {
   const location = useLocation();
@@ -24,6 +25,22 @@ const ViewSubmissions: React.FC = () => {
   const [submissionToDelete, setSubmissionToDelete] = useState<FormSubmission | null>(null);
   const [saving, setSaving] = useState(false);
   const [loadingEdit, setLoadingEdit] = useState(false);
+
+  // Permission system
+  const { currentUser, isAdmin } = usePermissions();
+
+  // Helper function to check if current user can edit/delete a submission
+  const canModifySubmission = (submission: FormSubmission): boolean => {
+    // Admins can modify any submission
+    if (isAdmin()) return true;
+    
+    // Users can only modify submissions they created
+    // Check both string and number formats for compatibility
+    const currentUserId = currentUser?.id?.toString();
+    const submissionUserId = submission.completedById?.toString();
+    
+    return !!(currentUserId && submissionUserId && currentUserId === submissionUserId);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -542,56 +559,60 @@ const ViewSubmissions: React.FC = () => {
             {/* Edit/Save/Cancel buttons */}
             {!isEditing ? (
               <div style={{ display: 'flex', gap: '8px' }}>
-                <button
-                  onClick={() => handleEditSubmission(selectedSubmission)}
-                  disabled={loadingEdit}
-                  style={{
-                    backgroundColor: loadingEdit ? '#e5e7eb' : '#dbeafe',
-                    color: loadingEdit ? '#9ca3af' : '#1d4ed8',
-                    padding: '8px 16px',
-                    borderRadius: '6px',
-                    border: 'none',
-                    cursor: loadingEdit ? 'not-allowed' : 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    fontSize: '14px',
-                    fontWeight: '500'
-                  }}
-                >
-                  {loadingEdit ? (
-                    <div style={{
-                      width: '16px',
-                      height: '16px',
-                      border: '2px solid #9ca3af',
-                      borderTop: '2px solid transparent',
-                      borderRadius: '50%',
-                      animation: 'spin 1s linear infinite'
-                    }}></div>
-                  ) : (
-                    <Edit style={{ height: '16px', width: '16px' }} />
-                  )}
-                  {loadingEdit ? 'Loading...' : 'Edit'}
-                </button>
-                <button
-                  onClick={() => handleDeleteSubmission(selectedSubmission)}
-                  style={{
-                    backgroundColor: '#fecaca',
-                    color: '#dc2626',
-                    padding: '8px 16px',
-                    borderRadius: '6px',
-                    border: 'none',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    fontSize: '14px',
-                    fontWeight: '500'
-                  }}
-                >
-                  <Trash2 style={{ height: '16px', width: '16px' }} />
-                  Delete
-                </button>
+                {canModifySubmission(selectedSubmission) && (
+                  <button
+                    onClick={() => handleEditSubmission(selectedSubmission)}
+                    disabled={loadingEdit}
+                    style={{
+                      backgroundColor: loadingEdit ? '#e5e7eb' : '#dbeafe',
+                      color: loadingEdit ? '#9ca3af' : '#1d4ed8',
+                      padding: '8px 16px',
+                      borderRadius: '6px',
+                      border: 'none',
+                      cursor: loadingEdit ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      fontSize: '14px',
+                      fontWeight: '500'
+                    }}
+                  >
+                    {loadingEdit ? (
+                      <div style={{
+                        width: '16px',
+                        height: '16px',
+                        border: '2px solid #9ca3af',
+                        borderTop: '2px solid transparent',
+                        borderRadius: '50%',
+                        animation: 'spin 1s linear infinite'
+                      }}></div>
+                    ) : (
+                      <Edit style={{ height: '16px', width: '16px' }} />
+                    )}
+                    {loadingEdit ? 'Loading...' : 'Edit'}
+                  </button>
+                )}
+                {canModifySubmission(selectedSubmission) && (
+                  <button
+                    onClick={() => handleDeleteSubmission(selectedSubmission)}
+                    style={{
+                      backgroundColor: '#fecaca',
+                      color: '#dc2626',
+                      padding: '8px 16px',
+                      borderRadius: '6px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      fontSize: '14px',
+                      fontWeight: '500'
+                    }}
+                  >
+                    <Trash2 style={{ height: '16px', width: '16px' }} />
+                    Delete
+                  </button>
+                )}
               </div>
             ) : (
               <div style={{ display: 'flex', gap: '8px' }}>
@@ -1103,58 +1124,62 @@ const ViewSubmissions: React.FC = () => {
                         <Eye style={{ height: '14px', width: '14px' }} />
                         View
                       </button>
-                      <button
-                        onClick={() => handleEditSubmission(submission)}
-                        disabled={loadingEdit}
-                        style={{
-                          backgroundColor: loadingEdit ? '#e5e7eb' : '#dbeafe',
-                          color: loadingEdit ? '#9ca3af' : '#1d4ed8',
-                          padding: '8px 12px',
-                          borderRadius: '6px',
-                          border: 'none',
-                          cursor: loadingEdit ? 'not-allowed' : 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          fontSize: '14px',
-                          fontWeight: '500'
-                        }}
-                        title="Edit submission"
-                      >
-                        {loadingEdit ? (
-                          <div style={{
-                            width: '14px',
-                            height: '14px',
-                            border: '2px solid #9ca3af',
-                            borderTop: '2px solid transparent',
-                            borderRadius: '50%',
-                            animation: 'spin 1s linear infinite'
-                          }}></div>
-                        ) : (
-                          <Edit style={{ height: '14px', width: '14px' }} />
-                        )}
-                        {loadingEdit ? 'Loading...' : 'Edit'}
-                      </button>
-                      <button
-                        onClick={() => handleDeleteSubmission(submission)}
-                        style={{
-                          backgroundColor: '#fecaca',
-                          color: '#dc2626',
-                          padding: '8px 12px',
-                          borderRadius: '6px',
-                          border: 'none',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          fontSize: '14px',
-                          fontWeight: '500'
-                        }}
-                        title="Delete submission"
-                      >
-                        <Trash2 style={{ height: '14px', width: '14px' }} />
-                        Delete
-                      </button>
+                      {canModifySubmission(submission) && (
+                        <button
+                          onClick={() => handleEditSubmission(submission)}
+                          disabled={loadingEdit}
+                          style={{
+                            backgroundColor: loadingEdit ? '#e5e7eb' : '#dbeafe',
+                            color: loadingEdit ? '#9ca3af' : '#1d4ed8',
+                            padding: '8px 12px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            cursor: loadingEdit ? 'not-allowed' : 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            fontSize: '14px',
+                            fontWeight: '500'
+                          }}
+                          title="Edit submission"
+                        >
+                          {loadingEdit ? (
+                            <div style={{
+                              width: '14px',
+                              height: '14px',
+                              border: '2px solid #9ca3af',
+                              borderTop: '2px solid transparent',
+                              borderRadius: '50%',
+                              animation: 'spin 1s linear infinite'
+                            }}></div>
+                          ) : (
+                            <Edit style={{ height: '14px', width: '14px' }} />
+                          )}
+                          {loadingEdit ? 'Loading...' : 'Edit'}
+                        </button>
+                      )}
+                      {canModifySubmission(submission) && (
+                        <button
+                          onClick={() => handleDeleteSubmission(submission)}
+                          style={{
+                            backgroundColor: '#fecaca',
+                            color: '#dc2626',
+                            padding: '8px 12px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            fontSize: '14px',
+                            fontWeight: '500'
+                          }}
+                          title="Delete submission"
+                        >
+                          <Trash2 style={{ height: '14px', width: '14px' }} />
+                          Delete
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
