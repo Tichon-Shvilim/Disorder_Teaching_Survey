@@ -33,6 +33,8 @@ import {
 import type { FormNodeV2 } from './models/FormModelsV2';
 
 interface FormPreviewProps {
+  title?: string;
+  description?: string;
   structure: FormNodeV2[];
   onClose: () => void;
 }
@@ -41,10 +43,32 @@ interface FormData {
   [key: string]: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
-const FormPreview: React.FC<FormPreviewProps> = ({ structure, onClose }) => {
+const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure, onClose }) => {
   const [formData, setFormData] = useState<FormData>({});
   const [viewMode, setViewMode] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+
+  // Check if conditional questions should be shown based on current form data
+  const shouldShowConditionalQuestion = (conditionalQuestion: FormNodeV2): boolean => {
+    if (!conditionalQuestion.condition) return true;
+    
+    const { parentQuestionId, parentOptionId } = conditionalQuestion.condition;
+    if (!parentQuestionId || !parentOptionId) return true;
+    
+    const parentValue = formData[parentQuestionId];
+    
+    // For single-choice questions, check exact match with option ID
+    if (typeof parentValue === 'string') {
+      return parentValue === parentOptionId;
+    }
+    
+    // For multiple-choice questions, check if array contains the option ID
+    if (Array.isArray(parentValue)) {
+      return parentValue.includes(parentOptionId);
+    }
+    
+    return false;
+  };
 
   const handleInputChange = (nodeId: string, value: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
     setFormData(prev => ({ ...prev, [nodeId]: value }));
@@ -108,13 +132,52 @@ const FormPreview: React.FC<FormPreviewProps> = ({ structure, onClose }) => {
               value={value}
               onChange={(e) => handleInputChange(node.id, e.target.value)}
             >
-              {node.options?.map((option, index) => (
-                <FormControlLabel
-                  key={index}
-                  value={option.value}
-                  control={<Radio />}
-                  label={option.label}
-                />
+              {node.options?.map((option) => (
+                <Box key={option.id}>
+                  <FormControlLabel
+                    value={option.id}
+                    control={<Radio />}
+                    label={option.label}
+                  />
+                  
+                  {/* Show conditional questions for this specific option */}
+                  {value === option.id && node.children && node.children.length > 0 && (
+                    <Box sx={{ 
+                      ml: 4, 
+                      mt: 1, 
+                      mb: 2, 
+                      pl: 3, 
+                      borderLeft: '3px solid #4caf50',
+                      backgroundColor: 'rgba(76, 175, 80, 0.05)',
+                      borderRadius: 1,
+                      position: 'relative'
+                    }}>
+                      <Typography 
+                        variant="caption" 
+                        sx={{ 
+                          position: 'absolute',
+                          top: -8,
+                          left: 8,
+                          backgroundColor: 'white',
+                          px: 1,
+                          color: '#4caf50',
+                          fontWeight: 'bold',
+                          fontSize: '0.7rem'
+                        }}
+                      >
+                        ✨ Follow-up Questions
+                      </Typography>
+                      <Box sx={{ pt: 1 }}>
+                        {node.children
+                          .filter(child => 
+                            child.condition?.parentQuestionId === node.id && 
+                            child.condition?.parentOptionId === option.id
+                          )
+                          .map(child => renderNode(child, 0))}
+                      </Box>
+                    </Box>
+                  )}
+                </Box>
               ))}
             </RadioGroup>
           </FormControl>
@@ -132,23 +195,62 @@ const FormPreview: React.FC<FormPreviewProps> = ({ structure, onClose }) => {
               </Typography>
             )}
             <FormGroup>
-              {node.options?.map((option, index) => (
-                <FormControlLabel
-                  key={index}
-                  control={
-                    <Checkbox
-                      checked={(value || []).includes(option.value)}
-                      onChange={(e) => {
-                        const currentValues = value || [];
-                        const newValues = e.target.checked
-                          ? [...currentValues, option.value]
-                          : currentValues.filter((v: any) => v !== option.value); // eslint-disable-line @typescript-eslint/no-explicit-any
-                        handleInputChange(node.id, newValues);
-                      }}
-                    />
-                  }
-                  label={option.label}
-                />
+              {node.options?.map((option) => (
+                <Box key={option.id}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={(value || []).includes(option.id)}
+                        onChange={(e) => {
+                          const currentValues = value || [];
+                          const newValues = e.target.checked
+                            ? [...currentValues, option.id]
+                            : currentValues.filter((v: any) => v !== option.id); // eslint-disable-line @typescript-eslint/no-explicit-any
+                          handleInputChange(node.id, newValues);
+                        }}
+                      />
+                    }
+                    label={option.label}
+                  />
+                  
+                  {/* Show conditional questions for this specific option */}
+                  {(value || []).includes(option.id) && node.children && node.children.length > 0 && (
+                    <Box sx={{ 
+                      ml: 4, 
+                      mt: 1, 
+                      mb: 2, 
+                      pl: 3, 
+                      borderLeft: '3px solid #ff9800',
+                      backgroundColor: 'rgba(255, 152, 0, 0.05)',
+                      borderRadius: 1,
+                      position: 'relative'
+                    }}>
+                      <Typography 
+                        variant="caption" 
+                        sx={{ 
+                          position: 'absolute',
+                          top: -8,
+                          left: 8,
+                          backgroundColor: 'white',
+                          px: 1,
+                          color: '#ff9800',
+                          fontWeight: 'bold',
+                          fontSize: '0.7rem'
+                        }}
+                      >
+                        ✨ Follow-up Questions
+                      </Typography>
+                      <Box sx={{ pt: 1 }}>
+                        {node.children
+                          .filter(child => 
+                            child.condition?.parentQuestionId === node.id && 
+                            child.condition?.parentOptionId === option.id
+                          )
+                          .map(child => renderNode(child, 0))}
+                      </Box>
+                    </Box>
+                  )}
+                </Box>
               ))}
             </FormGroup>
           </FormControl>
@@ -200,10 +302,77 @@ const FormPreview: React.FC<FormPreviewProps> = ({ structure, onClose }) => {
   };
 
   const renderNode = (node: FormNodeV2, level: number = 0) => {
+    // Check if this is a conditional question that shouldn't be shown
+    const isConditional = Boolean(node.condition);
+    const shouldShow = !isConditional || shouldShowConditionalQuestion(node);
+    
+    if (isConditional && !shouldShow) {
+      // Show a placeholder for hidden conditional questions in preview mode
+      return (
+        <Box 
+          key={node.id} 
+          sx={{ 
+            mb: 2, 
+            p: 2, 
+            backgroundColor: 'rgba(0,0,0,0.05)', 
+            borderRadius: 1,
+            border: '1px dashed #ccc',
+            opacity: 0.6
+          }}
+        >
+          <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+            💡 Hidden conditional question: "{node.title}" (will appear when condition is met)
+          </Typography>
+        </Box>
+      );
+    }
+
     if (node.type === 'question') {
       return (
         <Box key={node.id} sx={{ mb: 2 }}>
+          {isConditional && (
+            <Chip 
+              label="Conditional Question"
+              size="small"
+              color="info"
+              variant="outlined"
+              sx={{ mb: 1, fontSize: '0.7rem' }}
+            />
+          )}
           {renderQuestion(node)}
+          
+          {/* Only render remaining conditional questions that aren't option-specific */}
+          {node.children && node.children.length > 0 && (
+            node.inputType !== 'single-choice' && node.inputType !== 'multiple-choice' && (
+              <Box sx={{ 
+                ml: 3, 
+                mt: 2, 
+                pl: 3, 
+                borderLeft: '3px solid #2196f3',
+                backgroundColor: 'rgba(33, 150, 243, 0.05)',
+                borderRadius: 1,
+                position: 'relative'
+              }}>
+                <Typography 
+                  variant="caption" 
+                  sx={{ 
+                    position: 'absolute',
+                    top: -8,
+                    left: 8,
+                    backgroundColor: 'white',
+                    px: 1,
+                    color: '#2196f3',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  📋 Conditional Questions
+                </Typography>
+                <Box sx={{ pt: 1 }}>
+                  {node.children.map(child => renderNode(child, level + 1))}
+                </Box>
+              </Box>
+            )
+          )}
         </Box>
       );
     }
@@ -368,13 +537,24 @@ const FormPreview: React.FC<FormPreviewProps> = ({ structure, onClose }) => {
           ) : (
             <Box>
               {/* Form Header */}
-              <Card elevation={3} sx={{ p: 4, mb: 4, borderRadius: 3 }}>
+              <Card elevation={3} sx={{ p: 4, mb: 4, borderRadius: 3, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
                 <Typography variant="h4" fontWeight="bold" gutterBottom>
-                  Sample Form Title
+                  {title || 'Questionnaire Preview'}
                 </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  This is how your form will appear to users. All interactions work as they would in the real form.
+                <Typography variant="body1" sx={{ opacity: 0.9 }}>
+                  {description || 'This is how your questionnaire will appear to users. All interactions work as they would in the real form.'}
                 </Typography>
+                {title && (
+                  <Chip 
+                    label="🔍 Preview Mode" 
+                    sx={{ 
+                      mt: 2, 
+                      backgroundColor: 'rgba(255,255,255,0.2)', 
+                      color: 'white',
+                      '& .MuiChip-label': { fontWeight: 'bold' }
+                    }} 
+                  />
+                )}
               </Card>
 
               {/* Form Body */}

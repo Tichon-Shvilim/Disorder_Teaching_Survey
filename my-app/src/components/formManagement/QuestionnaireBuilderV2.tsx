@@ -13,11 +13,19 @@ import {
   CircularProgress,
   Backdrop,
   TextField,
-  Button
+  Button,
+  Chip,
+  LinearProgress
 } from '@mui/material';
 import {
   Quiz as QuizIcon,
-  Save as SaveIcon
+  Save as SaveIcon,
+  Settings as SettingsIcon,
+  Description as DescriptionIcon,
+  AccountTree as StructureIcon,
+  Analytics as AnalyticsIcon,
+  Visibility as PreviewIcon,
+  CheckCircle as CheckIcon
 } from '@mui/icons-material';
 
 import type { FormNodeV2, CreateQuestionnaireV2Request, GraphSettings } from './models/FormModelsV2';
@@ -47,6 +55,7 @@ const QuestionnaireBuilderV2: React.FC<QuestionnaireBuilderV2Props> = ({
   
   // Form State
   const [activeStep, setActiveStep] = useState(0);
+  const [visitedSteps, setVisitedSteps] = useState<Set<number>>(new Set([0])); // Track which steps have been visited
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [structure, setStructure] = useState<FormNodeV2[]>([]);
@@ -89,15 +98,15 @@ const QuestionnaireBuilderV2: React.FC<QuestionnaireBuilderV2Props> = ({
       id: 2,
       title: 'Analytics',
       description: 'Configure graph settings',
-      completed: true // Optional step
+      completed: visitedSteps.has(2) // Only completed if user has visited this step
     },
     {
       id: 3,
       title: 'Review',
       description: 'Preview and save',
-      completed: false
+      completed: visitedSteps.has(3) // Only completed if user has visited this step
     }
-  ], [title, structure, hasQuestions]);
+  ], [title, structure, hasQuestions, visitedSteps]);
 
   // Load existing questionnaire if editing
   useEffect(() => {
@@ -128,12 +137,10 @@ const QuestionnaireBuilderV2: React.FC<QuestionnaireBuilderV2Props> = ({
     setHasUnsavedChanges(true);
   }, []);
 
-  const handleStepClick = (step: number) => {
-    setActiveStep(step);
-  };
-
   const handleNext = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    const nextStep = activeStep + 1;
+    setActiveStep(nextStep);
+    setVisitedSteps(prev => new Set([...prev, nextStep]));
   };
 
   const handleBack = () => {
@@ -361,21 +368,115 @@ const QuestionnaireBuilderV2: React.FC<QuestionnaireBuilderV2Props> = ({
         )}
       </Paper>
 
-      {/* Progress Stepper */}
-      <Paper elevation={1} sx={{ p: 3, mb: 3, borderRadius: 2 }}>
-        <Stepper activeStep={activeStep} sx={{ mb: 2 }}>
+      {/* Enhanced Progress Stepper */}
+      <Paper 
+        elevation={3} 
+        sx={{ 
+          p: 4, 
+          mb: 3, 
+          borderRadius: 3,
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          color: 'white'
+        }}
+      >
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h5" fontWeight="bold" gutterBottom>
+            Form Creation Progress
+          </Typography>
+          <Typography variant="body2" sx={{ opacity: 0.9 }}>
+            Step {activeStep + 1} of {steps.length} • {Math.round(((activeStep) / (steps.length - 1)) * 100)}% Complete
+          </Typography>
+        </Box>
+        
+        <LinearProgress 
+          variant="determinate" 
+          value={(activeStep / (steps.length - 1)) * 100} 
+          sx={{ 
+            mb: 3, 
+            height: 8, 
+            borderRadius: 4,
+            backgroundColor: 'rgba(255,255,255,0.2)',
+            '& .MuiLinearProgress-bar': {
+              backgroundColor: '#4caf50',
+              borderRadius: 4
+            }
+          }} 
+        />
+        
+        <Stepper 
+          activeStep={activeStep} 
+          sx={{ 
+            '& .MuiStepLabel-root': {
+              cursor: 'default' // Remove pointer cursor
+            },
+            '& .MuiStepIcon-root': {
+              color: 'rgba(255,255,255,0.3)',
+              '&.Mui-active': {
+                color: '#4caf50'
+              },
+              '&.Mui-completed': {
+                color: '#4caf50'
+              }
+            },
+            '& .MuiStepLabel-label': {
+              color: 'rgba(255,255,255,0.8)',
+              '&.Mui-active': {
+                color: 'white',
+                fontWeight: 'bold'
+              },
+              '&.Mui-completed': {
+                color: 'white'
+              }
+            },
+            '& .MuiStepConnector-line': {
+              borderColor: 'rgba(255,255,255,0.3)'
+            }
+          }}
+        >
           {steps.map((step, index) => (
-            <Step 
-              key={step.id} 
-              completed={step.completed}
-              sx={{ cursor: 'pointer' }}
-              onClick={() => handleStepClick(index)}
-            >
+            <Step key={step.id} completed={step.completed}>
               <StepLabel>
-                <Typography variant="subtitle2">{step.title}</Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {step.description}
-                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  {/* Step Icon */}
+                  {index === 0 && <DescriptionIcon sx={{ fontSize: 20 }} />}
+                  {index === 1 && <StructureIcon sx={{ fontSize: 20 }} />}
+                  {index === 2 && <AnalyticsIcon sx={{ fontSize: 20 }} />}
+                  {index === 3 && <PreviewIcon sx={{ fontSize: 20 }} />}
+                  
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ 
+                      fontWeight: activeStep === index ? 'bold' : 'normal',
+                      fontSize: '0.9rem'
+                    }}>
+                      {step.title}
+                    </Typography>
+                    <Typography variant="caption" sx={{ 
+                      opacity: 0.8,
+                      display: 'block',
+                      fontSize: '0.75rem'
+                    }}>
+                      {step.description}
+                    </Typography>
+                  </Box>
+                  
+                  {/* Completion Indicator */}
+                  {step.completed && (
+                    <Chip
+                      icon={<CheckIcon sx={{ fontSize: 16 }} />}
+                      label="Done"
+                      size="small"
+                      sx={{
+                        backgroundColor: '#4caf50',
+                        color: 'white',
+                        height: 20,
+                        fontSize: '0.7rem',
+                        '& .MuiChip-icon': {
+                          color: 'white'
+                        }
+                      }}
+                    />
+                  )}
+                </Box>
               </StepLabel>
             </Step>
           ))}
@@ -401,24 +502,58 @@ const QuestionnaireBuilderV2: React.FC<QuestionnaireBuilderV2Props> = ({
         {renderStepContent()}
       </Card>
 
-      {/* Step Navigation */}
-      <Paper elevation={1} sx={{ p: 3, mt: 3, borderRadius: 2 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+      {/* Enhanced Step Navigation */}
+      <Paper elevation={2} sx={{ p: 4, mt: 3, borderRadius: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Button
             disabled={activeStep === 0}
             onClick={handleBack}
             variant="outlined"
+            size="large"
+            sx={{
+              borderRadius: 2,
+              px: 4,
+              py: 1.5,
+              textTransform: 'none',
+              fontSize: '1rem'
+            }}
           >
-            Back
+            ← Back
           </Button>
-          <Box sx={{ flex: '1 1 auto' }} />
+          
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 2,
+            textAlign: 'center' 
+          }}>
+            <Typography variant="body2" color="text.secondary">
+              Step {activeStep + 1} of {steps.length}
+            </Typography>
+            <Typography variant="h6" color="primary" fontWeight="bold">
+              {steps[activeStep].title}
+            </Typography>
+          </Box>
+          
           {activeStep < steps.length - 1 ? (
             <Button
               variant="contained"
               onClick={handleNext}
               disabled={!steps[activeStep].completed}
+              size="large"
+              sx={{
+                borderRadius: 2,
+                px: 4,
+                py: 1.5,
+                textTransform: 'none',
+                fontSize: '1rem',
+                background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                '&:hover': {
+                  background: 'linear-gradient(45deg, #1976D2 30%, #0288D1 90%)',
+                }
+              }}
             >
-              Next
+              Next →
             </Button>
           ) : (
             <Button
@@ -427,22 +562,78 @@ const QuestionnaireBuilderV2: React.FC<QuestionnaireBuilderV2Props> = ({
               onClick={handleSave}
               disabled={isSaving || validationErrors.length > 0}
               startIcon={<SaveIcon />}
+              size="large"
+              sx={{
+                borderRadius: 2,
+                px: 4,
+                py: 1.5,
+                textTransform: 'none',
+                fontSize: '1rem',
+                background: 'linear-gradient(45deg, #4caf50 30%, #66bb6a 90%)',
+                '&:hover': {
+                  background: 'linear-gradient(45deg, #388e3c 30%, #4caf50 90%)',
+                }
+              }}
             >
-              {isSaving ? 'Saving...' : editingQuestionnaire ? 'Update' : 'Save'}
+              {isSaving ? 'Saving...' : editingQuestionnaire ? 'Update Questionnaire' : 'Save Questionnaire'}
             </Button>
           )}
         </Box>
+        
+        {/* Step completion hint */}
+        {!steps[activeStep].completed && activeStep < steps.length - 1 && (
+          <Box sx={{ mt: 3, p: 2, backgroundColor: '#f5f5f5', borderRadius: 2 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <SettingsIcon sx={{ fontSize: 16 }} />
+              Complete this step to continue to the next one
+            </Typography>
+          </Box>
+        )}
       </Paper>
 
-      {/* Navigation & Save FAB */}
+      {/* Enhanced Navigation & Save FAB */}
       <Box sx={{ 
         position: 'fixed', 
         bottom: 20, 
         right: 20, 
         zIndex: 1000,
         display: 'flex',
-        gap: 1
+        flexDirection: 'column',
+        gap: 2,
+        alignItems: 'flex-end'
       }}>
+        {/* Progress indicator */}
+        <Paper 
+          elevation={4} 
+          sx={{ 
+            p: 2, 
+            borderRadius: 2,
+            backgroundColor: 'rgba(255,255,255,0.95)',
+            backdropFilter: 'blur(10px)'
+          }}
+        >
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+            Progress
+          </Typography>
+          <LinearProgress 
+            variant="determinate" 
+            value={(activeStep / (steps.length - 1)) * 100} 
+            sx={{ 
+              width: 120, 
+              height: 6, 
+              borderRadius: 3,
+              backgroundColor: 'rgba(0,0,0,0.1)',
+              '& .MuiLinearProgress-bar': {
+                backgroundColor: '#4caf50',
+                borderRadius: 3
+              }
+            }} 
+          />
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+            {Math.round(((activeStep) / (steps.length - 1)) * 100)}% Complete
+          </Typography>
+        </Paper>
+        
         {activeStep === steps.length - 1 && (
           <Fab
             color="success"
@@ -450,9 +641,18 @@ const QuestionnaireBuilderV2: React.FC<QuestionnaireBuilderV2Props> = ({
             onClick={handleSave}
             disabled={isSaving || validationErrors.length > 0}
             size="large"
+            sx={{
+              background: 'linear-gradient(45deg, #4caf50 30%, #66bb6a 90%)',
+              '&:hover': {
+                background: 'linear-gradient(45deg, #388e3c 30%, #4caf50 90%)',
+              },
+              boxShadow: '0 8px 32px rgba(76, 175, 80, 0.3)',
+              borderRadius: 3,
+              px: 3
+            }}
           >
             <SaveIcon sx={{ mr: 1 }} />
-            {isSaving ? 'Saving...' : editingQuestionnaire ? 'Update' : 'Save'}
+            {isSaving ? 'Saving...' : editingQuestionnaire ? 'Update' : 'Finish & Save'}
           </Fab>
         )}
       </Box>
@@ -460,6 +660,8 @@ const QuestionnaireBuilderV2: React.FC<QuestionnaireBuilderV2Props> = ({
       {/* Form Preview Modal */}
       {showPreview && (
         <FormPreview 
+          title={title}
+          description={description}
           structure={structure} 
           onClose={() => setShowPreview(false)} 
         />
