@@ -92,36 +92,70 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
     switch (node.inputType) {
       case 'text':
         return (
-          <TextField
-            fullWidth
-            label={node.title}
-            placeholder="Type your answer here..."
-            value={value}
-            onChange={(e) => handleInputChange(node.id, e.target.value)}
-            helperText={node.description}
-            sx={{ mb: 2 }}
-          />
+          <Box sx={{ mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+              <Typography variant="body1" fontWeight="bold">
+                {node.title}
+              </Typography>
+              {node.weight !== 1 && (
+                <Chip 
+                  label={`Weight: ${node.weight}`} 
+                  size="small" 
+                  variant="outlined"
+                  color="secondary"
+                />
+              )}
+            </Box>
+            <TextField
+              fullWidth
+              placeholder="Type your answer here..."
+              value={value}
+              onChange={(e) => handleInputChange(node.id, e.target.value)}
+              helperText={node.description}
+            />
+          </Box>
         );
 
       case 'number':
         return (
-          <TextField
-            fullWidth
-            type="number"
-            label={node.title}
-            placeholder="Enter a number..."
-            value={value}
-            onChange={(e) => handleInputChange(node.id, e.target.value)}
-            helperText={node.description}
-            sx={{ mb: 2 }}
-          />
+          <Box sx={{ mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+              <Typography variant="body1" fontWeight="bold">
+                {node.title}
+              </Typography>
+              {node.weight !== 1 && (
+                <Chip 
+                  label={`Weight: ${node.weight}`} 
+                  size="small" 
+                  variant="outlined"
+                  color="secondary"
+                />
+              )}
+            </Box>
+            <TextField
+              fullWidth
+              type="number"
+              placeholder="Enter a number..."
+              value={value}
+              onChange={(e) => handleInputChange(node.id, e.target.value)}
+              helperText={node.description}
+            />
+          </Box>
         );
 
       case 'single-choice':
         return (
           <FormControl component="fieldset" fullWidth sx={{ mb: 2 }}>
-            <FormLabel component="legend" sx={{ mb: 1, fontWeight: 'bold' }}>
+            <FormLabel component="legend" sx={{ mb: 1, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 1 }}>
               {node.title}
+              {node.weight !== 1 && (
+                <Chip 
+                  label={`Weight: ${node.weight}`} 
+                  size="small" 
+                  variant="outlined"
+                  color="secondary"
+                />
+              )}
             </FormLabel>
             {node.description && (
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -137,7 +171,19 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
                   <FormControlLabel
                     value={option.id}
                     control={<Radio />}
-                    label={option.label}
+                    label={
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography component="span">
+                          {option.label}
+                        </Typography>
+                        <Chip 
+                          label={`Value: ${option.value}`} 
+                          size="small" 
+                          variant="outlined"
+                          color="primary"
+                        />
+                      </Box>
+                    }
                   />
                   
                   {/* Show conditional questions for this specific option */}
@@ -186,8 +232,16 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
       case 'multiple-choice':
         return (
           <FormControl component="fieldset" fullWidth sx={{ mb: 2 }}>
-            <FormLabel component="legend" sx={{ mb: 1, fontWeight: 'bold' }}>
+            <FormLabel component="legend" sx={{ mb: 1, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 1 }}>
               {node.title}
+              {node.weight !== 1 && (
+                <Chip 
+                  label={`Weight: ${node.weight}`} 
+                  size="small" 
+                  variant="outlined"
+                  color="secondary"
+                />
+              )}
             </FormLabel>
             {node.description && (
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -210,7 +264,19 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
                         }}
                       />
                     }
-                    label={option.label}
+                    label={
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography component="span">
+                          {option.label}
+                        </Typography>
+                        <Chip 
+                          label={`Value: ${option.value}`} 
+                          size="small" 
+                          variant="outlined"
+                          color="primary"
+                        />
+                      </Box>
+                    }
                   />
                   
                   {/* Show conditional questions for this specific option */}
@@ -259,9 +325,19 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
       case 'scale':
         return (
           <Box sx={{ mb: 3 }}>
-            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-              {node.title}
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+              <Typography variant="subtitle1" fontWeight="bold">
+                {node.title}
+              </Typography>
+              {node.weight !== 1 && (
+                <Chip 
+                  label={`Weight: ${node.weight}`} 
+                  size="small" 
+                  variant="outlined"
+                  color="secondary"
+                />
+              )}
+            </Box>
             {node.description && (
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 {node.description}
