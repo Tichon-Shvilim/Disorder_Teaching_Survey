@@ -242,10 +242,12 @@ const QuestionnaireViewerV2: React.FC = () => {
                 <Stack spacing={1}>
                   {node.options.map((option, index) => (
                     <Paper key={option.id} variant="outlined" sx={{ p: 2 }}>
-                      <Typography variant="body2">
-                        <strong>{index + 1}.</strong> {option.label} 
-                        <Chip label={`Value: ${option.value}`} size="small" sx={{ ml: 1 }} />
-                      </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant="body2" component="span">
+                          <strong>{index + 1}.</strong> {option.label}
+                        </Typography>
+                        <Chip label={`Value: ${option.value}`} size="small" />
+                      </Box>
                     </Paper>
                   ))}
                 </Stack>
