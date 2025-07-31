@@ -25,6 +25,10 @@ import SignUp from "./components/user/signUp/SignUp";
 import FillForm from "./components/formManagement/FillForm";
 import ViewSubmissions from "./components/formManagement/ViewSubmissions";
 
+// V2 Components
+import QuestionnaireListV2 from "./components/formManagement/QuestionnaireListV2";
+import QuestionnaireBuilderV2 from "./components/formManagement/QuestionnaireBuilderV2";
+
 const App: React.FC = () => {
   return (
     <Router>
@@ -73,6 +77,33 @@ const App: React.FC = () => {
               </RoleRoute>
             }
           />
+          
+          {/* V2 Enhanced Questionnaire Routes - New Hierarchical System */}
+          <Route
+            path="questionnaires-v2"
+            element={
+              <RoleRoute allowedRoles={["Admin"]}>
+                <QuestionnaireListV2 />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="create-questionnaire-v2"
+            element={
+              <RoleRoute allowedRoles={["Admin"]}>
+                <QuestionnaireBuilderV2 />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="create-questionnaire-v2/:id"
+            element={
+              <RoleRoute allowedRoles={["Admin"]}>
+                <QuestionnaireBuilderV2 />
+              </RoleRoute>
+            }
+          />
+          
           <Route
             path="user-management"
             element={
