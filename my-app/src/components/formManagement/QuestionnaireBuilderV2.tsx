@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import {
   Box,
   Typography,
@@ -132,6 +133,37 @@ const QuestionnaireBuilderV2: React.FC<QuestionnaireBuilderV2Props> = ({
     loadExistingQuestionnaire();
   }, [editingQuestionnaire]);
 
+  // Auto-clear validation errors when issues might be fixed
+  useEffect(() => {
+    if (validationErrors.length > 0) {
+      // Check if any validation errors might be resolved
+      const hasBasicIssues = validationErrors.some(error => 
+        error.includes('Title is required') || 
+        error.includes('At least one group or question is required')
+      );
+      
+      // Clear basic validation errors if they're now resolved
+      if (hasBasicIssues) {
+        const stillValidErrors: string[] = [];
+        
+        // Re-check title
+        if (!title.trim() && validationErrors.some(error => error.includes('Title is required'))) {
+          stillValidErrors.push('Title is required');
+        }
+        
+        // Re-check structure
+        if (structure.length === 0 && validationErrors.some(error => error.includes('At least one group or question is required'))) {
+          stillValidErrors.push('At least one group or question is required');
+        }
+        
+        // If we have fewer errors now, update the validation errors
+        if (stillValidErrors.length < validationErrors.length) {
+          setValidationErrors(stillValidErrors);
+        }
+      }
+    }
+  }, [title, structure, validationErrors]);
+
   // Mark as dirty when changes are made
   const markDirty = useCallback(() => {
     setHasUnsavedChanges(true);
@@ -141,10 +173,14 @@ const QuestionnaireBuilderV2: React.FC<QuestionnaireBuilderV2Props> = ({
     const nextStep = activeStep + 1;
     setActiveStep(nextStep);
     setVisitedSteps(prev => new Set([...prev, nextStep]));
+    // Clear validation errors when moving to next step
+    setValidationErrors([]);
   };
 
   const handleBack = () => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
+    // Clear validation errors when moving back
+    setValidationErrors([]);
   };
 
   // Validate current step
@@ -208,6 +244,29 @@ const QuestionnaireBuilderV2: React.FC<QuestionnaireBuilderV2Props> = ({
 
       if (response.success) {
         setHasUnsavedChanges(false);
+        setValidationErrors([]); // Clear any existing validation errors
+        
+        // Show success message
+        if (editingQuestionnaire) {
+          toast.success('Questionnaire updated successfully!', {
+            position: "top-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          });
+        } else {
+          toast.success('Questionnaire created successfully!', {
+            position: "top-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          });
+        }
+        
         if (onSave) {
           onSave(response.data);
         } else {
@@ -215,10 +274,27 @@ const QuestionnaireBuilderV2: React.FC<QuestionnaireBuilderV2Props> = ({
         }
       } else {
         setValidationErrors(response.errors || ['Failed to save questionnaire']);
+        toast.error('Failed to save questionnaire. Please check the errors and try again.', {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
       }
     } catch (error) {
       console.error('Error saving questionnaire:', error);
-      setValidationErrors(['An unexpected error occurred while saving']);
+      const errorMessage = 'An unexpected error occurred while saving';
+      setValidationErrors([errorMessage]);
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     } finally {
       setIsSaving(false);
     }
@@ -236,7 +312,14 @@ const QuestionnaireBuilderV2: React.FC<QuestionnaireBuilderV2Props> = ({
             <TextField
               label="Title"
               value={title}
-              onChange={(e) => { setTitle(e.target.value); markDirty(); }}
+              onChange={(e) => { 
+                setTitle(e.target.value); 
+                markDirty(); 
+                // Clear validation errors when title changes
+                if (validationErrors.length > 0) {
+                  setValidationErrors([]);
+                }
+              }}
               fullWidth
               required
               sx={{ mb: 3 }}
@@ -244,7 +327,14 @@ const QuestionnaireBuilderV2: React.FC<QuestionnaireBuilderV2Props> = ({
             <TextField
               label="Description"
               value={description}
-              onChange={(e) => { setDescription(e.target.value); markDirty(); }}
+              onChange={(e) => { 
+                setDescription(e.target.value); 
+                markDirty(); 
+                // Clear validation errors when description changes
+                if (validationErrors.length > 0) {
+                  setValidationErrors([]);
+                }
+              }}
               fullWidth
               multiline
               rows={3}
@@ -260,6 +350,26 @@ const QuestionnaireBuilderV2: React.FC<QuestionnaireBuilderV2Props> = ({
                 console.log('Structure changed:', newStructure);
                 setStructure(newStructure);
                 markDirty();
+                // Clear validation errors when structure changes significantly
+                if (validationErrors.length > 0) {
+                  // Check if this might fix API validation errors by comparing structure complexity
+                  const oldQuestionCount = structure.filter(node => node.type === 'question' || hasQuestions(node)).length;
+                  const newQuestionCount = newStructure.filter(node => node.type === 'question' || hasQuestions(node)).length;
+                  
+                  // Check if any questions now have options that didn't before
+                  const hasNewOptions = newStructure.some(node => {
+                    if (node.type === 'question' && (node.inputType === 'single-choice' || node.inputType === 'multiple-choice')) {
+                      const oldNode = structure.find(oldN => oldN.id === node.id);
+                      return node.options && node.options.length > 0 && (!oldNode?.options || oldNode.options.length === 0);
+                    }
+                    return false;
+                  });
+                  
+                  // Clear errors if structure improved significantly or options were added
+                  if (newQuestionCount > oldQuestionCount || hasNewOptions) {
+                    setValidationErrors([]);
+                  }
+                }
               }}
               onPreview={(structureToPreview) => {
                 console.log('Preview requested:', structureToPreview);
