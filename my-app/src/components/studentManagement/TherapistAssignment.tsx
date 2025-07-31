@@ -29,6 +29,7 @@ import {
   type Student
 } from "./Api-Requests/StudentAPIService";
 import { getAllTherapists, type User } from "./Api-Requests/userHttpService";
+import { PermissionGate, usePermissions } from '../common';
 
 interface ApiError {
   response?: {
@@ -53,10 +54,15 @@ const TherapistAssignment: React.FC<TherapistAssignmentProps> = ({
   const [selectedTherapistId, setSelectedTherapistId] = useState<string>("");
   const [assigning, setAssigning] = useState(false);
 
-  // Load all therapists
+  // Permission system
+  const { hasPermission } = usePermissions();
+
+  // Load all therapists - only if user has permission to assign therapists
   useEffect(() => {
-    loadTherapists();
-  }, []);
+    if (hasPermission('student.assign_therapist')) {
+      loadTherapists();
+    }
+  }, [hasPermission]);
 
   const handleCloseDialog = useCallback(() => {
     setDialogOpen(false);
@@ -156,16 +162,18 @@ const TherapistAssignment: React.FC<TherapistAssignmentProps> = ({
           <Typography variant="h6" component="h3">
             Assigned Therapists
           </Typography>
-          <Button
-            startIcon={<AddIcon />}
-            onClick={() => setDialogOpen(true)}
-            sx={{ ml: 'auto' }}
-            variant="outlined"
-            size="small"
-            disabled={availableTherapists.length === 0}
-          >
-            Assign Therapist
-          </Button>
+          <PermissionGate permission="student.assign_therapist">
+            <Button
+              startIcon={<AddIcon />}
+              onClick={() => setDialogOpen(true)}
+              sx={{ ml: 'auto' }}
+              variant="outlined"
+              size="small"
+              disabled={availableTherapists.length === 0}
+            >
+              Assign Therapist
+            </Button>
+          </PermissionGate>
         </Box>
 
         {loading ? (
@@ -181,14 +189,25 @@ const TherapistAssignment: React.FC<TherapistAssignmentProps> = ({
             ) : (
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                 {student.therapists.map((therapist) => (
-                  <Chip
-                    key={therapist._id}
-                    label={therapist.name}
-                    color="primary"
-                    variant="outlined"
-                    deleteIcon={<DeleteIcon />}
-                    onDelete={() => handleRemoveTherapist(therapist._id, therapist.name)}
-                  />
+                  <PermissionGate 
+                    key={therapist._id} 
+                    permission="student.assign_therapist"
+                    fallback={
+                      <Chip
+                        label={therapist.name}
+                        color="primary"
+                        variant="outlined"
+                      />
+                    }
+                  >
+                    <Chip
+                      label={therapist.name}
+                      color="primary"
+                      variant="outlined"
+                      deleteIcon={<DeleteIcon />}
+                      onDelete={() => handleRemoveTherapist(therapist._id, therapist.name)}
+                    />
+                  </PermissionGate>
                 ))}
               </Box>
             )}

@@ -4,13 +4,16 @@ import react from '@vitejs/plugin-react-swc'
 export default defineConfig({
   plugins: [react()],
   define: {
-    global: {}, // Define global to avoid issues with certain libraries
+    global: 'globalThis', // Properly define global for browser compatibility
   },
   resolve: {
     alias: {
       crypto: 'crypto-browserify',
       buffer: 'buffer',
     },
+  },
+  optimizeDeps: {
+    include: ['crypto-browserify', 'buffer']
   },
   server: {
     host: '0.0.0.0', 
