@@ -4,7 +4,7 @@ import { ArrowLeft, Calendar, FileText, Eye, Plus, Edit, Trash2, Save, X } from 
 import { FormAPIService } from './Api-Requests/FormAPIService';
 import type { FormSubmission, QuestionnaireTemplate } from './models/FormModels';
 import { toast } from 'react-toastify';
-import { usePermissions } from '../common';
+import { usePermissions, PDFDownloadButton } from '../common';
 
 const ViewSubmissions: React.FC = () => {
   const location = useLocation();
@@ -1124,6 +1124,12 @@ const ViewSubmissions: React.FC = () => {
                         <Eye style={{ height: '14px', width: '14px' }} />
                         View
                       </button>
+                      <PDFDownloadButton 
+                        submission={submission}
+                        variant="secondary"
+                        size="small"
+                        fileName={`${studentName}_${submission.questionnaireTitle}_${submission.submittedAt ? new Date(submission.submittedAt).toLocaleDateString() : 'no-date'}`}
+                      />
                       {canModifySubmission(submission) && (
                         <button
                           onClick={() => handleEditSubmission(submission)}
