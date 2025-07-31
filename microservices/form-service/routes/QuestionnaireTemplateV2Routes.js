@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const axios = require('axios');
 const QuestionnaireTemplateV2 = require('../models/QuestionnaireTemplateV2');
 const { authenticateJWT, authorizeRole } = require('../middleware/auth');
 const { 
@@ -11,6 +12,54 @@ const {
 } = require('../utils/treeUtils');
 
 const router = express.Router();
+
+// Helper function to fetch user data from user-service
+async function fetchUserData(userId, authHeader) {
+  try {
+    const userResponse = await axios.get(
+      `${process.env.USER_SERVICE_URL || 'http://user-service:3001'}/api/users/${userId}`,
+      { headers: { Authorization: authHeader } }
+    );
+    return userResponse.data;
+  } catch (error) {
+    console.error('Error fetching user data:', error.message);
+    return null;
+  }
+}
+
+// Helper function to enrich questionnaires with user data
+async function enrichWithUserData(questionnaires, authHeader) {
+  if (!Array.isArray(questionnaires)) {
+    questionnaires = [questionnaires];
+  }
+
+  const userIds = [...new Set(questionnaires.map(q => q.createdBy).filter(Boolean))];
+  const userDataMap = {};
+
+  // Fetch all unique users
+  await Promise.all(
+    userIds.map(async (userId) => {
+      const userData = await fetchUserData(userId, authHeader);
+      if (userData) {
+        userDataMap[userId] = {
+          name: userData.name,
+          email: userData.email
+        };
+      }
+    })
+  );
+
+  // Enrich questionnaires with user data
+  return questionnaires.map(questionnaire => {
+    const questionnaireObj = questionnaire.toObject ? questionnaire.toObject() : questionnaire;
+    const userData = userDataMap[questionnaireObj.createdBy];
+    
+    return {
+      ...questionnaireObj,
+      createdBy: userData || questionnaireObj.createdBy
+    };
+  });
+}
 
 // Create new enhanced questionnaire template - Admin only
 router.post('/v2/templates', authenticateJWT, authorizeRole(['Admin']), async (req, res) => {
@@ -45,13 +94,22 @@ router.post('/v2/templates', authenticateJWT, authorizeRole(['Admin']), async (r
       });
     }
     
+    // Get user ID from JWT
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid user authentication is required'
+      });
+    }
+    
     // Create the questionnaire template
     const questionnaireTemplate = new QuestionnaireTemplateV2({
       title,
       description,
       structure,
       graphSettings: graphSettings || { colorRanges: [] },
-      createdBy: req.headers['user-id'] || 'system'
+      createdBy: userId
     });
 
     await questionnaireTemplate.save();
@@ -88,14 +146,17 @@ router.get('/v2/templates', authenticateJWT, async (req, res) => {
     const templates = await QuestionnaireTemplateV2.find({ isActive: true })
       .sort({ createdAt: -1 });
     
+    // Enrich templates with user data
+    const enrichedTemplates = await enrichWithUserData(templates, req.headers.authorization);
+    
     // Add metadata for each template
-    const templatesWithMetadata = templates.map(template => {
+    const templatesWithMetadata = enrichedTemplates.map(template => {
       const questions = extractAllQuestions(template.structure);
       const nodePaths = generateNodePaths(template.structure);
       const maxScore = calculateMaxScore(template.structure);
       
       return {
-        ...template.toObject(),
+        ...template,
         metadata: {
           totalQuestions: questions.length,
           totalNodes: nodePaths.length,
@@ -142,15 +203,18 @@ router.get('/v2/templates/:id', authenticateJWT, async (req, res) => {
       });
     }
 
+    // Enrich template with user data
+    const [enrichedTemplate] = await enrichWithUserData([template], req.headers.authorization);
+
     // Add metadata
-    const questions = extractAllQuestions(template.structure);
-    const nodePaths = generateNodePaths(template.structure);
-    const maxScore = calculateMaxScore(template.structure);
+    const questions = extractAllQuestions(enrichedTemplate.structure);
+    const nodePaths = generateNodePaths(enrichedTemplate.structure);
+    const maxScore = calculateMaxScore(enrichedTemplate.structure);
     
     res.json({
       success: true,
       data: {
-        ...template.toObject(),
+        ...enrichedTemplate,
         metadata: {
           totalQuestions: questions.length,
           totalNodes: nodePaths.length,

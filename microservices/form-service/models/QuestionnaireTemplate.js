@@ -62,7 +62,7 @@ const QuestionnaireTemplateSchema = new mongoose.Schema({
   domains: [DomainDataSchema],
   questions: [QuestionSchema],
   isActive: { type: Boolean, default: true },
-  createdBy: { type: String, required: true }, // User ID who created this
+  createdBy: { type: String, required: true },
   version: { type: Number, default: 1 }
 }, {
   timestamps: true // Adds createdAt and updatedAt

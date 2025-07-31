@@ -3,6 +3,14 @@
  * Supporting hierarchical structure with groups and questions
  */
 
+// User interface for populated references
+export interface User {
+  _id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
 // Option for choice-based questions
 export interface OptionV2 {
   id: string;
@@ -57,7 +65,7 @@ export interface QuestionnaireTemplateV2 {
   structure: FormNodeV2[];
   graphSettings?: GraphSettings;
   isActive: boolean;
-  createdBy: string;
+  createdBy: string | User;
   version: number;
   createdAt: Date;
   updatedAt: Date;

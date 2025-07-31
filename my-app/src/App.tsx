@@ -28,6 +28,7 @@ import ViewSubmissions from "./components/formManagement/ViewSubmissions";
 // V2 Components
 import QuestionnaireListV2 from "./components/formManagement/QuestionnaireListV2";
 import QuestionnaireBuilderV2 from "./components/formManagement/QuestionnaireBuilderV2";
+import QuestionnaireViewerV2 from "./components/formManagement/QuestionnaireViewerV2";
 
 const App: React.FC = () => {
   return (
@@ -100,6 +101,14 @@ const App: React.FC = () => {
             element={
               <RoleRoute allowedRoles={["Admin"]}>
                 <QuestionnaireBuilderV2 />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="view-questionnaire-v2/:id"
+            element={
+              <RoleRoute allowedRoles={["Admin"]}>
+                <QuestionnaireViewerV2 />
               </RoleRoute>
             }
           />

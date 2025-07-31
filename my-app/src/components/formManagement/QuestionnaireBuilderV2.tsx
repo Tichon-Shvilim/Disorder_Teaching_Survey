@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import {
   Box,
@@ -49,10 +49,14 @@ interface BuilderStep {
 }
 
 const QuestionnaireBuilderV2: React.FC<QuestionnaireBuilderV2Props> = ({
-  editingQuestionnaire,
+  editingQuestionnaire: editingQuestionnaireProp,
   onSave
 }) => {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  
+  // Use URL parameter if available, otherwise use prop
+  const editingQuestionnaire = id || editingQuestionnaireProp;
   
   // Form State
   const [activeStep, setActiveStep] = useState(0);
