@@ -24,6 +24,7 @@ import { getItemById } from "./Api-Requests/genericRequests";
 import { toast } from 'react-toastify';
 import TherapistAssignment from './TherapistAssignment';
 import { type Student as StudentType } from './Api-Requests/StudentAPIService';
+import { PermissionGate, usePermissions } from '../common';
 
 interface Student {
   _id?: string;
@@ -48,6 +49,9 @@ const StudentDetails: React.FC = () => {
   const navigate = useNavigate();
   const [student, setStudent] = useState<Student | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Permission system  
+  usePermissions();
 
   useEffect(() => {
     if (id) {
@@ -233,12 +237,14 @@ const StudentDetails: React.FC = () => {
 
           {/* Actions */}
           <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-            <Button
-              variant="outlined"
-              onClick={() => navigate(`/layout/students/${id}/edit`)}
-            >
-              Edit Student
-            </Button>
+            <PermissionGate permission="student.edit">
+              <Button
+                variant="outlined"
+                onClick={() => navigate(`/layout/students/${id}/edit`)}
+              >
+                Edit Student
+              </Button>
+            </PermissionGate>
             <Button
               variant="contained"
               onClick={handleBack}

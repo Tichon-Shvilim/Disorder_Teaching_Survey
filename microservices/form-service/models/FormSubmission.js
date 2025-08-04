@@ -30,7 +30,8 @@ const FormSubmissionSchema = new mongoose.Schema({
   // Submission data
   answers: [AnswerSchema],
   submittedAt: { type: Date, default: Date.now },
-  completedBy: { type: String }, // Who filled it (therapist, teacher, etc.)
+  completedBy: { type: String }, // Who filled it (therapist, teacher, etc.) - name for display
+  completedById: { type: String }, // User ID of who filled it - for robust identification
   
   // Metadata
   status: { 

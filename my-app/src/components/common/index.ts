@@ -15,3 +15,9 @@ export {
 
 // Permission utilities
 export { usePermissionClasses } from '../../hooks/usePermissionClasses';
+
+// PDF components
+export { default as PDFDownloadButton } from './PDFDownloadButton';
+export { default as PDFGenerator } from './PDFGenerator';
+export { SimplePDFDocument } from './SimplePDFGenerator';
+export { usePDFGeneration } from './usePDFGeneration';
