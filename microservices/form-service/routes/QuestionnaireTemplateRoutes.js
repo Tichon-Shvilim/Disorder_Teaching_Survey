@@ -1,8 +1,57 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const axios = require('axios');
 const QuestionnaireTemplate = require('../models/QuestionnaireTemplate');
 const { authenticateJWT, authorizeRole } = require('../middleware/auth');
 const router = express.Router();
+
+// Helper function to fetch user data from user-service
+async function fetchUserData(userId, authHeader) {
+  try {
+    const userResponse = await axios.get(
+      `${process.env.USER_SERVICE_URL || 'http://user-service:3001'}/api/users/${userId}`,
+      { headers: { Authorization: authHeader } }
+    );
+    return userResponse.data;
+  } catch (error) {
+    console.error('Error fetching user data:', error.message);
+    return null;
+  }
+}
+
+// Helper function to enrich questionnaires with user data
+async function enrichWithUserData(questionnaires, authHeader) {
+  if (!Array.isArray(questionnaires)) {
+    questionnaires = [questionnaires];
+  }
+
+  const userIds = [...new Set(questionnaires.map(q => q.createdBy).filter(Boolean))];
+  const userDataMap = {};
+
+  // Fetch all unique users
+  await Promise.all(
+    userIds.map(async (userId) => {
+      const userData = await fetchUserData(userId, authHeader);
+      if (userData) {
+        userDataMap[userId] = {
+          name: userData.name,
+          email: userData.email
+        };
+      }
+    })
+  );
+
+  // Enrich questionnaires with user data
+  return questionnaires.map(questionnaire => {
+    const questionnaireObj = questionnaire.toObject ? questionnaire.toObject() : questionnaire;
+    const userData = userDataMap[questionnaireObj.createdBy];
+    
+    return {
+      ...questionnaireObj,
+      createdBy: userData || questionnaireObj.createdBy
+    };
+  });
+}
 
 // Create new questionnaire template - Admin only
 router.post('/templates', authenticateJWT, authorizeRole(['Admin']), async (req, res) => {
@@ -57,7 +106,7 @@ router.post('/templates', authenticateJWT, authorizeRole(['Admin']), async (req,
       description,
       domains: processedDomains,
       questions: processedQuestions,
-      createdBy: req.headers['user-id'] || 'system'
+      createdBy: req.user?.id || 'system'
     });
 
     await questionnaireTemplate.save();
@@ -82,9 +131,12 @@ router.get('/templates', authenticateJWT, async (req, res) => {
     const templates = await QuestionnaireTemplate.find({ isActive: true })
       .sort({ createdAt: -1 });
     
+    // Enrich templates with user data
+    const enrichedTemplates = await enrichWithUserData(templates, req.headers.authorization);
+    
     res.json({
       success: true,
-      data: templates
+      data: enrichedTemplates
     });
   } catch (error) {
     console.error('Error fetching questionnaire templates:', error);
@@ -119,9 +171,12 @@ router.get('/templates/:id', authenticateJWT, async (req, res) => {
       });
     }
 
+    // Enrich template with user data
+    const [enrichedTemplate] = await enrichWithUserData([template], req.headers.authorization);
+
     res.json({
       success: true,
-      data: template
+      data: enrichedTemplate
     });
   } catch (error) {
     console.error('Error fetching questionnaire template:', error);
