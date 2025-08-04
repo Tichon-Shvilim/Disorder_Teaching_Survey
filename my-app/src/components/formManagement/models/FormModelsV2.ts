@@ -24,6 +24,13 @@ export interface NodeCondition {
   parentOptionId?: string;
 }
 
+// Visibility conditions for dynamic form logic
+export interface VisibilityCondition {
+  questionId: string;
+  operator: 'equals' | 'not_equals' | 'greater_than' | 'less_than' | 'contains';
+  value: string | number;
+}
+
 // Graph settings for analytics
 export interface GraphSettings {
   colorRanges: Array<{
@@ -41,13 +48,17 @@ export interface FormNodeV2 {
   title: string;
   description?: string;
   weight: number;
+  required?: boolean; // For questions
   
   // Question-specific fields
   inputType?: 'single-choice' | 'multiple-choice' | 'scale' | 'number' | 'text';
   options?: OptionV2[];
+  scaleMin?: number; // For scale questions
+  scaleMax?: number; // For scale questions
   
   // Conditional logic
   condition?: NodeCondition;
+  visibilityConditions?: VisibilityCondition[];
   
   // Analytics configuration
   graphable: boolean;

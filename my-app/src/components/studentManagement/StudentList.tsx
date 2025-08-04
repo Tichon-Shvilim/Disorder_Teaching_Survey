@@ -125,6 +125,15 @@ const StudentList: React.FC = () => {
     navigate(`../forms/submissions`, { state: { studentId, studentName } });
   };
 
+  // V2 Form handlers
+  const handleFillFormV2 = (studentId: string, studentName: string) => {
+    navigate(`../forms/v2/fill`, { state: { studentId, studentName } });
+  };
+
+  const handleViewSubmissionsV2 = (studentId: string, studentName: string) => {
+    navigate(`../forms/v2/submissions`, { state: { studentId, studentName } });
+  };
+
   const filteredStudents = students.filter((student) => {
     const matchesSearch = student.name
       .toLowerCase()
@@ -563,6 +572,55 @@ const StudentList: React.FC = () => {
                   title="View Past Forms"
                 >
                   <History style={{ height: "16px", width: "16px" }} />
+                </button>
+
+                {/* V2 Form Buttons */}
+                <button
+                  onClick={() => handleFillFormV2(student._id, student.name)}
+                  style={{
+                    padding: "8px",
+                    backgroundColor: "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                    borderRadius: "8px",
+                    color: "#9ca3af",
+                    transition: "all 0.2s",
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.backgroundColor = "#f0f3ff";
+                    e.currentTarget.style.color = "#6366f1";
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                    e.currentTarget.style.color = "#9ca3af";
+                  }}
+                  title="Fill Form V2 (Enhanced)"
+                >
+                  <FileText style={{ height: "16px", width: "16px", strokeWidth: 2.5 }} />
+                </button>
+                
+                <button
+                  onClick={() => handleViewSubmissionsV2(student._id, student.name)}
+                  style={{
+                    padding: "8px",
+                    backgroundColor: "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                    borderRadius: "8px",
+                    color: "#9ca3af",
+                    transition: "all 0.2s",
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.backgroundColor = "#f0fdfa";
+                    e.currentTarget.style.color = "#14b8a6";
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                    e.currentTarget.style.color = "#9ca3af";
+                  }}
+                  title="View Submissions V2 (Enhanced)"
+                >
+                  <History style={{ height: "16px", width: "16px", strokeWidth: 2.5 }} />
                 </button>
               </div>
 

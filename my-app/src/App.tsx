@@ -28,6 +28,8 @@ import ViewSubmissions from "./components/formManagement/ViewSubmissions";
 // V2 Components
 import QuestionnaireListV2 from "./components/formManagement/QuestionnaireListV2";
 import QuestionnaireBuilderV2 from "./components/formManagement/QuestionnaireBuilderV2";
+import FillFormV2 from "./components/formManagement/FillFormV2";
+import ViewSubmissionsV2 from "./components/formManagement/ViewSubmissionsV2";
 import QuestionnaireViewerV2 from "./components/formManagement/QuestionnaireViewerV2";
 
 const App: React.FC = () => {
@@ -54,6 +56,10 @@ const App: React.FC = () => {
           <Route path="forms/fill" element={<FillForm />} />
           <Route path="forms/fill/:questionnaireId" element={<FillForm />} />
           <Route path="forms/submissions" element={<ViewSubmissions />} />
+          {/* V2 Form Routes */}
+          <Route path="forms/v2/fill" element={<FillFormV2 />} />
+          <Route path="forms/v2/fill/:questionnaireId" element={<FillFormV2 />} />
+          <Route path="forms/v2/submissions" element={<ViewSubmissionsV2 />} />
           <Route path="classes" element={<ClassList/>} />
           <Route path="classes/:id" element={<ModernClassManagement />} />
           <Route path="classes/:id/edit" element={<EditClass />} />

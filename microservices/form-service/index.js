@@ -17,6 +17,7 @@ mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTop
 app.use('/api/questionnaires', require('./routes/QuestionnaireTemplateRoutes'));
 app.use('/api/questionnaires', require('./routes/QuestionnaireTemplateV2Routes')); // V2 Enhanced routes
 app.use('/api/forms', require('./routes/FormSubmissionRoutes'));
+app.use('/api/forms', require('./routes/FormSubmissionV2Routes')); // V2 Enhanced form submissions
 
 app.get('/healthz', (req, res) => {
   res.status(200).send('OK');
