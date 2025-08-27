@@ -117,13 +117,13 @@ const StudentList: React.FC = () => {
     navigate(`${studentId}/edit`);
   };
 
-  const handleFillForm = (studentId: string, studentName: string) => {
-    navigate(`../forms/fill`, { state: { studentId, studentName } });
-  };
+  // const handleFillForm = (studentId: string, studentName: string) => {
+  //   navigate(`../forms/fill`, { state: { studentId, studentName } });
+  // };
 
-  const handleViewSubmissions = (studentId: string, studentName: string) => {
-    navigate(`../forms/submissions`, { state: { studentId, studentName } });
-  };
+  // const handleViewSubmissions = (studentId: string, studentName: string) => {
+  //   navigate(`../forms/submissions`, { state: { studentId, studentName } });
+  // };
 
   // V2 Form handlers
   const handleFillFormV2 = (studentId: string, studentName: string) => {
@@ -526,7 +526,7 @@ const StudentList: React.FC = () => {
                   <Edit style={{ height: "16px", width: "16px" }} />
                 </button>
                 
-                <button
+                {/* <button
                   onClick={() => handleFillForm(student._id, student.name)}
                   style={{
                     padding: "8px",
@@ -572,7 +572,7 @@ const StudentList: React.FC = () => {
                   title="View Past Forms"
                 >
                   <History style={{ height: "16px", width: "16px" }} />
-                </button>
+                </button> */}
 
                 {/* V2 Form Buttons */}
                 <button

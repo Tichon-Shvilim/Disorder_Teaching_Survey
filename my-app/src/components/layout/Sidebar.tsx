@@ -51,11 +51,11 @@ const Sidebar: React.FC = () => {
             path: "/layout/classes",
             icon: <ClassOutlined />,
           },
-          {
-            name: "Assessment Forms (Legacy)",
-            path: "/layout/questionnaires",
-            icon: <AssignmentOutlined />,
-          },
+          // {
+          //   name: "Assessment Forms (Legacy)",
+          //   path: "/layout/questionnaires",
+          //   icon: <AssignmentOutlined />,
+          // },
           {
             name: "Assessment Forms V2",
             path: "/layout/questionnaires-v2",
