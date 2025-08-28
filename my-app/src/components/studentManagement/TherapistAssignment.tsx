@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Box,
   Card,
@@ -57,12 +57,17 @@ const TherapistAssignment: React.FC<TherapistAssignmentProps> = ({
   // Permission system
   const { hasPermission } = usePermissions();
 
+  // Memoize the permission check to prevent endless re-renders
+  const canAssignTherapist = useMemo(() => {
+    return hasPermission('student.assign_therapist');
+  }, [hasPermission]);
+
   // Load all therapists - only if user has permission to assign therapists
   useEffect(() => {
-    if (hasPermission('student.assign_therapist')) {
+    if (canAssignTherapist) {
       loadTherapists();
     }
-  }, [hasPermission]);
+  }, [canAssignTherapist]);
 
   const handleCloseDialog = useCallback(() => {
     setDialogOpen(false);
@@ -72,9 +77,7 @@ const TherapistAssignment: React.FC<TherapistAssignmentProps> = ({
   const loadTherapists = async () => {
     try {
       setLoading(true);
-      console.log("Loading therapists...");
       const response = await getAllTherapists();
-      console.log("Therapists loaded:", response.data);
       setTherapists(response.data);
     } catch (error) {
       console.error("Error loading therapists:", error);
@@ -85,15 +88,12 @@ const TherapistAssignment: React.FC<TherapistAssignmentProps> = ({
   };
 
   const handleAssignTherapist = async () => {
-    console.log("handleAssignTherapist called with selectedTherapistId:", selectedTherapistId);
-    
     if (!selectedTherapistId || selectedTherapistId === "") {
       toast.error("Please select a therapist");
       return;
     }
 
     const therapist = therapists.find(t => t.id === selectedTherapistId);
-    console.log("Found therapist:", therapist);
     
     if (!therapist) {
       toast.error("Selected therapist not found");
@@ -102,18 +102,12 @@ const TherapistAssignment: React.FC<TherapistAssignmentProps> = ({
 
     try {
       setAssigning(true);
-      console.log("About to call assignTherapistToStudent with:", {
-        studentId: student._id,
-        therapistId: therapist.id,
-        therapistName: therapist.name
-      });
       
       const response = await assignTherapistToStudent(student._id, {
         therapistId: therapist.id,
         therapistName: therapist.name
       });
       
-      console.log("Assignment response:", response);
       onUpdate(response.data.student);
       setDialogOpen(false);
       setSelectedTherapistId("");
@@ -148,11 +142,6 @@ const TherapistAssignment: React.FC<TherapistAssignmentProps> = ({
 
   const assignedTherapistIds = student.therapists?.map(t => t._id) || [];
   const availableTherapists = therapists.filter(t => !assignedTherapistIds.includes(t.id));
-  
-  console.log("Student therapists:", student.therapists);
-  console.log("Assigned therapist IDs:", assignedTherapistIds);
-  console.log("All therapists:", therapists);
-  console.log("Available therapists:", availableTherapists);
 
   return (
     <Card sx={{ mt: 2 }}>
@@ -228,20 +217,15 @@ const TherapistAssignment: React.FC<TherapistAssignmentProps> = ({
               <Select
                 value={selectedTherapistId || ""}
                 onChange={(e) => {
-                  const newValue = e.target.value;
-                  console.log("Select changed to:", newValue, "type:", typeof newValue);
-                  setSelectedTherapistId(newValue as string);
+                  setSelectedTherapistId(e.target.value as string);
                 }}
                 label="Select Therapist"
               >
-                {availableTherapists.map((therapist) => {
-                  console.log("Rendering MenuItem for therapist:", therapist.id, therapist.name);
-                  return (
+                {availableTherapists.map((therapist) => (
                     <MenuItem key={therapist.id} value={therapist.id}>
                       {therapist.name} ({therapist.email})
                     </MenuItem>
-                  );
-                })}
+                ))}
               </Select>
             </FormControl>
             

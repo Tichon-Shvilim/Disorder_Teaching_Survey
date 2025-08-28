@@ -117,6 +117,80 @@ router.post('/refresh-token', async (req, res) => {
   }
 });
 
+// Unified student-therapist assignment helper function
+const handleStudentTherapistAssignment = async (therapistId, studentId, studentName, action) => {
+  const therapist = await User.findById(therapistId);
+  
+  if (!therapist) {
+    throw new Error('Therapist not found');
+  }
+  
+  if (therapist.role.toLowerCase() !== 'therapist') {
+    throw new Error('User is not a therapist');
+  }
+  
+  if (action === 'add') {
+    // Check if student is already assigned
+    const existingStudent = therapist.students.find(s => s._id.toString() === studentId);
+    if (existingStudent) {
+      return { message: 'Student already assigned to this therapist', therapist };
+    }
+    
+    therapist.students.push({ _id: studentId, name: studentName });
+    await therapist.save();
+    
+    return { message: 'Student added to therapist successfully', therapist };
+  } else if (action === 'remove') {
+    // Check if student is assigned
+    const studentIndex = therapist.students.findIndex(s => s._id.toString() === studentId);
+    if (studentIndex === -1) {
+      throw new Error('Student not assigned to this therapist');
+    }
+    
+    therapist.students.splice(studentIndex, 1);
+    await therapist.save();
+    
+    return { message: 'Student removed from therapist successfully', therapist };
+  }
+};
+
+// Service-to-service routes (no authentication required)
+// Add student to therapist (called by student-service)
+router.put('/:therapistId/add-student', async (req, res) => {
+  try {
+    const { studentId, studentName } = req.body;
+
+    if (!studentId || !studentName) {
+      return res.status(400).json({ message: 'studentId and studentName are required' });
+    }
+
+    const result = await handleStudentTherapistAssignment(req.params.therapistId, studentId, studentName, 'add');
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error adding student to therapist:', error);
+    const statusCode = error.message.includes('not found') ? 404 : 500;
+    res.status(statusCode).json({ message: error.message });
+  }
+});
+
+// Remove student from therapist (called by student-service)
+router.delete('/:therapistId/remove-student', async (req, res) => {
+  try {
+    const { studentId } = req.body;
+
+    if (!studentId) {
+      return res.status(400).json({ message: 'studentId is required' });
+    }
+
+    const result = await handleStudentTherapistAssignment(req.params.therapistId, studentId, null, 'remove');
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error removing student from therapist:', error);
+    const statusCode = error.message.includes('not found') ? 404 : 500;
+    res.status(statusCode).json({ message: error.message });
+  }
+});
+
 // All routes below this line require authentication
 router.use(authenticateJWT);
 
@@ -239,128 +313,36 @@ router.delete('/:id/classes/:classId', authorizeResourceAccess('class-assignment
 router.post('/:id/students', authorizeResourceAccess('student-assignment'), async (req, res) => {
   try {
     const { studentId, studentName } = req.body;
-    const user = await User.findById(req.params.id);
     
-    if (!user) return res.status(404).send({ message: 'User not found' });
-    if (user.role.toLowerCase() !== 'therapist') return res.status(400).send({ message: 'User is not a therapist' });
-    
-    // Check if student is already assigned
-    const existingStudent = user.students.find(s => s._id.toString() === studentId);
-    if (existingStudent) {
-      return res.status(400).send({ message: 'Student already assigned to this therapist' });
+    if (!studentId || !studentName) {
+      return res.status(400).json({ message: 'studentId and studentName are required' });
     }
     
-    user.students.push({ _id: studentId, name: studentName });
-    await user.save();
-    
+    const result = await handleStudentTherapistAssignment(req.params.id, studentId, studentName, 'add');
     const updatedUser = await User.findById(req.params.id).select('-password');
     
-    res.send(updatedUser);
+    res.json(updatedUser);
   } catch (error) {
     console.error('Error adding student assignment:', error);
-    res.status(400).send({ message: 'Failed to add student assignment', error: error.message });
+    const statusCode = error.message.includes('not found') ? 404 : 
+                      error.message.includes('already assigned') ? 400 : 500;
+    res.status(statusCode).json({ message: error.message });
   }
 });
 
 // Remove student assignment from therapist (protected - Admin only)
 router.delete('/:id/students/:studentId', authorizeResourceAccess('student-assignment'), async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
-    
-    if (!user) return res.status(404).send({ message: 'User not found' });
-    if (user.role.toLowerCase() !== 'therapist') return res.status(400).send({ message: 'User is not a therapist' });
-    
-    user.students = user.students.filter(s => s._id.toString() !== req.params.studentId);
-    await user.save();
-    
+    const result = await handleStudentTherapistAssignment(req.params.id, req.params.studentId, null, 'remove');
     const updatedUser = await User.findById(req.params.id).select('-password');
     
-    res.send(updatedUser);
+    res.json(updatedUser);
   } catch (error) {
     console.error('Error removing student assignment:', error);
-    res.status(400).send({ message: 'Failed to remove student assignment', error: error.message });
+    const statusCode = error.message.includes('not found') ? 404 : 500;
+    res.status(statusCode).json({ message: error.message });
   }
 });
-
-//THESE FUNCTIONS SEEM TO BE DUPLICATED - CHECK THIS OUT
-// Add student to therapist (called by student-service)
-router.put('/:therapistId/add-student', async (req, res) => {
-  try {
-    const { therapistId } = req.params;
-    const { studentId, studentName } = req.body;
-
-    if (!studentId || !studentName) {
-      return res.status(400).json({ message: 'studentId and studentName are required' });
-    }
-
-    const therapist = await User.findById(therapistId);
-    
-    if (!therapist) {
-      return res.status(404).json({ message: 'Therapist not found' });
-    }
-    
-    if (therapist.role.toLowerCase() !== 'therapist') {
-      return res.status(400).json({ message: 'User is not a therapist' });
-    }
-    
-    // Check if student is already assigned
-    const existingStudent = therapist.students.find(s => s._id.toString() === studentId);
-    if (existingStudent) {
-      return res.status(200).json({ message: 'Student already assigned to this therapist' });
-    }
-    
-    therapist.students.push({ _id: studentId, name: studentName });
-    await therapist.save();
-    
-    res.status(200).json({ 
-      message: 'Student added to therapist successfully', 
-      therapist: therapist 
-    });
-  } catch (error) {
-    console.error('Error adding student to therapist:', error);
-    res.status(500).json({ message: 'Failed to add student to therapist', error: error.message });
-  }
-});
-
-// Remove student from therapist (called by student-service)
-router.delete('/:therapistId/remove-student', async (req, res) => {
-  try {
-    const { therapistId } = req.params;
-    const { studentId } = req.body;
-
-    if (!studentId) {
-      return res.status(400).json({ message: 'studentId is required' });
-    }
-
-    const therapist = await User.findById(therapistId);
-    
-    if (!therapist) {
-      return res.status(404).json({ message: 'Therapist not found' });
-    }
-    
-    if (therapist.role.toLowerCase() !== 'therapist') {
-      return res.status(400).json({ message: 'User is not a therapist' });
-    }
-    
-    // Check if student is assigned
-    const studentIndex = therapist.students.findIndex(s => s._id.toString() === studentId);
-    if (studentIndex === -1) {
-      return res.status(404).json({ message: 'Student not assigned to this therapist' });
-    }
-    
-    therapist.students.splice(studentIndex, 1);
-    await therapist.save();
-    
-    res.status(200).json({ 
-      message: 'Student removed from therapist successfully', 
-      therapist: therapist 
-    });
-  } catch (error) {
-    console.error('Error removing student from therapist:', error);
-    res.status(500).json({ message: 'Failed to remove student from therapist', error: error.message });
-  }
-});
-//END OF DOUBLED FUNCTIONS - CHECK WHAT IS NEEDED...
 
 // Delete a user by ID (protected - Admin only)
 router.delete('/:id', authorizeRoles(['Admin']), async (req, res) => {
