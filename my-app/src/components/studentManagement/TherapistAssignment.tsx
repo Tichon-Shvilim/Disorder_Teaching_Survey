@@ -23,6 +23,7 @@ import {
   Psychology as TherapyIcon
 } from "@mui/icons-material";
 import { toast } from 'react-toastify';
+import { useTranslation } from 'react-i18next';
 import { 
   assignTherapistToStudent, 
   removeTherapistFromStudent,
@@ -48,6 +49,7 @@ const TherapistAssignment: React.FC<TherapistAssignmentProps> = ({
   student, 
   onUpdate 
 }) => {
+  const { t } = useTranslation();
   const [therapists, setTherapists] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -63,40 +65,40 @@ const TherapistAssignment: React.FC<TherapistAssignmentProps> = ({
   }, [hasPermission]);
 
   // Load all therapists - only if user has permission to assign therapists
-  useEffect(() => {
-    if (canAssignTherapist) {
-      loadTherapists();
-    }
-  }, [canAssignTherapist]);
-
-  const handleCloseDialog = useCallback(() => {
-    setDialogOpen(false);
-    setSelectedTherapistId("");
-  }, []);
-
-  const loadTherapists = async () => {
+  const loadTherapists = useCallback(async () => {
     try {
       setLoading(true);
       const response = await getAllTherapists();
       setTherapists(response.data);
     } catch (error) {
       console.error("Error loading therapists:", error);
-      toast.error("Failed to load therapists");
+      toast.error(t('therapists.failedToLoadTherapists'));
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
+
+  const handleCloseDialog = useCallback(() => {
+    setDialogOpen(false);
+    setSelectedTherapistId("");
+  }, []);
+
+  useEffect(() => {
+    if (canAssignTherapist) {
+      loadTherapists();
+    }
+  }, [canAssignTherapist, loadTherapists]);
 
   const handleAssignTherapist = async () => {
     if (!selectedTherapistId || selectedTherapistId === "") {
-      toast.error("Please select a therapist");
+      toast.error(t('therapists.pleaseSelectTherapist'));
       return;
     }
 
     const therapist = therapists.find(t => t.id === selectedTherapistId);
     
     if (!therapist) {
-      toast.error("Selected therapist not found");
+      toast.error(t('therapists.therapistNotFound'));
       return;
     }
 
@@ -111,10 +113,10 @@ const TherapistAssignment: React.FC<TherapistAssignmentProps> = ({
       onUpdate(response.data.student);
       setDialogOpen(false);
       setSelectedTherapistId("");
-      toast.success("Therapist assigned successfully");
+      toast.success(t('therapists.assignTherapistSuccess'));
     } catch (error: unknown) {
       console.error("Error assigning therapist:", error);
-      const errorMessage = (error as ApiError).response?.data?.message || "Failed to assign therapist";
+      const errorMessage = (error as ApiError).response?.data?.message || t('therapists.failedToAssignTherapist');
       toast.error(errorMessage);
     } finally {
       setAssigning(false);
@@ -122,7 +124,7 @@ const TherapistAssignment: React.FC<TherapistAssignmentProps> = ({
   };
 
   const handleRemoveTherapist = async (therapistId: string, therapistName: string) => {
-    if (!confirm(`Are you sure you want to remove ${therapistName} as a therapist for ${student.name}?`)) {
+    if (!confirm(t('therapists.confirmRemoveTherapist', { therapistName, studentName: student.name }))) {
       return;
     }
 
@@ -132,10 +134,10 @@ const TherapistAssignment: React.FC<TherapistAssignmentProps> = ({
       });
       
       onUpdate(response.data.student);
-      toast.success("Therapist removed successfully");
+      toast.success(t('therapists.removeTherapistSuccess'));
     } catch (error: unknown) {
       console.error("Error removing therapist:", error);
-      const errorMessage = (error as ApiError).response?.data?.message || "Failed to remove therapist";
+      const errorMessage = (error as ApiError).response?.data?.message || t('therapists.failedToAssignTherapist');
       toast.error(errorMessage);
     }
   };
@@ -149,7 +151,7 @@ const TherapistAssignment: React.FC<TherapistAssignmentProps> = ({
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
           <TherapyIcon sx={{ mr: 1, color: 'primary.main' }} />
           <Typography variant="h6" component="h3">
-            Assigned Therapists
+            {t('therapists.assignedTherapists')}
           </Typography>
           <PermissionGate permission="student.assign_therapist">
             <Button
@@ -160,7 +162,7 @@ const TherapistAssignment: React.FC<TherapistAssignmentProps> = ({
               size="small"
               disabled={availableTherapists.length === 0}
             >
-              Assign Therapist
+              {t('therapists.assignTherapist')}
             </Button>
           </PermissionGate>
         </Box>
@@ -173,7 +175,7 @@ const TherapistAssignment: React.FC<TherapistAssignmentProps> = ({
           <>
             {!student.therapists || student.therapists.length === 0 ? (
               <Alert severity="info">
-                No therapists assigned to this student
+                {t('therapists.noTherapistsAssigned')}
               </Alert>
             ) : (
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
@@ -210,16 +212,16 @@ const TherapistAssignment: React.FC<TherapistAssignmentProps> = ({
           maxWidth="sm"
           fullWidth
         >
-          <DialogTitle>Assign Therapist to {student.name}</DialogTitle>
+          <DialogTitle>{t('therapists.assignTherapist')} - {student.name}</DialogTitle>
           <DialogContent>
             <FormControl fullWidth sx={{ mt: 2 }}>
-              <InputLabel>Select Therapist</InputLabel>
+              <InputLabel>{t('therapists.selectTherapist')}</InputLabel>
               <Select
                 value={selectedTherapistId || ""}
                 onChange={(e) => {
                   setSelectedTherapistId(e.target.value as string);
                 }}
-                label="Select Therapist"
+                label={t('therapists.selectTherapist')}
               >
                 {availableTherapists.map((therapist) => (
                     <MenuItem key={therapist.id} value={therapist.id}>
@@ -231,13 +233,13 @@ const TherapistAssignment: React.FC<TherapistAssignmentProps> = ({
             
             {availableTherapists.length === 0 && (
               <Alert severity="warning" sx={{ mt: 2 }}>
-                All available therapists are already assigned to this student
+                {t('therapists.allTherapistsAssigned')}
               </Alert>
             )}
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCloseDialog}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               onClick={handleAssignTherapist}
@@ -245,7 +247,7 @@ const TherapistAssignment: React.FC<TherapistAssignmentProps> = ({
               disabled={!selectedTherapistId || selectedTherapistId === "" || assigning}
               startIcon={assigning ? <CircularProgress size={16} /> : <AddIcon />}
             >
-              {assigning ? "Assigning..." : "Assign Therapist"}
+              {assigning ? t('common.loading') : t('therapists.assignTherapist')}
             </Button>
           </DialogActions>
         </Dialog>

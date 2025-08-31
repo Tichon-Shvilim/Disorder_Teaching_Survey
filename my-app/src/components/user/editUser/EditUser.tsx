@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   TextField,
   Button,
@@ -55,6 +56,7 @@ interface ValidationErrors {
 const EditUser: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
@@ -202,9 +204,9 @@ const EditUser: React.FC = () => {
     return (
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Paper elevation={3} sx={{ p: 4, textAlign: 'center' }}>
-          <Typography color="error">User not found</Typography>
+          <Typography color="error">{t('users.userNotFound')}</Typography>
           <Button onClick={handleCancel} sx={{ mt: 2 }}>
-            Back to User Management
+            {t('users.backToUserManagement')}
           </Button>
         </Paper>
       </Container>

@@ -21,3 +21,9 @@ export { default as PDFDownloadButton } from './PDFDownloadButton';
 export { default as PDFGenerator } from './PDFGenerator';
 export { SimplePDFDocument } from './SimplePDFGenerator';
 export { usePDFGeneration } from './usePDFGeneration';
+
+// Language components
+export { default as LanguageSwitcher } from './LanguageSwitcher';
+
+// Theme components
+export { default as RTLThemeProvider } from './RTLThemeProvider';
