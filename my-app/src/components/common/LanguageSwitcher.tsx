@@ -3,7 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { Menu, MenuItem, Box, IconButton } from '@mui/material';
 import { Language as LanguageIcon } from '@mui/icons-material';
 
-const LanguageSwitcher: React.FC = () => {
+interface LanguageSwitcherProps {
+  variant?: 'header' | 'signin';
+}
+
+const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ variant = 'header' }) => {
   const { i18n } = useTranslation();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
@@ -22,6 +26,9 @@ const LanguageSwitcher: React.FC = () => {
 
   const currentLanguage = i18n.language === 'he' ? 'עברית' : 'English';
 
+  // Different styles based on variant
+  const isSignInVariant = variant === 'signin';
+
   return (
     <Box sx={{ display: 'flex', alignItems: 'center' }}>
       <IconButton
@@ -37,12 +44,15 @@ const LanguageSwitcher: React.FC = () => {
           padding: '8px 12px',
           borderRadius: 2,
           transition: 'all 0.2s ease-in-out',
-          color: 'text.secondary',
-          backgroundColor: 'rgba(0, 0, 0, 0.04)',
+          color: isSignInVariant ? '#374151' : 'text.secondary',
+          backgroundColor: isSignInVariant ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.04)',
+          backdropFilter: isSignInVariant ? 'blur(10px)' : 'none',
+          boxShadow: isSignInVariant ? '0 4px 6px -1px rgba(0, 0, 0, 0.1)' : 'none',
           '&:hover': {
-            backgroundColor: '#f0f9ff',
-            color: '#1976d2',
-            transform: 'translateY(-1px)'
+            backgroundColor: isSignInVariant ? 'rgba(255, 255, 255, 1)' : '#f0f9ff',
+            color: isSignInVariant ? '#1976d2' : '#1976d2',
+            transform: 'translateY(-1px)',
+            boxShadow: isSignInVariant ? '0 6px 8px -1px rgba(0, 0, 0, 0.15)' : 'none'
           },
           '&:focus': {
             outline: 'none',
