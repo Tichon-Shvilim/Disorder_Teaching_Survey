@@ -23,18 +23,18 @@ const AnswerV2Schema = new mongoose.Schema({
 
 // Enhanced form submission schema for V2 questionnaires
 const FormSubmissionV2Schema = new mongoose.Schema({
-  // Student information
-  studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
+  // Student information (string reference to student-service)
+  studentId: { type: String, required: true }, // Reference to Student in student-service
   studentName: { type: String, required: true }, // Denormalized for performance
   
-  // Questionnaire information
+  // Questionnaire information (local reference)
   questionnaireId: { type: mongoose.Schema.Types.ObjectId, ref: 'QuestionnaireTemplateV2', required: true },
   questionnaireTitle: { type: String, required: true }, // Denormalized for performance
   
   // Enhanced submission data
   answers: [AnswerV2Schema],
   submittedAt: { type: Date, default: Date.now },
-  completedBy: { type: String }, // Who filled it (therapist, teacher, etc.)
+  completedBy: { type: String }, // User ID who filled it (therapist, teacher, etc.)
   
   // Metadata
   status: { 
@@ -44,8 +44,9 @@ const FormSubmissionV2Schema = new mongoose.Schema({
   },
   notes: { type: String },
   
-  // Analytics support
-  totalScore: { type: Number }, // Calculated total score based on weights
+  // Analytics fields - will be populated by analytics-service later
+  // Keeping them optional for now
+  totalScore: { type: Number, default: null },
   domainScores: [{ // Scores per domain/group
     nodeId: String,
     nodePath: [String],
