@@ -101,7 +101,11 @@ const Sidebar: React.FC = () => {
           <ListItemIcon sx={{ minWidth: 36 }}>{item.icon}</ListItemIcon>
           <ListItemText
             primary={item.name}
-            sx={{ fontWeight: isActive ? "bold" : "normal" }}
+            sx={{ 
+              fontWeight: isActive ? "bold" : "normal",
+              textAlign: isRTL ? 'right' : 'left',
+              direction: isRTL ? 'rtl' : 'ltr'
+            }}
           />
         </ListItemButton>
       )}
