@@ -19,6 +19,7 @@ import type { Student } from "./Api-Requests/StudentAPIService";
 import { getAllClasses } from "./Api-Requests/ClassAPIService";
 import type { Class } from "./Api-Requests/ClassAPIService";
 import { toast } from "react-toastify";
+import { PermissionGate, usePermissions } from '../common';
 
 const StudentList: React.FC = () => {
   const [students, setStudents] = useState<Student[]>([]);
@@ -28,6 +29,9 @@ const StudentList: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  
+  // Permission system - keeping hook for future use
+  usePermissions();
 
   // Fetch students from API
   const fetchStudents = useCallback(async () => {
@@ -253,36 +257,38 @@ const StudentList: React.FC = () => {
               Students
             </h1>
           </div>
-          <button
-            onClick={handleAddStudent}
-            style={{
-              background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
-              color: "white",
-              padding: "12px 24px",
-              borderRadius: "8px",
-              border: "none",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              fontSize: "14px",
-              fontWeight: "500",
-              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-              transition: "all 0.2s",
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = "translateY(-2px)";
-              e.currentTarget.style.boxShadow =
-                "0 6px 12px rgba(0, 0, 0, 0.15)";
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
-            }}
-          >
-            <Plus style={{ height: "20px", width: "20px" }} />
-            <span>Add Student</span>
-          </button>
+          <PermissionGate permission="student.create">
+            <button
+              onClick={handleAddStudent}
+              style={{
+                background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+                color: "white",
+                padding: "12px 24px",
+                borderRadius: "8px",
+                border: "none",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                fontSize: "14px",
+                fontWeight: "500",
+                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                transition: "all 0.2s",
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = "translateY(-2px)";
+                e.currentTarget.style.boxShadow =
+                  "0 6px 12px rgba(0, 0, 0, 0.15)";
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = "translateY(0)";
+                e.currentTarget.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+              }}
+            >
+              <Plus style={{ height: "20px", width: "20px" }} />
+              <span>Add Student</span>
+            </button>
+          </PermissionGate>
         </div>
 
         {/* Search and Filter */}
@@ -502,29 +508,31 @@ const StudentList: React.FC = () => {
                     Active
                   </div>
                 </div>
-                <button
-                  onClick={() => handleEditStudent(student._id)}
-                  style={{
-                    padding: "8px",
-                    backgroundColor: "transparent",
-                    border: "none",
-                    cursor: "pointer",
-                    borderRadius: "8px",
-                    color: "#9ca3af",
-                    transition: "all 0.2s",
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.backgroundColor = "#f3f4f6";
-                    e.currentTarget.style.color = "#4b5563";
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.backgroundColor = "transparent";
-                    e.currentTarget.style.color = "#9ca3af";
-                  }}
-                  title="Edit Student"
-                >
-                  <Edit style={{ height: "16px", width: "16px" }} />
-                </button>
+                <PermissionGate permission="student.edit">
+                  <button
+                    onClick={() => handleEditStudent(student._id)}
+                    style={{
+                      padding: "8px",
+                      backgroundColor: "transparent",
+                      border: "none",
+                      cursor: "pointer",
+                      borderRadius: "8px",
+                      color: "#9ca3af",
+                      transition: "all 0.2s",
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.backgroundColor = "#f3f4f6";
+                      e.currentTarget.style.color = "#4b5563";
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.backgroundColor = "transparent";
+                      e.currentTarget.style.color = "#9ca3af";
+                    }}
+                    title="Edit Student"
+                  >
+                    <Edit style={{ height: "16px", width: "16px" }} />
+                  </button>
+                </PermissionGate>
                 
                 {/* <button
                   onClick={() => handleFillForm(student._id, student.name)}
@@ -674,27 +682,29 @@ const StudentList: React.FC = () => {
                   <Eye style={{ height: "16px", width: "16px" }} />
                   <span>View Details</span>
                 </button>
-                <button
-                  onClick={() => handleDeleteStudent(student._id)}
-                  style={{
-                    padding: "8px 12px",
-                    border: "1px solid #fca5a5",
-                    borderRadius: "8px",
-                    backgroundColor: "white",
-                    color: "#dc2626",
-                    cursor: "pointer",
-                    transition: "all 0.2s",
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.backgroundColor = "#fef2f2";
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.backgroundColor = "white";
-                  }}
-                  title="Delete Student"
-                >
-                  <Trash2 style={{ height: "16px", width: "16px" }} />
-                </button>
+                <PermissionGate permission="student.delete">
+                  <button
+                    onClick={() => handleDeleteStudent(student._id)}
+                    style={{
+                      padding: "8px 12px",
+                      border: "1px solid #fca5a5",
+                      borderRadius: "8px",
+                      backgroundColor: "white",
+                      color: "#dc2626",
+                      cursor: "pointer",
+                      transition: "all 0.2s",
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.backgroundColor = "#fef2f2";
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.backgroundColor = "white";
+                    }}
+                    title="Delete Student"
+                  >
+                    <Trash2 style={{ height: "16px", width: "16px" }} />
+                  </button>
+                </PermissionGate>
               </div>
             </div>
           ))}

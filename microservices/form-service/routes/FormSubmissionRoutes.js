@@ -115,7 +115,8 @@ router.post('/submissions', authenticateJWT, async (req, res) => {
       studentName, 
       questionnaireId, 
       answers, 
-      completedBy, 
+      completedBy,
+      completedById, 
       notes 
     } = req.body;
 
@@ -156,6 +157,7 @@ router.post('/submissions', authenticateJWT, async (req, res) => {
       questionnaireTitle: questionnaire.title,
       answers,
       completedBy: completedBy || user.name || `${user.role} (${user.id})`, // Default to current user
+      completedById: completedById || user.id?.toString(), // Store user ID for permission checks
       notes,
       status: 'completed'
     });
@@ -188,6 +190,11 @@ router.put('/submissions/:id', authenticateJWT, async (req, res) => {
     const hasAccess = await canAccessStudent(user, existingSubmission.studentId, req.headers.authorization);
     if (!hasAccess) {
       return res.status(403).json({ message: 'Access denied. You cannot update this submission.' });
+    }
+    
+    // Additional check: Users can only edit their own submissions (unless admin)
+    if (user.role.toLowerCase() !== 'admin' && existingSubmission.completedById !== user.id?.toString()) {
+      return res.status(403).json({ message: 'Access denied. You can only edit your own submissions.' });
     }
     
     const updatedSubmission = await FormSubmission.findByIdAndUpdate(
@@ -226,6 +233,11 @@ router.delete('/submissions/:id', authenticateJWT, async (req, res) => {
     const hasAccess = await canAccessStudent(user, existingSubmission.studentId, req.headers.authorization);
     if (!hasAccess) {
       return res.status(403).json({ message: 'Access denied. You cannot delete this submission.' });
+    }
+    
+    // Additional check: Users can only delete their own submissions (unless admin)
+    if (user.role.toLowerCase() !== 'admin' && existingSubmission.completedById !== user.id?.toString()) {
+      return res.status(403).json({ message: 'Access denied. You can only delete your own submissions.' });
     }
     
     const deletedSubmission = await FormSubmission.findByIdAndDelete(req.params.id);

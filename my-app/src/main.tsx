@@ -1,3 +1,27 @@
+// Polyfills for Node.js modules in browser
+import { Buffer } from 'buffer';
+
+// Make them globally available
+declare global {
+  interface Window {
+    global: typeof globalThis;
+    Buffer: typeof Buffer;
+    process: {
+      env: Record<string, string | undefined>;
+      browser: boolean;
+      nextTick: (callback: () => void) => void;
+    };
+  }
+}
+
+window.global = globalThis;
+window.Buffer = Buffer;
+window.process = {
+  env: {},
+  browser: true,
+  nextTick: (callback: () => void) => setTimeout(callback, 0)
+};
+
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";

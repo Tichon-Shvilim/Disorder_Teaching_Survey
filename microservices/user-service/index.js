@@ -6,11 +6,10 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Enable CORS
+// Enable CORS with specific origin
 app.use(cors({
-  origin: 'http://localhost:5173', // Allow requests from the frontend
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Specify allowed HTTP methods
-  credentials: true, // Allow cookies and credentials
+  origin: process.env.CORS_ORIGIN || '*',
+  credentials: true
 }));
 
 app.use(express.json());
