@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Table,
   TableBody,
@@ -34,6 +35,8 @@ import type UserModel from "../UserModel";
 
 const UsersList: React.FC = () => {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.dir() === 'rtl';
   const [users, setUsers] = React.useState<UserModel[]>([]);
   const [searchTerm, setSearchTerm] = React.useState<string>("");
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -74,7 +77,7 @@ const UsersList: React.FC = () => {
 
   const onDelete = async (id: number) => {
     const confirmed = window.confirm(
-      "Are you sure you want to deactivate this user?"
+      t('users.confirmDeactivate')
     );
     if (!confirmed) return;
     try {
@@ -93,7 +96,7 @@ const UsersList: React.FC = () => {
 
   const onActivate = async (id: number) => {
     const confirmed = window.confirm(
-      "Are you sure you want to activate this user?"
+      t('users.confirmActivate')
     );
     if (!confirmed) return;
     try {
@@ -181,7 +184,7 @@ const UsersList: React.FC = () => {
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Typography variant="h4" sx={{ fontWeight: 600, color: '#1a202c' }}>
-            {showInactive ? 'Inactive Users' : 'User Management'}
+            {showInactive ? t('users.inactiveUsers') : t('users.title')}
           </Typography>
           
           {/* Toggle Buttons */}
@@ -202,7 +205,7 @@ const UsersList: React.FC = () => {
                 padding: '8px 16px'
               }}
             >
-              Active Users
+              {t('users.activeUsers')}
             </Button>
             <Button
               variant={showInactive ? "contained" : "outlined"}
@@ -220,7 +223,7 @@ const UsersList: React.FC = () => {
                 padding: '8px 16px'
               }}
             >
-              Inactive Users
+              {t('users.inactiveUsers')}
             </Button>
           </Box>
         </Box>
@@ -240,14 +243,14 @@ const UsersList: React.FC = () => {
             padding: '10px 20px'
           }}
         >
-          Add User
+          {t('users.addUser')}
         </Button>
       </Box>
 
       {/* Search Bar */}
       <Box sx={{ marginBottom: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
         <TextField
-          placeholder={`Search ${showInactive ? 'inactive' : 'active'} users...`}
+          placeholder={showInactive ? t('users.searchInactiveUsers') : t('users.searchActiveUsers')}
           variant="outlined"
           size="medium"
           value={searchTerm}
@@ -279,7 +282,7 @@ const UsersList: React.FC = () => {
         
         {/* User count indicator */}
         <Typography sx={{ color: '#718096', fontSize: '14px' }}>
-          {filteredUsers.length} {showInactive ? 'inactive' : 'active'} user{filteredUsers.length !== 1 ? 's' : ''} found
+          {filteredUsers.length} {showInactive ? t('users.inactive') : t('users.active')} {filteredUsers.length === 1 ? t('users.userFound') : t('users.usersFound')}
         </Typography>
       </Box>
 
@@ -295,20 +298,20 @@ const UsersList: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow sx={{ backgroundColor: '#f7fafc' }}>
-              <TableCell sx={{ fontWeight: 600, color: '#4a5568', fontSize: '14px', padding: '16px 24px' }}>
-                User
+              <TableCell sx={{ fontWeight: 600, color: '#4a5568', fontSize: '14px', padding: '16px 24px', textAlign: isRTL ? 'right' : 'left' }}>
+                {t('users.user')}
               </TableCell>
-              <TableCell sx={{ fontWeight: 600, color: '#4a5568', fontSize: '14px', padding: '16px 24px' }}>
-                Role
+              <TableCell sx={{ fontWeight: 600, color: '#4a5568', fontSize: '14px', padding: '16px 24px', textAlign: isRTL ? 'right' : 'left' }}>
+                {t('users.role')}
               </TableCell>
-              <TableCell sx={{ fontWeight: 600, color: '#4a5568', fontSize: '14px', padding: '16px 24px' }}>
-                Status
+              <TableCell sx={{ fontWeight: 600, color: '#4a5568', fontSize: '14px', padding: '16px 24px', textAlign: isRTL ? 'right' : 'left' }}>
+                {t('users.status')}
               </TableCell>
-              <TableCell sx={{ fontWeight: 600, color: '#4a5568', fontSize: '14px', padding: '16px 24px', width: '280px' }}>
-                Assignments
+              <TableCell sx={{ fontWeight: 600, color: '#4a5568', fontSize: '14px', padding: '16px 24px', width: '280px', textAlign: isRTL ? 'right' : 'left' }}>
+                {t('users.assignments')}
               </TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600, color: '#4a5568', fontSize: '14px', padding: '16px 24px' }}>
-                {showInactive ? 'Activate' : 'Actions'}
+              <TableCell align={isRTL ? 'left' : 'right'} sx={{ fontWeight: 600, color: '#4a5568', fontSize: '14px', padding: '16px 24px' }}>
+                {showInactive ? t('users.activate') : t('users.actions')}
               </TableCell>
             </TableRow>
           </TableHead>
@@ -323,8 +326,8 @@ const UsersList: React.FC = () => {
                   borderBottom: '1px solid #e2e8f0'
                 }}
               >
-                <TableCell sx={{ padding: '16px 24px' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <TableCell sx={{ padding: '16px 24px', textAlign: isRTL ? 'right' : 'left' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, justifyContent: isRTL ? 'flex-end' : 'flex-start', direction: isRTL ? 'rtl' : 'ltr' }}>
                     <Avatar
                       sx={{
                         backgroundColor: '#3182ce',
@@ -332,12 +335,13 @@ const UsersList: React.FC = () => {
                         width: 40,
                         height: 40,
                         fontSize: '14px',
-                        fontWeight: 600
+                        fontWeight: 600,
+                        order: isRTL ? 2 : 1
                       }}
                     >
                       {getUserInitials(user.name)}
                     </Avatar>
-                    <Box>
+                    <Box sx={{ textAlign: isRTL ? 'right' : 'left', order: isRTL ? 1 : 2 }}>
                       <Typography sx={{ fontWeight: 500, color: '#1a202c', fontSize: '14px' }}>
                         {user.name}
                       </Typography>
@@ -347,9 +351,9 @@ const UsersList: React.FC = () => {
                     </Box>
                   </Box>
                 </TableCell>
-                <TableCell sx={{ padding: '16px 24px' }}>
+                <TableCell sx={{ padding: '16px 24px', textAlign: isRTL ? 'right' : 'left' }}>
                   <Chip
-                    label={user.role}
+                    label={t(`users.${user.role.toLowerCase()}`)}
                     size="small"
                     sx={{
                       backgroundColor: getRoleColor(user.role),
@@ -360,9 +364,9 @@ const UsersList: React.FC = () => {
                     }}
                   />
                 </TableCell>
-                <TableCell sx={{ padding: '16px 24px' }}>
+                <TableCell sx={{ padding: '16px 24px', textAlign: isRTL ? 'right' : 'left' }}>
                   <Chip
-                    label={user.status === 'inactive' ? 'Inactive' : 'Active'}
+                    label={user.status === 'inactive' ? t('users.inactive') : t('users.active')}
                     size="small"
                     sx={{
                       backgroundColor: user.status === 'inactive' ? '#fed7d7' : '#c6f6d5',
@@ -373,7 +377,7 @@ const UsersList: React.FC = () => {
                     }}
                   />
                 </TableCell>
-                <TableCell sx={{ padding: '16px 24px', maxWidth: '300px' }}>
+                <TableCell sx={{ padding: '16px 24px', maxWidth: '300px', textAlign: isRTL ? 'right' : 'left' }}>
                   {user.role.toLowerCase() === 'teacher' && user.classes && user.classes.length > 0 ? (
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                       {user.classes.slice(0, 3).map((classItem) => (
@@ -413,7 +417,7 @@ const UsersList: React.FC = () => {
                             justifyContent: 'flex-start',
                           }}
                         >
-                          +{user.classes.length - 3} more classes
+                          +{user.classes.length - 3} {t('users.moreClasses')}
                         </Button>
                       )}
                     </Box>
@@ -456,17 +460,17 @@ const UsersList: React.FC = () => {
                             justifyContent: 'flex-start',
                           }}
                         >
-                          +{user.students.length - 3} more students
+                          +{user.students.length - 3} {t('users.moreStudents')}
                         </Button>
                       )}
                     </Box>
                   ) : (
                     <Typography sx={{ color: '#a0aec0', fontSize: '12px', fontStyle: 'italic' }}>
-                      No assignments
+                      {t('users.noAssignments')}
                     </Typography>
                   )}
                 </TableCell>
-                <TableCell align="right" sx={{ padding: '16px 24px' }}>
+                <TableCell align={isRTL ? 'left' : 'right'} sx={{ padding: '16px 24px' }}>
                   <IconButton
                     onClick={() => user.id !== undefined && onEdit(user.id)}
                     disabled={user.id === undefined}
@@ -492,7 +496,7 @@ const UsersList: React.FC = () => {
                           backgroundColor: '#f0fdf4',
                         },
                       }}
-                      title="Activate User"
+                      title={t('users.activateUser')}
                     >
                       <AddIcon fontSize="small" />
                     </IconButton>
@@ -507,7 +511,7 @@ const UsersList: React.FC = () => {
                           backgroundColor: '#fed7d7',
                         },
                       }}
-                      title="Deactivate User"
+                      title={t('users.deactivateUser')}
                     >
                       <DeleteIcon fontSize="small" />
                     </IconButton>
@@ -535,10 +539,10 @@ const UsersList: React.FC = () => {
         >
           <Typography sx={{ color: '#718096', fontSize: '16px' }}>
             {searchTerm 
-              ? `No ${showInactive ? 'inactive' : 'active'} users found matching your search.`
+              ? (showInactive ? t('users.noInactiveUsersFound') : t('users.noActiveUsersFound'))
               : showInactive 
-                ? 'No inactive users found.'
-                : 'No active users available.'
+                ? t('users.noInactiveUsers')
+                : t('users.noActiveUsers')
             }
           </Typography>
           {showInactive && users.filter(u => u.status !== 'inactive').length > 0 && (
@@ -550,7 +554,7 @@ const UsersList: React.FC = () => {
                 textTransform: 'none'
               }}
             >
-              View Active Users
+              {t('users.viewActiveUsers')}
             </Button>
           )}
         </Box>
@@ -623,7 +627,7 @@ const UsersList: React.FC = () => {
          (!selectedUser.classes || selectedUser.classes.length <= 3) && (
           <MenuItem disabled sx={{ padding: '12px 16px' }}>
             <Typography sx={{ color: '#a0aec0', fontSize: '14px', fontStyle: 'italic' }}>
-              No additional classes
+              {t('users.noAdditionalClasses')}
             </Typography>
           </MenuItem>
         )}
@@ -632,7 +636,7 @@ const UsersList: React.FC = () => {
          (!selectedUser.students || selectedUser.students.length <= 3) && (
           <MenuItem disabled sx={{ padding: '12px 16px' }}>
             <Typography sx={{ color: '#a0aec0', fontSize: '14px', fontStyle: 'italic' }}>
-              No additional students
+              {t('users.noAdditionalStudents')}
             </Typography>
           </MenuItem>
         )}

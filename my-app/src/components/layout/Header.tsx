@@ -2,11 +2,14 @@
 import React from "react";
 import { AppBar, Toolbar, Typography, Box, Button } from "@mui/material";
 import { useSelector, useDispatch } from "react-redux";
+import { useTranslation } from 'react-i18next';
 import type { RootState } from "../../store";
 import { logout } from "../../store/authSlice";
 import { LogOut, User } from "lucide-react";
+import { LanguageSwitcher } from "../common";
 
 const Header: React.FC = () => {
+  const { t } = useTranslation();
   const user = useSelector((state: RootState) => state.auth.user);
   const dispatch = useDispatch();
 
@@ -29,13 +32,14 @@ const Header: React.FC = () => {
       <Toolbar sx={{ justifyContent: "space-between" }}>
         <Box>
           <Typography variant="h5" fontWeight="bold">
-            Special Needs Progress Tracker
+            {t('common.appTitle', 'Special Needs Progress Tracker')}
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Welcome back, {user?.name}
+            {t('common.welcomeBack', 'Welcome back')}, {user?.name}
           </Typography>
         </Box>
-        <Box display="flex" alignItems="center" gap={4} sx={{ px: 2 }}>
+        <Box display="flex" alignItems="center" gap={2} sx={{ px: 2 }}>
+          <LanguageSwitcher />
           <Box display="flex" alignItems="center" gap={1}>
             <User size={24} color="gray" />
             <Typography fontWeight="bold" color="text.secondary">
@@ -53,7 +57,7 @@ const Header: React.FC = () => {
             startIcon={<LogOut />}
             onClick={handleLogout}
           >
-            Logout
+            {t('navigation.logout', 'Logout')}
           </Button>
         </Box>
       </Toolbar>

@@ -1,6 +1,7 @@
 // src/components/layout/Sidebar.tsx
 import { NavLink } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 import type { RootState } from "../../store";
 import {
   Drawer,
@@ -26,43 +27,44 @@ const drawerWidth = 280;
 
 const Sidebar: React.FC = () => {
   const user = useSelector((state: RootState) => state.auth.user);
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.dir() === 'rtl';
 
   const mainNavItems = [
     {
-      name: "Dashboard",
+      name: t('navigation.dashboard'),
       path: "/layout/dashboard",
       icon: <SpaceDashboardOutlined />,
     },
     {
-      name: "Assessments",
+      name: t('navigation.assessments'),
       path: "/layout/assessments",
       icon: <DescriptionOutlined />,
     },
-    { name: "Reports", path: "/layout/reports", icon: <BarChartOutlined /> },
+    { 
+      name: t('navigation.reports'), 
+      path: "/layout/reports", 
+      icon: <BarChartOutlined /> 
+    },
     {
-      name: "Student Management",
+      name: t('navigation.studentManagement'),
       path: "/layout/students",
       icon: <SchoolOutlined />,
     },
     ...(user?.role === "Admin"
       ? [
           {
-            name: "Class Management",
+            name: t('navigation.classManagement'),
             path: "/layout/classes",
             icon: <ClassOutlined />,
           },
-          // {
-          //   name: "Assessment Forms (Legacy)",
-          //   path: "/layout/questionnaires",
-          //   icon: <AssignmentOutlined />,
-          // },
           {
-            name: "Assessment Forms V2",
-            path: "/layout/questionnaires-v2",
+            name: t('navigation.assessmentFormsV2'),
+            path: "/layout/questionnaires",
             icon: <AssignmentOutlined />,
           },
           {
-            name: "User Management",
+            name: t('navigation.userManagement'),
             path: "/layout/user-management",
             icon: <PeopleOutlineRounded />,
           },
@@ -88,7 +90,8 @@ const Sidebar: React.FC = () => {
             "&:hover .MuiListItemIcon-root .MuiSvgIcon-root": {
               color: "#64b5f6",
             },
-            borderRight: isActive ? "3px solid #64b5f6" : "none",
+            borderRight: !isRTL && isActive ? "3px solid #64b5f6" : "none",
+            borderLeft: isRTL && isActive ? "3px solid #64b5f6" : "none",
             color: "#667A93",
             paddingY: isSubItem ? 1 : 2,
             paddingX: isSubItem ? 5 : 3,
@@ -108,6 +111,7 @@ const Sidebar: React.FC = () => {
   return (
     <Drawer
       variant="permanent"
+      anchor={isRTL ? 'right' : 'left'}
       sx={{
         width: drawerWidth,
         flexShrink: 0,

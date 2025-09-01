@@ -17,6 +17,121 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* RTL Support */
+[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+}
+
+[dir="ltr"] {
+  direction: ltr;
+  text-align: left;
+}
+
+/* Hebrew font support */
+[dir="rtl"] * {
+  font-family: 'Segoe UI', 'Arial Hebrew', 'David', 'Narkisim', system-ui, Arial, sans-serif;
+}
+
+/* RTL Material-UI adjustments */
+[dir="rtl"] .MuiDrawer-paper {
+  right: 0;
+  left: auto;
+}
+
+[dir="rtl"] .MuiDrawer-docked {
+  border-left: 1px solid rgba(0, 0, 0, 0.12);
+  border-right: none;
+}
+
+/* RTL Sidebar positioning */
+[dir="rtl"] .sidebar {
+  right: 0;
+  left: auto;
+}
+
+[dir="rtl"] .main-content {
+  margin-right: 240px;
+  margin-left: 0;
+}
+
+[dir="ltr"] .main-content {
+  margin-left: 240px;
+  margin-right: 0;
+}
+
+/* RTL Button positioning */
+[dir="rtl"] .MuiButton-startIcon {
+  margin-right: -4px;
+  margin-left: 8px;
+}
+
+[dir="rtl"] .MuiButton-endIcon {
+  margin-left: -4px;
+  margin-right: 8px;
+}
+
+/* RTL Icon positioning */
+[dir="rtl"] .MuiSvgIcon-root {
+  transform: scaleX(-1);
+}
+
+[dir="rtl"] .MuiIconButton-root {
+  transform: none;
+}
+
+/* RTL Text alignment */
+[dir="rtl"] .MuiTypography-alignLeft {
+  text-align: right;
+}
+
+[dir="rtl"] .MuiTypography-alignRight {
+  text-align: left;
+}
+
+/* RTL Menu positioning */
+[dir="rtl"] .MuiMenu-paper {
+  transform-origin: top right;
+}
+
+/* RTL Chip positioning */
+[dir="rtl"] .MuiChip-deleteIcon {
+  margin-right: 5px;
+  margin-left: -6px;
+}
+
+/* RTL Form elements */
+[dir="rtl"] .MuiInputLabel-root {
+  transform-origin: top right;
+  right: 0;
+  left: auto;
+}
+
+[dir="rtl"] .MuiInputLabel-shrink {
+  transform: translate(0, -9px) scale(0.75);
+}
+
+/* Override Material-UI for RTL */
+[dir="rtl"] .MuiOutlinedInput-notchedOutline legend {
+  text-align: right;
+}
+
+/* RTL Flexbox adjustments */
+[dir="rtl"] .flex-row-reverse {
+  flex-direction: row-reverse;
+}
+
+/* General RTL margins and paddings */
+[dir="rtl"] .ml-auto {
+  margin-right: auto !important;
+  margin-left: unset !important;
+}
+
+[dir="rtl"] .mr-auto {
+  margin-left: auto !important;
+  margin-right: unset !important;
+}
+
 a {
   font-weight: 500;
   color: #646cff;

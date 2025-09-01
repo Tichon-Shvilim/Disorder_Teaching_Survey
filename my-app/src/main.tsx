@@ -30,6 +30,7 @@ import { Provider } from "react-redux";
 import { store } from "./store";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import './i18n'; // Initialize i18n
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -41,7 +42,7 @@ createRoot(document.getElementById("root")!).render(
         hideProgressBar={false}
         newestOnTop={false}
         closeOnClick
-        rtl={false}
+        rtl={true}
         pauseOnFocusLoss
         draggable
         pauseOnHover

@@ -218,13 +218,19 @@ router.delete('/:id', authenticateJWT, authorizeRole(['Admin']), async (req, res
   }
 });
 
-// ASSIGN a therapist to a student
-router.put('/:studentId/assign-therapist', async (req, res) => {
+// ASSIGN a therapist to a student - Admin only
+router.put('/:studentId/assign-therapist', authenticateJWT, authorizeRole(['Admin']), async (req, res) => {
   try {
+    console.log('=== ASSIGN THERAPIST ENDPOINT CALLED ===');
+    console.log('Student ID:', req.params.studentId);
+    console.log('Request body:', req.body);
+    console.log('User making request:', req.user);
+    
     const { studentId } = req.params;
     const { therapistId, therapistName } = req.body;
 
     if (!therapistId || !therapistName) {
+      console.log('Missing required fields:', { therapistId, therapistName });
       return res.status(400).json({ message: 'therapistId and therapistName are required' });
     }
 
@@ -250,10 +256,30 @@ router.put('/:studentId/assign-therapist', async (req, res) => {
     // 4. Update therapist's students array in user-service
     try {
       const userServiceUrl = process.env.USER_SERVICE_URL || 'http://user-service:3001';
-      await axios.put(`${userServiceUrl}/api/users/${therapistId}/add-student`, {
+      const requestData = {
         studentId: studentId,
         studentName: student.name
+      };
+      
+      console.log('=== CALLING USER SERVICE ===');
+      console.log('URL:', `${userServiceUrl}/api/users/${therapistId}/add-student`);
+      console.log('Request data:', JSON.stringify(requestData));
+      
+      // Instead of axios, let's try using fetch with explicit headers
+      const response = await fetch(`${userServiceUrl}/api/users/${therapistId}/add-student`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData)
       });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      console.log('User service response:', result);
     } catch (userServiceError) {
       // Rollback student update if user-service update fails
       student.therapists = student.therapists.filter(therapist => 
@@ -279,8 +305,8 @@ router.put('/:studentId/assign-therapist', async (req, res) => {
   }
 });
 
-// REMOVE a therapist from a student
-router.delete('/:studentId/remove-therapist', async (req, res) => {
+// REMOVE a therapist from a student - Admin only
+router.delete('/:studentId/remove-therapist', authenticateJWT, authorizeRole(['Admin']), async (req, res) => {
   try {
     const { studentId } = req.params;
     const { therapistId } = req.body;
@@ -313,7 +339,11 @@ router.delete('/:studentId/remove-therapist', async (req, res) => {
     try {
       const userServiceUrl = process.env.USER_SERVICE_URL || 'http://user-service:3001';
       await axios.delete(`${userServiceUrl}/api/users/${therapistId}/remove-student`, {
-        data: { studentId: studentId }
+        data: { studentId: studentId },
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        timeout: 5000
       });
     } catch (userServiceError) {
       // Rollback student update if user-service update fails
