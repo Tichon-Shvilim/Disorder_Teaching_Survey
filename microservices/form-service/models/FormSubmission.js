@@ -1,37 +1,40 @@
 const mongoose = require('mongoose');
 
-// Answer schema for individual question responses
+// Enhanced answer schema for hierarchical questionnaire responses
 const AnswerSchema = new mongoose.Schema({
-  questionId: { type: String, required: true },
-  questionText: { type: String, required: true },
-  questionType: { 
+  questionId: { type: String, required: true }, // The FormNode ID of the question
+  nodePath: [String], // Array representing path like ["comm", "spoken", "q1"] - helps with lookup and analytics
+  inputType: { 
     type: String, 
-    enum: ['single-choice', 'multiple-choice', 'text', 'number', 'scale'], 
+    enum: ['single-choice', 'multiple-choice', 'scale', 'number', 'text'], 
     required: true 
   },
-  answer: { type: mongoose.Schema.Types.Mixed, required: true }, // Can be string, number, array
-  selectedOptions: [{ // For choice questions
+  answer: { type: mongoose.Schema.Types.Mixed, required: true }, // Raw answer value
+  selectedOptions: [{ // For choice-based questions
     id: String,
     label: String,
     value: Number
-  }]
+  }],
+  // Optional metadata for analytics
+  questionTitle: String, // Store question title for easier analytics
+  weight: { type: Number, default: 1 }, // Question weight for scoring
+  graphable: { type: Boolean, default: false }, // Whether this answer should be included in graphs
 }, { _id: false });
 
-// Main form submission schema
+// Enhanced form submission schema for questionnaires
 const FormSubmissionSchema = new mongoose.Schema({
-  // Student information
-  studentId: { type: String, required: true },
-  studentName: { type: String, required: true },
+  // Student information (string reference to student-service)
+  studentId: { type: String, required: true }, // Reference to Student in student-service
+  studentName: { type: String, required: true }, // Denormalized for performance
   
-  // Questionnaire information
+  // Questionnaire information (local reference)
   questionnaireId: { type: mongoose.Schema.Types.ObjectId, ref: 'QuestionnaireTemplate', required: true },
-  questionnaireTitle: { type: String, required: true },
+  questionnaireTitle: { type: String, required: true }, // Denormalized for performance
   
-  // Submission data
+  // Enhanced submission data
   answers: [AnswerSchema],
   submittedAt: { type: Date, default: Date.now },
-  completedBy: { type: String }, // Who filled it (therapist, teacher, etc.) - name for display
-  completedById: { type: String }, // User ID of who filled it - for robust identification
+  completedBy: { type: String }, // User ID who filled it (therapist, teacher, etc.)
   
   // Metadata
   status: { 
@@ -40,6 +43,17 @@ const FormSubmissionSchema = new mongoose.Schema({
     default: 'completed' 
   },
   notes: { type: String },
+  
+  // Analytics fields - will be populated by analytics-service later
+  // Keeping them optional for now
+  totalScore: { type: Number, default: null },
+  domainScores: [{ // Scores per domain/group
+    nodeId: String,
+    nodePath: [String],
+    title: String,
+    score: Number,
+    maxScore: Number
+  }],
   
   // Timestamps
   createdAt: { type: Date, default: Date.now },
@@ -55,5 +69,6 @@ FormSubmissionSchema.pre('save', function(next) {
 // Index for faster queries
 FormSubmissionSchema.index({ studentId: 1, submittedAt: -1 });
 FormSubmissionSchema.index({ questionnaireId: 1 });
+FormSubmissionSchema.index({ 'answers.nodePath': 1 }); // For analytics queries
 
 module.exports = mongoose.model('FormSubmission', FormSubmissionSchema);

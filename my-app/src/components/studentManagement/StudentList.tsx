@@ -124,21 +124,13 @@ const StudentList: React.FC = () => {
     navigate(`${studentId}/edit`);
   };
 
-  // const handleFillForm = (studentId: string, studentName: string) => {
-  //   navigate(`../forms/fill`, { state: { studentId, studentName } });
-  // };
 
-  // const handleViewSubmissions = (studentId: string, studentName: string) => {
-  //   navigate(`../forms/submissions`, { state: { studentId, studentName } });
-  // };
-
-  // V2 Form handlers
-  const handleFillFormV2 = (studentId: string, studentName: string) => {
-    navigate(`../forms/v2/fill`, { state: { studentId, studentName } });
+  const handleFillForm = (studentId: string, studentName: string) => {
+    navigate(`../forms/fill`, { state: { studentId, studentName } });
   };
 
-  const handleViewSubmissionsV2 = (studentId: string, studentName: string) => {
-    navigate(`../forms/v2/submissions`, { state: { studentId, studentName } });
+  const handleViewSubmissions = (studentId: string, studentName: string) => {
+    navigate(`../forms/submissions`, { state: { studentId, studentName } });
   };
 
   const filteredStudents = students.filter((student) => {
@@ -595,9 +587,9 @@ const StudentList: React.FC = () => {
                   <History style={{ height: "16px", width: "16px" }} />
                 </button> */}
 
-                {/* V2 Form Buttons */}
+                {/* Form Buttons */}
                 <button
-                  onClick={() => handleFillFormV2(student._id, student.name)}
+                  onClick={() => handleFillForm(student._id, student.name)}
                   style={{
                     padding: "8px",
                     backgroundColor: "transparent",
@@ -615,13 +607,13 @@ const StudentList: React.FC = () => {
                     e.currentTarget.style.backgroundColor = "transparent";
                     e.currentTarget.style.color = "#9ca3af";
                   }}
-                  title="Fill Form V2 (Enhanced)"
+                  title="Fill Form"
                 >
                   <FileText style={{ height: "16px", width: "16px", strokeWidth: 2.5 }} />
                 </button>
                 
                 <button
-                  onClick={() => handleViewSubmissionsV2(student._id, student.name)}
+                  onClick={() => handleViewSubmissions(student._id, student.name)}
                   style={{
                     padding: "8px",
                     backgroundColor: "transparent",
@@ -639,7 +631,7 @@ const StudentList: React.FC = () => {
                     e.currentTarget.style.backgroundColor = "transparent";
                     e.currentTarget.style.color = "#9ca3af";
                   }}
-                  title="View Submissions V2 (Enhanced)"
+                  title="View Submissions"
                 >
                   <History style={{ height: "16px", width: "16px", strokeWidth: 2.5 }} />
                 </button>

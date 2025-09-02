@@ -274,7 +274,7 @@ const StudentDetails: React.FC = () => {
               <Button
                 variant="outlined"
                 size="small"
-                onClick={() => navigate(`../forms/v2/fill`, { state: { studentId: id, studentName: student?.name } })}
+                onClick={() => navigate(`../forms/fill`, { state: { studentId: id, studentName: student?.name } })}
                 sx={{ 
                   borderColor: '#6366f1', 
                   color: '#6366f1',
@@ -284,12 +284,12 @@ const StudentDetails: React.FC = () => {
                   }
                 }}
               >
-                Fill Form V2 (Enhanced)
+                Fill Form
               </Button>
               <Button
                 variant="outlined"
                 size="small"
-                onClick={() => navigate(`../forms/v2/submissions`, { state: { studentId: id, studentName: student?.name } })}
+                onClick={() => navigate(`../forms/submissions`, { state: { studentId: id, studentName: student?.name } })}
                 sx={{ 
                   borderColor: '#14b8a6', 
                   color: '#14b8a6',
@@ -299,7 +299,7 @@ const StudentDetails: React.FC = () => {
                   }
                 }}
               >
-                View Submissions V2
+                View Submissions
               </Button>
             </Box>
           </Box>

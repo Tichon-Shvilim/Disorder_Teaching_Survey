@@ -1,1162 +1,785 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import {
   Box,
-  Button,
-  TextField,
-  Select,
-  MenuItem,
-  IconButton,
   Typography,
   Card,
-  CardContent,
-  Chip,
-  FormControl,
-  InputLabel,
-  Switch,
-  FormControlLabel,
   Paper,
-  Stack,
-  Badge,
   Stepper,
   Step,
   StepLabel,
   Alert,
-  Collapse,
-} from "@mui/material";
+  Fab,
+  CircularProgress,
+  Backdrop,
+  TextField,
+  Button,
+  Chip,
+  LinearProgress
+} from '@mui/material';
 import {
-  Add as AddIcon,
-  Delete as DeleteIcon,
-  Save as SaveIcon,
-  QuestionAnswer as QuestionIcon,
-  Settings as SettingsIcon,
-  Category as CategoryIcon,
   Quiz as QuizIcon,
-  KeyboardArrowDown as ArrowDownIcon,
-  KeyboardArrowUp as ArrowUpIcon,
-  ArrowBack as ArrowBackIcon,
-} from "@mui/icons-material";
-import type {
-  DomainModel,
-  QuestionFormData,
-  CreateQuestionnaireRequest,
-} from "./models/FormModels";
-import { useNavigate } from "react-router-dom";
+  Save as SaveIcon,
+  Settings as SettingsIcon,
+  Description as DescriptionIcon,
+  AccountTree as StructureIcon,
+  Analytics as AnalyticsIcon,
+  Visibility as PreviewIcon,
+  CheckCircle as CheckIcon
+} from '@mui/icons-material';
+
+import type { FormNode, CreateQuestionnaireRequest, GraphSettings } from './models/FormModels';
+import { questionnaireApiService } from './Api-Requests/questionnaireApi';
+import StructureBuilder from './StructureBuilder';
+import FormPreview from './FormPreview';
+import AnalyticsSettings from './AnalyticsSettings';
+import ErrorBoundary from '../common/ErrorBoundary';
 
 interface QuestionnaireBuilderProps {
-  onSave: (data: CreateQuestionnaireRequest) => Promise<void>;
+  editingQuestionnaire?: string; // ID if editing existing questionnaire
+  onSave?: (questionnaire: any) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
+}
+
+interface BuilderStep {
+  id: number;
+  title: string;
+  description: string;
+  completed: boolean;
 }
 
 const QuestionnaireBuilder: React.FC<QuestionnaireBuilderProps> = ({
-  onSave,
+  editingQuestionnaire: editingQuestionnaireProp,
+  onSave
 }) => {
   const navigate = useNavigate();
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [domains, setDomains] = useState<DomainModel[]>([]);
-  const [questions, setQuestions] = useState<QuestionFormData[]>([]);
-  const [currentQuestion, setCurrentQuestion] = useState<QuestionFormData>({
-    text: "",
-    domainId: "",
-    type: "single-choice",
-    options: [{ id: "opt-0", label: "", value: 1, subQuestions: [] }],
-    required: false,
-    helpText: "",
-    order: 0,
-  });
-  const [showAddDomain, setShowAddDomain] = useState(false);
-  const [newDomainName, setNewDomainName] = useState("");
-  const [newDomainDescription, setNewDomainDescription] = useState("");
-  const [expandedOptions, setExpandedOptions] = useState<{
-    [key: string]: boolean;
-  }>({});
+  const { id } = useParams<{ id: string }>();
+  
+  // Use URL parameter if available, otherwise use prop
+  const editingQuestionnaire = id || editingQuestionnaireProp;
+  
+  // Form State
+  const [activeStep, setActiveStep] = useState(0);
+  const [visitedSteps, setVisitedSteps] = useState<Set<number>>(new Set([0])); // Track which steps have been visited
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [structure, setStructure] = useState<FormNode[]>([]);
+  const [graphSettings, setGraphSettings] = useState<GraphSettings>({ colorRanges: [] });
+  
+  // UI State
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
-  const questionTypes = [
-    { value: "single-choice", label: "Single Choice" },
-    { value: "multiple-choice", label: "Multiple Choice" },
-    { value: "text", label: "Text Input" },
-    { value: "number", label: "Number Input" },
-    { value: "scale", label: "Scale (1-5)" },
-  ];
-
-  // Navigate back to questionnaire list
-  const handleBack = () => {
-    navigate("/layout/questionnaires");
-  };
-
-  // Add new domain
-  const handleAddDomain = () => {
-    if (newDomainName.trim()) {
-      const newDomain: DomainModel = {
-        _id: `temp-${Date.now()}`,
-        name: newDomainName.trim(),
-        description: newDomainDescription.trim() || undefined,
-        color: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
-      };
-      setDomains([...domains, newDomain]);
-      setCurrentQuestion({ ...currentQuestion, domainId: newDomain._id });
-      setNewDomainName("");
-      setNewDomainDescription("");
-      setShowAddDomain(false);
-    }
-  };
-
-  // Add option to current question
-  const addOption = () => {
-    const newOption = {
-      id: `opt-${currentQuestion.options.length}`,
-      label: "",
-      value: currentQuestion.options.length + 1,
-      subQuestions: [],
+  // Helper function to check if a node or its children contain questions
+  const hasQuestions = useCallback((node: FormNode): boolean => {
+    const checkNode = (n: FormNode): boolean => {
+      if (n.type === 'question') return true;
+      if (!n.children || n.children.length === 0) return false;
+      return n.children.some(checkNode);
     };
-    setCurrentQuestion({
-      ...currentQuestion,
-      options: [...currentQuestion.options, newOption],
-    });
-  };
+    return checkNode(node);
+  }, []);
 
-  // Update option
-  const updateOption = (index: number, value: string) => {
-    const updatedOptions = currentQuestion.options.map((option, i) =>
-      i === index ? { ...option, label: value } : option
-    );
-    setCurrentQuestion({ ...currentQuestion, options: updatedOptions });
-  };
+  // Steps configuration - calculate dynamically
+  const steps = useMemo((): BuilderStep[] => [
+    {
+      id: 0,
+      title: 'Basics',
+      description: 'Set title and description',
+      completed: Boolean(title.trim())
+    },
+    {
+      id: 1,
+      title: 'Structure',
+      description: 'Build groups and questions',
+      completed: structure.length > 0 && structure.some(node => 
+        node.type === 'question' || hasQuestions(node)
+      )
+    },
+    {
+      id: 2,
+      title: 'Analytics',
+      description: 'Configure graph settings',
+      completed: visitedSteps.has(2) // Only completed if user has visited this step
+    },
+    {
+      id: 3,
+      title: 'Review',
+      description: 'Preview and save',
+      completed: visitedSteps.has(3) // Only completed if user has visited this step
+    }
+  ], [title, structure, hasQuestions, visitedSteps]);
 
-  // Remove option
-  const removeOption = (index: number) => {
-    if (currentQuestion.options.length > 1) {
-      const updatedOptions = currentQuestion.options.filter(
-        (_, i) => i !== index
+  // Load existing questionnaire if editing
+  useEffect(() => {
+    const loadExistingQuestionnaire = async () => {
+      if (!editingQuestionnaire) return;
+      
+      setIsLoading(true);
+      try {
+        const response = await questionnaireApiService.getQuestionnaire(editingQuestionnaire);
+        if (response.success && response.data) {
+          setTitle(response.data.title);
+          setDescription(response.data.description || '');
+          setStructure(response.data.structure);
+          setGraphSettings(response.data.graphSettings || { colorRanges: [] });
+        }
+      } catch (error) {
+        console.error('Error loading questionnaire:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadExistingQuestionnaire();
+  }, [editingQuestionnaire]);
+
+  // Auto-clear validation errors when issues might be fixed
+  useEffect(() => {
+    if (validationErrors.length > 0) {
+      // Check if any validation errors might be resolved
+      const hasBasicIssues = validationErrors.some(error => 
+        error.includes('Title is required') || 
+        error.includes('At least one group or question is required')
       );
-      setCurrentQuestion({ ...currentQuestion, options: updatedOptions });
-    }
-  };
-
-  // Add sub-question to option
-  const addSubQuestion = (optionIndex: number) => {
-    const updatedOptions = [...currentQuestion.options];
-    if (!updatedOptions[optionIndex].subQuestions) {
-      updatedOptions[optionIndex].subQuestions = [];
-    }
-    const newSubQuestion = {
-      _id: `temp-sub-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      text: "",
-      domainId: currentQuestion.domainId,
-      type: "single-choice" as const,
-      options: [{ id: "subopt-0", label: "", value: 1, subQuestions: [] }],
-      required: false,
-      helpText: "",
-      order: updatedOptions[optionIndex].subQuestions!.length,
-    };
-    updatedOptions[optionIndex].subQuestions!.push(newSubQuestion);
-    setCurrentQuestion({ ...currentQuestion, options: updatedOptions });
-  };
-
-  // Update sub-question
-  const updateSubQuestion = (
-    optionIndex: number,
-    subQuestionIndex: number,
-    field: string,
-    value: string | boolean
-  ) => {
-    const updatedOptions = [...currentQuestion.options];
-    if (updatedOptions[optionIndex].subQuestions) {
-      updatedOptions[optionIndex].subQuestions![subQuestionIndex] = {
-        ...updatedOptions[optionIndex].subQuestions![subQuestionIndex],
-        [field]: value,
-      };
-      setCurrentQuestion({ ...currentQuestion, options: updatedOptions });
-    }
-  };
-
-  // Remove sub-question
-  const removeSubQuestion = (optionIndex: number, subQuestionIndex: number) => {
-    const updatedOptions = [...currentQuestion.options];
-    if (updatedOptions[optionIndex].subQuestions) {
-      updatedOptions[optionIndex].subQuestions!.splice(subQuestionIndex, 1);
-      setCurrentQuestion({ ...currentQuestion, options: updatedOptions });
-    }
-  };
-
-  // Add option to sub-question
-  const addSubQuestionOption = (
-    optionIndex: number,
-    subQuestionIndex: number
-  ) => {
-    const updatedOptions = [...currentQuestion.options];
-    if (updatedOptions[optionIndex].subQuestions) {
-      const subQuestion =
-        updatedOptions[optionIndex].subQuestions![subQuestionIndex];
-      const newOption = {
-        id: `subopt-${subQuestion.options.length}`,
-        label: "",
-        value: subQuestion.options.length + 1,
-        subQuestions: [],
-      };
-      subQuestion.options.push(newOption);
-      setCurrentQuestion({ ...currentQuestion, options: updatedOptions });
-    }
-  };
-
-  // Update sub-question option
-  const updateSubQuestionOption = (
-    optionIndex: number,
-    subQuestionIndex: number,
-    subOptionIndex: number,
-    value: string
-  ) => {
-    const updatedOptions = [...currentQuestion.options];
-    if (updatedOptions[optionIndex].subQuestions) {
-      updatedOptions[optionIndex].subQuestions![subQuestionIndex].options[
-        subOptionIndex
-      ].label = value;
-      setCurrentQuestion({ ...currentQuestion, options: updatedOptions });
-    }
-  };
-
-  // Remove sub-question option
-  const removeSubQuestionOption = (
-    optionIndex: number,
-    subQuestionIndex: number,
-    subOptionIndex: number
-  ) => {
-    const updatedOptions = [...currentQuestion.options];
-    if (updatedOptions[optionIndex].subQuestions) {
-      const subQuestion =
-        updatedOptions[optionIndex].subQuestions![subQuestionIndex];
-      if (subQuestion.options.length > 1) {
-        subQuestion.options.splice(subOptionIndex, 1);
-        setCurrentQuestion({ ...currentQuestion, options: updatedOptions });
+      
+      // Clear basic validation errors if they're now resolved
+      if (hasBasicIssues) {
+        const stillValidErrors: string[] = [];
+        
+        // Re-check title
+        if (!title.trim() && validationErrors.some(error => error.includes('Title is required'))) {
+          stillValidErrors.push('Title is required');
+        }
+        
+        // Re-check structure
+        if (structure.length === 0 && validationErrors.some(error => error.includes('At least one group or question is required'))) {
+          stillValidErrors.push('At least one group or question is required');
+        }
+        
+        // If we have fewer errors now, update the validation errors
+        if (stillValidErrors.length < validationErrors.length) {
+          setValidationErrors(stillValidErrors);
+        }
       }
     }
+  }, [title, structure, validationErrors]);
+
+  // Mark as dirty when changes are made
+  const markDirty = useCallback(() => {
+    setHasUnsavedChanges(true);
+  }, []);
+
+  const handleNext = () => {
+    const nextStep = activeStep + 1;
+    setActiveStep(nextStep);
+    setVisitedSteps(prev => new Set([...prev, nextStep]));
+    // Clear validation errors when moving to next step
+    setValidationErrors([]);
   };
 
-  // Toggle option expansion
-  const toggleOptionExpansion = (optionIndex: number) => {
-    const key = `option-${optionIndex}`;
-    setExpandedOptions((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
+  const handleBack = () => {
+    setActiveStep((prevActiveStep) => prevActiveStep - 1);
+    // Clear validation errors when moving back
+    setValidationErrors([]);
   };
 
-  // Add question to questionnaire
-  const addQuestionToQuestionnaire = () => {
-    if (currentQuestion.text.trim() && currentQuestion.domainId) {
-      const questionWithOrder = {
-        ...currentQuestion,
-        order: questions.length,
-        options: currentQuestion.options.filter(
-          (opt) => opt.label.trim() !== ""
-        ),
-      };
-      setQuestions([...questions, questionWithOrder]);
-
-      // Reset current question
-      setCurrentQuestion({
-        text: "",
-        domainId: "",
-        type: "single-choice",
-        options: [{ id: "opt-0", label: "", value: 1, subQuestions: [] }],
-        required: false,
-        helpText: "",
-        order: 0,
-      });
+  // Validate current step
+  const validateCurrentStep = useCallback(async () => {
+    const errors: string[] = [];
+    
+    switch (activeStep) {
+      case 0: // Basics
+        if (!title.trim()) {
+          errors.push('Title is required');
+        }
+        break;
+      case 1: // Structure
+        if (structure.length === 0) {
+          errors.push('At least one group or question is required');
+        } else {
+          // Validate structure with API
+          try {
+            const response = await questionnaireApiService.validateStructure(structure);
+            if (!response.success && response.errors) {
+              errors.push(...response.errors);
+            }
+          } catch {
+            errors.push('Failed to validate structure');
+          }
+        }
+        break;
     }
-  };
-
-  // Remove question from questionnaire
-  const removeQuestion = (index: number) => {
-    setQuestions(questions.filter((_, i) => i !== index));
-  };
+    
+    setValidationErrors(errors);
+    return errors.length === 0;
+  }, [activeStep, title, structure]);
 
   // Save questionnaire
   const handleSave = async () => {
-    const questionnaireData: CreateQuestionnaireRequest = {
-      title,
-      description,
-      domains: domains.map((domain) => ({
-        id: domain._id,
-        name: domain.name,
-        description: domain.description,
-        color: domain.color,
-      })),
-      questions: questions.map((question) => ({
-        text: question.text,
-        domainId: question.domainId,
-        type: question.type,
-        required: question.required,
-        helpText: question.helpText,
-        order: question.order,
-        parentQuestionId: question.parentQuestionId,
-        parentOptionId: question.parentOptionId,
-        options: question.options.map((opt, optionIndex) => ({
-          id: opt.id || `opt-${optionIndex}`,
-          value: opt.value,
-          label: opt.label,
-          subQuestions: opt.subQuestions || [],
-        })),
-      })),
-    };
+    setIsSaving(true);
+    
+    try {
+      const isValid = await validateCurrentStep();
+      if (!isValid) {
+        setIsSaving(false);
+        return;
+      }
 
-    await onSave(questionnaireData);
+      const questionnaireData: CreateQuestionnaireRequest = {
+        title,
+        description,
+        structure,
+        graphSettings
+      };
+
+      let response;
+      if (editingQuestionnaire) {
+        response = await questionnaireApiService.updateQuestionnaire(
+          editingQuestionnaire,
+          questionnaireData
+        );
+      } else {
+        response = await questionnaireApiService.createQuestionnaire(questionnaireData);
+      }
+
+      if (response.success) {
+        setHasUnsavedChanges(false);
+        setValidationErrors([]); // Clear any existing validation errors
+        
+        // Show success message
+        if (editingQuestionnaire) {
+          toast.success('Questionnaire updated successfully!', {
+            position: "top-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          });
+        } else {
+          toast.success('Questionnaire created successfully!', {
+            position: "top-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          });
+        }
+        
+        if (onSave) {
+          onSave(response.data);
+        } else {
+          navigate('/layout/questionnaires');
+        }
+      } else {
+        setValidationErrors(response.errors || ['Failed to save questionnaire']);
+        toast.error('Failed to save questionnaire. Please check the errors and try again.', {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      }
+    } catch (error) {
+      console.error('Error saving questionnaire:', error);
+      const errorMessage = 'An unexpected error occurred while saving';
+      setValidationErrors([errorMessage]);
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  return (
-    <Box sx={{ maxWidth: 1400, mx: "auto", p: 3 }}>
-      {/* Back Button */}
-      <Box sx={{ mb: 2 }}>
-        <Button
-          startIcon={<ArrowBackIcon />}
-          onClick={handleBack}
-          variant="outlined"
-          color="primary"
-          sx={{
-            borderRadius: 2,
-            textTransform: "none",
-            fontWeight: 500,
-          }}
-        >
-          Back to Questionnaires
-        </Button>
-      </Box>
+  // Render step content
+  const renderStepContent = () => {
+    switch (activeStep) {
+      case 0:
+        return (
+          <Box sx={{ p: 4 }}>
+            <Typography variant="h6" gutterBottom>
+              Questionnaire Basics
+            </Typography>
+            <TextField
+              label="Title"
+              value={title}
+              onChange={(e) => { 
+                setTitle(e.target.value); 
+                markDirty(); 
+                // Clear validation errors when title changes
+                if (validationErrors.length > 0) {
+                  setValidationErrors([]);
+                }
+              }}
+              fullWidth
+              required
+              sx={{ mb: 3 }}
+            />
+            <TextField
+              label="Description"
+              value={description}
+              onChange={(e) => { 
+                setDescription(e.target.value); 
+                markDirty(); 
+                // Clear validation errors when description changes
+                if (validationErrors.length > 0) {
+                  setValidationErrors([]);
+                }
+              }}
+              fullWidth
+              multiline
+              rows={3}
+            />
+          </Box>
+        );
+      case 1:
+        return (
+          <ErrorBoundary>
+            <StructureBuilder
+              structure={structure}
+              onChange={(newStructure) => {
+                console.log('Structure changed:', newStructure);
+                setStructure(newStructure);
+                markDirty();
+                // Clear validation errors when structure changes significantly
+                if (validationErrors.length > 0) {
+                  // Check if this might fix API validation errors by comparing structure complexity
+                  const oldQuestionCount = structure.filter(node => node.type === 'question' || hasQuestions(node)).length;
+                  const newQuestionCount = newStructure.filter(node => node.type === 'question' || hasQuestions(node)).length;
+                  
+                  // Check if any questions now have options that didn't before
+                  const hasNewOptions = newStructure.some(node => {
+                    if (node.type === 'question' && (node.inputType === 'single-choice' || node.inputType === 'multiple-choice')) {
+                      const oldNode = structure.find(oldN => oldN.id === node.id);
+                      return node.options && node.options.length > 0 && (!oldNode?.options || oldNode.options.length === 0);
+                    }
+                    return false;
+                  });
+                  
+                  // Clear errors if structure improved significantly or options were added
+                  if (newQuestionCount > oldQuestionCount || hasNewOptions) {
+                    setValidationErrors([]);
+                  }
+                }
+              }}
+              onPreview={(structureToPreview) => {
+                console.log('Preview requested:', structureToPreview);
+                setStructure(structureToPreview);
+                setShowPreview(true);
+              }}
+            />
+          </ErrorBoundary>
+        );
+      case 2:
+        return (
+          <ErrorBoundary>
+            <AnalyticsSettings
+              graphSettings={graphSettings}
+              onChange={(newSettings) => {
+                console.log('Graph settings changed:', newSettings);
+                setGraphSettings(newSettings);
+                markDirty();
+              }}
+            />
+          </ErrorBoundary>
+        );
+      case 3:
+        return (
+          <Box sx={{ p: 4 }}>
+            <Typography variant="h6" gutterBottom>
+              Preview and Validate
+            </Typography>
+            <Box sx={{ mb: 3 }}>
+              <Button
+                variant="contained"
+                startIcon={<QuizIcon />}
+                onClick={() => setShowPreview(true)}
+                disabled={structure.length === 0}
+                size="large"
+              >
+                Preview Complete Form
+              </Button>
+            </Box>
+            {structure.length > 0 && (
+              <Card sx={{ p: 3, backgroundColor: '#f8f9fa' }}>
+                <Typography variant="subtitle1" gutterBottom>
+                  Form Summary:
+                </Typography>
+                <Typography variant="body2">
+                  • {getQuestionCount(structure)} total questions
+                </Typography>
+                <Typography variant="body2">
+                  • {structure.length} root-level groups
+                </Typography>
+                <Typography variant="body2">
+                  • Ready for deployment
+                </Typography>
+              </Card>
+            )}
+          </Box>
+        );
+      default:
+        return <div>Unknown step</div>;
+    }
+  };
 
-      {/* Header Section */}
+  // Helper function to count questions
+  const getQuestionCount = (nodes: FormNode[]): number => {
+    return nodes.reduce((count, node) => {
+      if (node.type === 'question') {
+        return count + 1;
+      }
+      return count + getQuestionCount(node.children);
+    }, 0);
+  };
+
+  if (isLoading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+        <CircularProgress size={60} />
+      </Box>
+    );
+  }
+
+  return (
+    <Box sx={{ maxWidth: 1400, mx: 'auto', p: 3, pb: 10 }}>
+      {/* Loading Backdrop */}
+      <Backdrop open={isSaving} sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
+
+      {/* Header */}
       <Paper elevation={2} sx={{ p: 4, mb: 3, borderRadius: 2 }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
-          <QuizIcon sx={{ fontSize: 40, color: "primary.main" }} />
-          <Typography variant="h4" color="primary" fontWeight="bold">
-            Questionnaire Builder
-          </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+          <QuizIcon sx={{ fontSize: 40, color: 'primary.main' }} />
+          <Box>
+            <Typography variant="h4" color="primary" fontWeight="bold">
+              {editingQuestionnaire ? 'Edit Questionnaire' : 'Create Questionnaire'}
+            </Typography>
+            <Typography variant="subtitle1" color="text.secondary">
+              Build intelligent forms with hierarchical structure and analytics
+            </Typography>
+          </Box>
         </Box>
 
-        <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 3 }}>
-          Create comprehensive questionnaires with questions, options, and
-          sub-questions
-        </Typography>
-
-        <Stack spacing={2}>
-          <TextField
-            label="Questionnaire Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            fullWidth
-            required
-            variant="outlined"
-            placeholder="Enter a descriptive title for your questionnaire"
-          />
-          <TextField
-            label="Description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            fullWidth
-            multiline
-            rows={3}
-            variant="outlined"
-            placeholder="Provide a brief description of what this questionnaire measures"
-          />
-        </Stack>
+        {hasUnsavedChanges && (
+          <Alert severity="info" sx={{ mt: 2 }}>
+            You have unsaved changes. Remember to save your work!
+          </Alert>
+        )}
       </Paper>
 
-      {/* Progress Stepper */}
-      <Paper elevation={1} sx={{ p: 2, mb: 3, borderRadius: 2 }}>
-        <Stepper
-          activeStep={questions.length > 0 ? 2 : domains.length > 0 ? 1 : 0}
+      {/* Enhanced Progress Stepper */}
+      <Paper 
+        elevation={3} 
+        sx={{ 
+          p: 4, 
+          mb: 3, 
+          borderRadius: 3,
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          color: 'white'
+        }}
+      >
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h5" fontWeight="bold" gutterBottom>
+            Form Creation Progress
+          </Typography>
+          <Typography variant="body2" sx={{ opacity: 0.9 }}>
+            Step {activeStep + 1} of {steps.length} • {Math.round(((activeStep) / (steps.length - 1)) * 100)}% Complete
+          </Typography>
+        </Box>
+        
+        <LinearProgress 
+          variant="determinate" 
+          value={(activeStep / (steps.length - 1)) * 100} 
+          sx={{ 
+            mb: 3, 
+            height: 8, 
+            borderRadius: 4,
+            backgroundColor: 'rgba(255,255,255,0.2)',
+            '& .MuiLinearProgress-bar': {
+              backgroundColor: '#4caf50',
+              borderRadius: 4
+            }
+          }} 
+        />
+        
+        <Stepper 
+          activeStep={activeStep} 
+          sx={{ 
+            '& .MuiStepLabel-root': {
+              cursor: 'default' // Remove pointer cursor
+            },
+            '& .MuiStepIcon-root': {
+              color: 'rgba(255,255,255,0.3)',
+              '&.Mui-active': {
+                color: '#4caf50'
+              },
+              '&.Mui-completed': {
+                color: '#4caf50'
+              }
+            },
+            '& .MuiStepLabel-label': {
+              color: 'rgba(255,255,255,0.8)',
+              '&.Mui-active': {
+                color: 'white',
+                fontWeight: 'bold'
+              },
+              '&.Mui-completed': {
+                color: 'white'
+              }
+            },
+            '& .MuiStepConnector-line': {
+              borderColor: 'rgba(255,255,255,0.3)'
+            }
+          }}
         >
-          <Step>
-            <StepLabel>
-              <Typography variant="caption">Setup Domains</Typography>
-            </StepLabel>
-          </Step>
-          <Step>
-            <StepLabel>
-              <Typography variant="caption">Add Questions</Typography>
-            </StepLabel>
-          </Step>
-          <Step>
-            <StepLabel>
-              <Typography variant="caption">Save Questionnaire</Typography>
-            </StepLabel>
-          </Step>
+          {steps.map((step, index) => (
+            <Step key={step.id} completed={step.completed}>
+              <StepLabel>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  {/* Step Icon */}
+                  {index === 0 && <DescriptionIcon sx={{ fontSize: 20 }} />}
+                  {index === 1 && <StructureIcon sx={{ fontSize: 20 }} />}
+                  {index === 2 && <AnalyticsIcon sx={{ fontSize: 20 }} />}
+                  {index === 3 && <PreviewIcon sx={{ fontSize: 20 }} />}
+                  
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ 
+                      fontWeight: activeStep === index ? 'bold' : 'normal',
+                      fontSize: '0.9rem'
+                    }}>
+                      {step.title}
+                    </Typography>
+                    <Typography variant="caption" sx={{ 
+                      opacity: 0.8,
+                      display: 'block',
+                      fontSize: '0.75rem'
+                    }}>
+                      {step.description}
+                    </Typography>
+                  </Box>
+                  
+                  {/* Completion Indicator */}
+                  {step.completed && (
+                    <Chip
+                      icon={<CheckIcon sx={{ fontSize: 16 }} />}
+                      label="Done"
+                      size="small"
+                      sx={{
+                        backgroundColor: '#4caf50',
+                        color: 'white',
+                        height: 20,
+                        fontSize: '0.7rem',
+                        '& .MuiChip-icon': {
+                          color: 'white'
+                        }
+                      }}
+                    />
+                  )}
+                </Box>
+              </StepLabel>
+            </Step>
+          ))}
         </Stepper>
       </Paper>
 
-      <Box
-        sx={{
-          display: "flex",
-          gap: 3,
-          flexDirection: { xs: "column", xl: "row" },
-        }}
-      >
-        {/* Left Panel - Question Builder */}
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Paper elevation={2} sx={{ borderRadius: 2, overflow: "hidden" }}>
-            {/* Domain Management Section */}
-            <Box
+      {/* Validation Errors */}
+      {validationErrors.length > 0 && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          <Typography variant="subtitle2" gutterBottom>
+            Please fix the following issues:
+          </Typography>
+          <ul style={{ margin: 0, paddingLeft: 20 }}>
+            {validationErrors.map((error, index) => (
+              <li key={index}>{error}</li>
+            ))}
+          </ul>
+        </Alert>
+      )}
+
+      {/* Step Content */}
+      <Card elevation={2} sx={{ borderRadius: 2, minHeight: 400 }}>
+        {renderStepContent()}
+      </Card>
+
+      {/* Enhanced Step Navigation */}
+      <Paper elevation={2} sx={{ p: 4, mt: 3, borderRadius: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Button
+            disabled={activeStep === 0}
+            onClick={handleBack}
+            variant="outlined"
+            size="large"
+            sx={{
+              borderRadius: 2,
+              px: 4,
+              py: 1.5,
+              textTransform: 'none',
+              fontSize: '1rem'
+            }}
+          >
+            ← Back
+          </Button>
+          
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 2,
+            textAlign: 'center' 
+          }}>
+            <Typography variant="body2" color="text.secondary">
+              Step {activeStep + 1} of {steps.length}
+            </Typography>
+            <Typography variant="h6" color="primary" fontWeight="bold">
+              {steps[activeStep].title}
+            </Typography>
+          </Box>
+          
+          {activeStep < steps.length - 1 ? (
+            <Button
+              variant="contained"
+              onClick={handleNext}
+              disabled={!steps[activeStep].completed}
+              size="large"
               sx={{
-                p: 3,
-                bgcolor: "grey.50",
-                borderBottom: "1px solid",
-                borderColor: "divider",
+                borderRadius: 2,
+                px: 4,
+                py: 1.5,
+                textTransform: 'none',
+                fontSize: '1rem',
+                background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                '&:hover': {
+                  background: 'linear-gradient(45deg, #1976D2 30%, #0288D1 90%)',
+                }
               }}
             >
-              <Box
-                sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}
-              >
-                <CategoryIcon color="primary" />
-                <Typography variant="h6" color="primary">
-                  Step 1: Manage Domains
-                </Typography>
-              </Box>
-
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Domains help categorize your questions. Create at least one
-                domain before adding questions.
-              </Typography>
-
-              {domains.length > 0 && (
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    Created Domains:
-                  </Typography>
-                  <Box
-                    sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1 }}
-                  >
-                    {domains.map((domain) => (
-                      <Chip
-                        key={domain._id}
-                        label={domain.name}
-                        size="small"
-                        sx={{ bgcolor: domain.color, color: "white" }}
-                      />
-                    ))}
-                  </Box>
-                </Box>
-              )}
-
-              <Button
-                startIcon={<AddIcon />}
-                onClick={() => setShowAddDomain(true)}
-                variant="outlined"
-                size="small"
-                sx={{ mb: showAddDomain ? 2 : 0 }}
-              >
-                Add New Domain
-              </Button>
-
-              <Collapse in={showAddDomain}>
-                <Box
-                  sx={{
-                    p: 2,
-                    bgcolor: "white",
-                    borderRadius: 1,
-                    border: "1px solid",
-                    borderColor: "divider",
-                  }}
-                >
-                  <Stack spacing={2}>
-                    <TextField
-                      label="Domain Name"
-                      value={newDomainName}
-                      onChange={(e) => setNewDomainName(e.target.value)}
-                      fullWidth
-                      size="small"
-                      required
-                      placeholder="e.g., Academic Performance, Social Skills"
-                    />
-                    <TextField
-                      label="Domain Description (Optional)"
-                      value={newDomainDescription}
-                      onChange={(e) => setNewDomainDescription(e.target.value)}
-                      fullWidth
-                      size="small"
-                      multiline
-                      rows={2}
-                      placeholder="Describe what this domain measures..."
-                    />
-                    <Stack direction="row" spacing={1}>
-                      <Button
-                        size="small"
-                        variant="contained"
-                        onClick={handleAddDomain}
-                        disabled={!newDomainName.trim()}
-                      >
-                        Add Domain
-                      </Button>
-                      <Button
-                        size="small"
-                        onClick={() => setShowAddDomain(false)}
-                      >
-                        Cancel
-                      </Button>
-                    </Stack>
-                  </Stack>
-                </Box>
-              </Collapse>
-            </Box>
-
-            {/* Question Builder Section */}
-            <Box sx={{ p: 3 }}>
-              <Box
-                sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}
-              >
-                <QuestionIcon color="primary" />
-                <Typography variant="h6" color="primary">
-                  Step 2: Build Question
-                </Typography>
-              </Box>
-
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                Create questions with multiple choice options and optional
-                sub-questions.
-              </Typography>
-
-              {domains.length === 0 && (
-                <Alert severity="info" sx={{ mb: 2 }}>
-                  Please create at least one domain before adding questions.
-                </Alert>
-              )}
-
-              <Stack spacing={3}>
-                {/* Domain Selection */}
-                <FormControl fullWidth disabled={domains.length === 0}>
-                  <InputLabel>Select Domain</InputLabel>
-                  <Select
-                    value={currentQuestion.domainId}
-                    onChange={(e) =>
-                      setCurrentQuestion({
-                        ...currentQuestion,
-                        domainId: e.target.value,
-                      })
-                    }
-                  >
-                    {domains.map((domain) => (
-                      <MenuItem key={domain._id} value={domain._id}>
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                        >
-                          <Box
-                            sx={{
-                              width: 12,
-                              height: 12,
-                              borderRadius: "50%",
-                              bgcolor: domain.color,
-                            }}
-                          />
-                          {domain.name}
-                        </Box>
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                {/* Question Text */}
-                <TextField
-                  label="Question Text"
-                  value={currentQuestion.text}
-                  onChange={(e) =>
-                    setCurrentQuestion({
-                      ...currentQuestion,
-                      text: e.target.value,
-                    })
-                  }
-                  fullWidth
-                  multiline
-                  rows={2}
-                  placeholder="Enter your question here..."
-                  disabled={domains.length === 0}
-                />
-
-                {/* Question Type */}
-                <FormControl fullWidth disabled={domains.length === 0}>
-                  <InputLabel>Question Type</InputLabel>
-                  <Select
-                    value={currentQuestion.type}
-                    onChange={(e) =>
-                      setCurrentQuestion({
-                        ...currentQuestion,
-                        type: e.target.value as QuestionFormData["type"],
-                      })
-                    }
-                  >
-                    {questionTypes.map((type) => (
-                      <MenuItem key={type.value} value={type.value}>
-                        {type.label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                {/* Options Section */}
-                {(currentQuestion.type === "single-choice" ||
-                  currentQuestion.type === "multiple-choice") && (
-                  <Box>
-                    <Typography
-                      variant="subtitle1"
-                      gutterBottom
-                      sx={{ fontWeight: 500 }}
-                    >
-                      Answer Options
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mb: 2 }}
-                    >
-                      Add options for your question. Click "Sub-Q" to add
-                      follow-up questions for specific options.
-                    </Typography>
-
-                    <Stack spacing={2}>
-                      {currentQuestion.options.map((option, optionIndex) => (
-                        <Card
-                          key={optionIndex}
-                          variant="outlined"
-                          sx={{ borderRadius: 2 }}
-                        >
-                          <CardContent sx={{ p: 2 }}>
-                            {/* Main Option */}
-                            <Stack spacing={2}>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  gap: 1,
-                                  alignItems: "center",
-                                }}
-                              >
-                                <TextField
-                                  label={`Option ${optionIndex + 1}`}
-                                  value={option.label}
-                                  onChange={(e) =>
-                                    updateOption(optionIndex, e.target.value)
-                                  }
-                                  size="small"
-                                  sx={{ flexGrow: 1 }}
-                                  placeholder="Enter option text..."
-                                />
-                                <Button
-                                  size="small"
-                                  onClick={() =>
-                                    toggleOptionExpansion(optionIndex)
-                                  }
-                                  variant="outlined"
-                                  color="secondary"
-                                  sx={{ minWidth: 100 }}
-                                  endIcon={
-                                    expandedOptions[`option-${optionIndex}`] ? (
-                                      <ArrowUpIcon />
-                                    ) : (
-                                      <ArrowDownIcon />
-                                    )
-                                  }
-                                >
-                                  Sub-Q
-                                </Button>
-                                <IconButton
-                                  color="error"
-                                  onClick={() => removeOption(optionIndex)}
-                                  size="small"
-                                  disabled={currentQuestion.options.length <= 1}
-                                >
-                                  <DeleteIcon />
-                                </IconButton>
-                              </Box>
-
-                              {/* Sub-Questions Section */}
-                              <Collapse
-                                in={expandedOptions[`option-${optionIndex}`]}
-                              >
-                                <Box
-                                  sx={{
-                                    p: 2,
-                                    bgcolor: "grey.50",
-                                    borderRadius: 1,
-                                    border: "1px dashed",
-                                    borderColor: "divider",
-                                  }}
-                                >
-                                  <Typography
-                                    variant="subtitle2"
-                                    gutterBottom
-                                    color="primary"
-                                  >
-                                    Sub-Questions for "
-                                    {option.label ||
-                                      `Option ${optionIndex + 1}`}
-                                    "
-                                  </Typography>
-                                  <Typography
-                                    variant="caption"
-                                    color="text.secondary"
-                                    sx={{ mb: 2, display: "block" }}
-                                  >
-                                    These questions will appear when this option
-                                    is selected.
-                                  </Typography>
-
-                                  <Stack spacing={2}>
-                                    {option.subQuestions?.map(
-                                      (subQuestion, subQuestionIndex) => (
-                                        <Card
-                                          key={subQuestionIndex}
-                                          variant="outlined"
-                                          sx={{ bgcolor: "white" }}
-                                        >
-                                          <CardContent sx={{ p: 2 }}>
-                                            <Stack spacing={2}>
-                                              <Box
-                                                sx={{
-                                                  display: "flex",
-                                                  gap: 1,
-                                                  alignItems: "center",
-                                                }}
-                                              >
-                                                <TextField
-                                                  label={`Sub-Question ${
-                                                    subQuestionIndex + 1
-                                                  }`}
-                                                  value={subQuestion.text}
-                                                  onChange={(e) =>
-                                                    updateSubQuestion(
-                                                      optionIndex,
-                                                      subQuestionIndex,
-                                                      "text",
-                                                      e.target.value
-                                                    )
-                                                  }
-                                                  size="small"
-                                                  sx={{ flexGrow: 1 }}
-                                                  placeholder="Enter sub-question..."
-                                                />
-                                                <FormControl
-                                                  size="small"
-                                                  sx={{ minWidth: 140 }}
-                                                >
-                                                  <InputLabel>Type</InputLabel>
-                                                  <Select
-                                                    value={subQuestion.type}
-                                                    onChange={(e) =>
-                                                      updateSubQuestion(
-                                                        optionIndex,
-                                                        subQuestionIndex,
-                                                        "type",
-                                                        e.target.value
-                                                      )
-                                                    }
-                                                  >
-                                                    {questionTypes.map(
-                                                      (type) => (
-                                                        <MenuItem
-                                                          key={type.value}
-                                                          value={type.value}
-                                                        >
-                                                          {type.label}
-                                                        </MenuItem>
-                                                      )
-                                                    )}
-                                                  </Select>
-                                                </FormControl>
-                                                <IconButton
-                                                  color="error"
-                                                  onClick={() =>
-                                                    removeSubQuestion(
-                                                      optionIndex,
-                                                      subQuestionIndex
-                                                    )
-                                                  }
-                                                  size="small"
-                                                >
-                                                  <DeleteIcon />
-                                                </IconButton>
-                                              </Box>
-
-                                              {/* Sub-Question Options */}
-                                              {(subQuestion.type ===
-                                                "single-choice" ||
-                                                subQuestion.type ===
-                                                  "multiple-choice") && (
-                                                <Box
-                                                  sx={{
-                                                    ml: 2,
-                                                    pl: 2,
-                                                    borderLeft: "2px solid",
-                                                    borderColor: "divider",
-                                                  }}
-                                                >
-                                                  <Typography
-                                                    variant="caption"
-                                                    color="text.secondary"
-                                                    gutterBottom
-                                                  >
-                                                    Sub-Question Options:
-                                                  </Typography>
-                                                  <Stack
-                                                    spacing={1}
-                                                    sx={{ mt: 1 }}
-                                                  >
-                                                    {subQuestion.options.map(
-                                                      (
-                                                        subOption,
-                                                        subOptionIndex
-                                                      ) => (
-                                                        <Box
-                                                          key={subOptionIndex}
-                                                          sx={{
-                                                            display: "flex",
-                                                            gap: 1,
-                                                            alignItems:
-                                                              "center",
-                                                          }}
-                                                        >
-                                                          <TextField
-                                                            label={`Sub-Option ${
-                                                              subOptionIndex + 1
-                                                            }`}
-                                                            value={
-                                                              subOption.label
-                                                            }
-                                                            onChange={(e) =>
-                                                              updateSubQuestionOption(
-                                                                optionIndex,
-                                                                subQuestionIndex,
-                                                                subOptionIndex,
-                                                                e.target.value
-                                                              )
-                                                            }
-                                                            size="small"
-                                                            sx={{ flexGrow: 1 }}
-                                                            placeholder="Enter sub-option..."
-                                                          />
-                                                          <IconButton
-                                                            color="error"
-                                                            onClick={() =>
-                                                              removeSubQuestionOption(
-                                                                optionIndex,
-                                                                subQuestionIndex,
-                                                                subOptionIndex
-                                                              )
-                                                            }
-                                                            size="small"
-                                                            disabled={
-                                                              subQuestion
-                                                                .options
-                                                                .length <= 1
-                                                            }
-                                                          >
-                                                            <DeleteIcon />
-                                                          </IconButton>
-                                                        </Box>
-                                                      )
-                                                    )}
-                                                    <Button
-                                                      startIcon={<AddIcon />}
-                                                      onClick={() =>
-                                                        addSubQuestionOption(
-                                                          optionIndex,
-                                                          subQuestionIndex
-                                                        )
-                                                      }
-                                                      size="small"
-                                                      variant="text"
-                                                      sx={{
-                                                        alignSelf: "flex-start",
-                                                      }}
-                                                    >
-                                                      Add Sub-Option
-                                                    </Button>
-                                                  </Stack>
-                                                </Box>
-                                              )}
-                                            </Stack>
-                                          </CardContent>
-                                        </Card>
-                                      )
-                                    )}
-
-                                    <Button
-                                      startIcon={<AddIcon />}
-                                      onClick={() =>
-                                        addSubQuestion(optionIndex)
-                                      }
-                                      size="small"
-                                      variant="outlined"
-                                      sx={{ alignSelf: "flex-start" }}
-                                    >
-                                      Add Sub-Question
-                                    </Button>
-                                  </Stack>
-                                </Box>
-                              </Collapse>
-                            </Stack>
-                          </CardContent>
-                        </Card>
-                      ))}
-
-                      <Button
-                        startIcon={<AddIcon />}
-                        onClick={addOption}
-                        size="small"
-                        variant="outlined"
-                        sx={{ alignSelf: "flex-start" }}
-                      >
-                        Add Option
-                      </Button>
-                    </Stack>
-                  </Box>
-                )}
-
-                {/* Additional Settings */}
-                <Box sx={{ p: 2, bgcolor: "grey.50", borderRadius: 1 }}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1,
-                      mb: 2,
-                    }}
-                  >
-                    <SettingsIcon color="primary" fontSize="small" />
-                    <Typography variant="subtitle2" color="primary">
-                      Additional Settings
-                    </Typography>
-                  </Box>
-
-                  <Stack spacing={2}>
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={currentQuestion.required}
-                          onChange={(e) =>
-                            setCurrentQuestion({
-                              ...currentQuestion,
-                              required: e.target.checked,
-                            })
-                          }
-                          disabled={domains.length === 0}
-                        />
-                      }
-                      label="Mark as required question"
-                    />
-
-                    <TextField
-                      label="Help Text (Optional)"
-                      value={currentQuestion.helpText}
-                      onChange={(e) =>
-                        setCurrentQuestion({
-                          ...currentQuestion,
-                          helpText: e.target.value,
-                        })
-                      }
-                      fullWidth
-                      size="small"
-                      multiline
-                      rows={2}
-                      placeholder="Add helpful instructions for this question..."
-                      disabled={domains.length === 0}
-                    />
-                  </Stack>
-                </Box>
-
-                {/* Add Question Button */}
-                <Button
-                  variant="contained"
-                  onClick={addQuestionToQuestionnaire}
-                  disabled={
-                    !currentQuestion.text.trim() || !currentQuestion.domainId
-                  }
-                  fullWidth
-                  size="large"
-                  sx={{ py: 1.5 }}
-                >
-                  Add Question to Questionnaire
-                </Button>
-              </Stack>
-            </Box>
-          </Paper>
-        </Box>
-
-        {/* Right Panel - Questions List */}
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Paper elevation={2} sx={{ borderRadius: 2, height: "fit-content" }}>
-            <Box
-              sx={{ p: 3, borderBottom: "1px solid", borderColor: "divider" }}
+              Next →
+            </Button>
+          ) : (
+            <Button
+              variant="contained"
+              color="success"
+              onClick={handleSave}
+              disabled={isSaving || validationErrors.length > 0}
+              startIcon={<SaveIcon />}
+              size="large"
+              sx={{
+                borderRadius: 2,
+                px: 4,
+                py: 1.5,
+                textTransform: 'none',
+                fontSize: '1rem',
+                background: 'linear-gradient(45deg, #4caf50 30%, #66bb6a 90%)',
+                '&:hover': {
+                  background: 'linear-gradient(45deg, #388e3c 30%, #4caf50 90%)',
+                }
+              }}
             >
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <Box>
-                  <Typography variant="h6" color="primary">
-                    Step 3: Review & Save
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {questions.length} question
-                    {questions.length !== 1 ? "s" : ""} added
-                  </Typography>
-                </Box>
-                <Button
-                  variant="contained"
-                  startIcon={<SaveIcon />}
-                  onClick={handleSave}
-                  disabled={!title.trim() || questions.length === 0}
-                  color="success"
-                  size="large"
-                >
-                  Save Questionnaire
-                </Button>
-              </Box>
-            </Box>
-
-            <Box sx={{ p: 3 }}>
-              {questions.length === 0 ? (
-                <Box
-                  sx={{
-                    p: 4,
-                    textAlign: "center",
-                    color: "text.secondary",
-                    border: "2px dashed",
-                    borderColor: "divider",
-                    borderRadius: 2,
-                  }}
-                >
-                  <QuestionIcon sx={{ fontSize: 48, mb: 2, opacity: 0.5 }} />
-                  <Typography variant="h6" gutterBottom>
-                    No questions added yet
-                  </Typography>
-                  <Typography variant="body2">
-                    Use the form on the left to create your first question
-                  </Typography>
-                </Box>
-              ) : (
-                <Stack spacing={2}>
-                  {questions.map((question, index) => (
-                    <Card
-                      key={index}
-                      variant="outlined"
-                      sx={{ borderRadius: 2 }}
-                    >
-                      <CardContent sx={{ p: 2 }}>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "flex-start",
-                            gap: 2,
-                          }}
-                        >
-                          <Box sx={{ flexGrow: 1 }}>
-                            <Box
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 1,
-                                mb: 1,
-                              }}
-                            >
-                              <Typography
-                                variant="caption"
-                                color="text.secondary"
-                              >
-                                Question {index + 1}
-                              </Typography>
-                              <Chip
-                                label={
-                                  domains.find(
-                                    (d) => d._id === question.domainId
-                                  )?.name || "Unknown Domain"
-                                }
-                                size="small"
-                                sx={{
-                                  bgcolor:
-                                    domains.find(
-                                      (d) => d._id === question.domainId
-                                    )?.color || "#gray",
-                                  color: "white",
-                                  height: 20,
-                                  fontSize: "0.7rem",
-                                }}
-                              />
-                              {question.required && (
-                                <Chip
-                                  label="Required"
-                                  size="small"
-                                  color="error"
-                                  sx={{ height: 20, fontSize: "0.7rem" }}
-                                />
-                              )}
-                            </Box>
-
-                            <Typography
-                              variant="body1"
-                              gutterBottom
-                              sx={{ fontWeight: 500 }}
-                            >
-                              {question.text}
-                            </Typography>
-
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                            >
-                              Type:{" "}
-                              {
-                                questionTypes.find(
-                                  (t) => t.value === question.type
-                                )?.label
-                              }
-                              {question.options.length > 0 &&
-                                ` • ${question.options.length} options`}
-                              {question.options.some(
-                                (opt) =>
-                                  opt.subQuestions &&
-                                  opt.subQuestions.length > 0
-                              ) && ` • Has sub-questions`}
-                            </Typography>
-
-                            {question.options.length > 0 && (
-                              <Box sx={{ mt: 1 }}>
-                                {question.options.map((opt, i) => (
-                                  <Badge
-                                    key={i}
-                                    badgeContent={opt.subQuestions?.length || 0}
-                                    color="secondary"
-                                    sx={{ mr: 1, mb: 0.5 }}
-                                    invisible={
-                                      !opt.subQuestions ||
-                                      opt.subQuestions.length === 0
-                                    }
-                                  >
-                                    <Chip
-                                      label={opt.label}
-                                      size="small"
-                                      variant="outlined"
-                                      sx={{ mr: 0.5, mb: 0.5 }}
-                                    />
-                                  </Badge>
-                                ))}
-                              </Box>
-                            )}
-                          </Box>
-
-                          <IconButton
-                            color="error"
-                            onClick={() => removeQuestion(index)}
-                            size="small"
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Box>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </Stack>
-              )}
-            </Box>
-          </Paper>
+              {isSaving ? 'Saving...' : editingQuestionnaire ? 'Update Questionnaire' : 'Save Questionnaire'}
+            </Button>
+          )}
         </Box>
+        
+        {/* Step completion hint */}
+        {!steps[activeStep].completed && activeStep < steps.length - 1 && (
+          <Box sx={{ mt: 3, p: 2, backgroundColor: '#f5f5f5', borderRadius: 2 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <SettingsIcon sx={{ fontSize: 16 }} />
+              Complete this step to continue to the next one
+            </Typography>
+          </Box>
+        )}
+      </Paper>
+
+      {/* Enhanced Navigation & Save FAB */}
+      <Box sx={{ 
+        position: 'fixed', 
+        bottom: 20, 
+        right: 20, 
+        zIndex: 1000,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 2,
+        alignItems: 'flex-end'
+      }}>
+        {/* Progress indicator */}
+        <Paper 
+          elevation={4} 
+          sx={{ 
+            p: 2, 
+            borderRadius: 2,
+            backgroundColor: 'rgba(255,255,255,0.95)',
+            backdropFilter: 'blur(10px)'
+          }}
+        >
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+            Progress
+          </Typography>
+          <LinearProgress 
+            variant="determinate" 
+            value={(activeStep / (steps.length - 1)) * 100} 
+            sx={{ 
+              width: 120, 
+              height: 6, 
+              borderRadius: 3,
+              backgroundColor: 'rgba(0,0,0,0.1)',
+              '& .MuiLinearProgress-bar': {
+                backgroundColor: '#4caf50',
+                borderRadius: 3
+              }
+            }} 
+          />
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+            {Math.round(((activeStep) / (steps.length - 1)) * 100)}% Complete
+          </Typography>
+        </Paper>
+        
+        {activeStep === steps.length - 1 && (
+          <Fab
+            color="success"
+            variant="extended"
+            onClick={handleSave}
+            disabled={isSaving || validationErrors.length > 0}
+            size="large"
+            sx={{
+              background: 'linear-gradient(45deg, #4caf50 30%, #66bb6a 90%)',
+              '&:hover': {
+                background: 'linear-gradient(45deg, #388e3c 30%, #4caf50 90%)',
+              },
+              boxShadow: '0 8px 32px rgba(76, 175, 80, 0.3)',
+              borderRadius: 3,
+              px: 3
+            }}
+          >
+            <SaveIcon sx={{ mr: 1 }} />
+            {isSaving ? 'Saving...' : editingQuestionnaire ? 'Update' : 'Finish & Save'}
+          </Fab>
+        )}
       </Box>
+
+      {/* Form Preview Modal */}
+      {showPreview && (
+        <FormPreview 
+          title={title}
+          description={description}
+          structure={structure} 
+          onClose={() => setShowPreview(false)} 
+        />
+      )}
     </Box>
   );
 };

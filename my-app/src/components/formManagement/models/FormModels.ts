@@ -1,196 +1,193 @@
-// ============================================================================
-// FORM MANAGEMENT TYPE DEFINITIONS
-// ============================================================================
-// This file contains all type definitions for the form management system.
-// Types are organized into logical sections for better maintainability.
-
-// ============================================================================
-// CORE QUESTION & QUESTIONNAIRE TYPES
-// ============================================================================
-
 /**
- * Domain definition for categorizing questions in questionnaires
+ * Enhanced TypeScript interfaces for Questionnaire System
+ * Supporting hierarchical structure with groups and questions
  */
-export interface DomainModel {
+
+// User interface for populated references
+export interface User {
   _id: string;
   name: string;
-  description?: string;
-  color?: string;
+  email: string;
+  role: string;
 }
 
-/**
- * Option for single-choice and multiple-choice questions
- */
-export interface OptionModel {
+// Option for choice-based questions
+export interface Option {
   id: string;
-  value: number;
   label: string;
-  subQuestions?: QuestionModel[];
+  value: number;
 }
 
-/**
- * Individual question in a questionnaire
- */
-export interface QuestionModel {
-  _id: string;
-  text: string;
-  domainId: string;
-  type: 'single-choice' | 'multiple-choice' | 'text' | 'number' | 'scale';
-  options: OptionModel[];
-  required?: boolean;
-  helpText?: string;
-  order: number;
+// Conditional logic for showing questions based on parent selections
+export interface NodeCondition {
   parentQuestionId?: string;
   parentOptionId?: string;
 }
 
-/**
- * Complete questionnaire template with all metadata
- */
-export interface QuestionnaireModel {
+// Visibility conditions for dynamic form logic
+export interface VisibilityCondition {
+  questionId: string;
+  operator: 'equals' | 'not_equals' | 'greater_than' | 'less_than' | 'contains';
+  value: string | number;
+}
+
+// Graph settings for analytics
+export interface GraphSettings {
+  colorRanges: Array<{
+    label: string;     // e.g. "Low", "Medium", "High"
+    min: number;
+    max: number;
+    color: string;     // e.g. "#ef4444", "#fbbf24", "#10b981"
+  }>;
+}
+
+// Recursive FormNode - can be either a group (domain/subdomain) or a question
+export interface FormNode {
+  id: string;
+  type: 'group' | 'question';
+  title: string;
+  description?: string;
+  weight: number;
+  required?: boolean; // For questions
+  
+  // Question-specific fields
+  inputType?: 'single-choice' | 'multiple-choice' | 'scale' | 'number' | 'text';
+  options?: Option[];
+  scaleMin?: number; // For scale questions
+  scaleMax?: number; // For scale questions
+  
+  // Conditional logic
+  condition?: NodeCondition;
+  visibilityConditions?: VisibilityCondition[];
+  
+  // Analytics configuration
+  graphable: boolean;
+  preferredChartType: 'bar' | 'line' | 'radar' | 'gauge' | 'pie';
+  
+  // Hierarchical structure
+  children: FormNode[];
+}
+
+// Complete questionnaire template
+export interface QuestionnaireTemplate {
   _id: string;
   title: string;
   description?: string;
-  domains: DomainModel[];
-  questions: QuestionModel[];
+  structure: FormNode[];
+  graphSettings?: GraphSettings;
   isActive: boolean;
-  createdBy: string;
+  createdBy: string | User;
+  version: number;
   createdAt: Date;
   updatedAt: Date;
-  version: number;
 }
 
-// ============================================================================
-// FORM SUBMISSION TYPES
-// ============================================================================
-
-/**
- * Individual answer for a question in a form submission
- */
-export interface FormAnswer {
-  questionId: string;
-  questionText: string;
-  questionType: 'single-choice' | 'multiple-choice' | 'text' | 'number' | 'scale';
-  answer: string | number | (string | number)[];
-  selectedOptions?: {
-    id: string;
-    label: string;
-    value: number;
-  }[];
+// Metadata provided by the API
+export interface QuestionnaireMetadata {
+  totalQuestions: number;
+  totalNodes: number;
+  maxPossibleScore: number;
+  graphableQuestions: number;
+  nodePaths?: Array<{
+    nodeId: string;
+    nodePath: string[];
+    type: 'group' | 'question';
+  }>;
 }
 
-/**
- * Complete form submission with all metadata
- */
-export interface FormSubmission {
-  _id?: string;
-  studentId: string;
-  studentName: string;
-  questionnaireId: string | { _id: string; title: string; description?: string };
-  questionnaireTitle: string;
-  answers: FormAnswer[];
-  submittedAt?: Date;
-  completedBy?: string; // User's name for display
-  completedById?: string; // User's ID for robust identification
-  status?: 'draft' | 'completed' | 'reviewed';
-  notes?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
+// Full questionnaire with metadata
+export interface QuestionnaireTemplateWithMetadata extends QuestionnaireTemplate {
+  metadata: QuestionnaireMetadata;
 }
 
-// ============================================================================
-// API REQUEST/RESPONSE TYPES
-// ============================================================================
-
-/**
- * Standard API response wrapper
- */
-export interface ApiResponse<T> {
-  success: boolean;
-  message?: string;
-  data?: T;
-  error?: string;
-}
-
-/**
- * Payload for creating new questionnaires
- */
+// For form creation/editing
 export interface CreateQuestionnaireRequest {
   title: string;
   description?: string;
-  domains: Omit<DomainModel, '_id'>[];
-  questions: (Omit<QuestionModel, '_id' | 'options'> & {
-    options: (Omit<OptionModel, 'id' | 'subQuestions'> & {
-      subQuestions?: Omit<QuestionModel, '_id'>[];
-    })[];
-  })[];
+  structure: FormNode[];
+  graphSettings?: GraphSettings;
 }
 
-/**
- * Payload for creating new form submissions
- */
-export interface CreateFormSubmissionPayload {
+// Enhanced form submission interfaces
+export interface FormAnswer {
+  questionId: string;
+  nodePath: string[];
+  inputType: 'single-choice' | 'multiple-choice' | 'scale' | 'number' | 'text';
+  answer: string | number | (string | number)[];
+  selectedOptions?: Option[];
+  questionTitle?: string;
+  weight: number;
+  graphable: boolean;
+}
+
+export interface DomainScore {
+  nodeId: string;
+  nodePath: string[];
+  title: string;
+  score: number;
+  maxScore: number;
+}
+
+export interface FormSubmission {
+  _id: string;
   studentId: string;
   studentName: string;
   questionnaireId: string;
   questionnaireTitle: string;
   answers: FormAnswer[];
+  submittedAt: Date;
   completedBy?: string;
-  completedById?: string;
+  status: 'draft' | 'completed' | 'reviewed';
   notes?: string;
-}
-
-// ============================================================================
-// UTILITY TYPES
-// ============================================================================
-
-/**
- * Form data for question creation/editing (without database ID)
- */
-export type QuestionFormData = Omit<QuestionModel, '_id'>;
-
-/**
- * Simplified questionnaire template for API responses
- */
-export interface QuestionnaireTemplate {
-  _id: string;
-  title: string;
-  description: string;
-  domains: {
-    id: string;
-    name: string;
-    description: string;
-    color: string;
-  }[];
-  questions: {
-    text: string;
-    domainId: string;
-    type: 'single-choice' | 'multiple-choice' | 'text' | 'number' | 'scale';
-    options: {
-      id: string;
-      value: number;
-      label: string;
-      subQuestions?: {
-        text: string;
-        domainId: string;
-        type: 'single-choice' | 'multiple-choice' | 'text' | 'number' | 'scale';
-        options: {
-          id: string;
-          value: number;
-          label: string;
-        }[];
-        required: boolean;
-        helpText?: string;
-        order: number;
-      }[];
-    }[];
-    required: boolean;
-    helpText?: string;
-    order: number;
-  }[];
+  totalScore?: number;
+  domainScores: DomainScore[];
   createdAt: Date;
   updatedAt: Date;
 }
 
+// UI State Management Interfaces
+export interface FormBuilderState {
+  questionnaire: {
+    title: string;
+    description: string;
+    structure: FormNode[];
+    graphSettings: GraphSettings;
+  };
+  currentEditingNode: FormNode | null;
+  expandedNodes: Set<string>;
+  selectedNodePath: string[];
+  validationErrors: string[];
+  isDirty: boolean;
+}
 
+// Form Builder Action Types
+export type FormBuilderAction =
+  | { type: 'SET_TITLE'; payload: string }
+  | { type: 'SET_DESCRIPTION'; payload: string }
+  | { type: 'ADD_NODE'; payload: { parentPath: string[]; node: FormNode } }
+  | { type: 'UPDATE_NODE'; payload: { nodePath: string[]; updates: Partial<FormNode> } }
+  | { type: 'DELETE_NODE'; payload: { nodePath: string[] } }
+  | { type: 'MOVE_NODE'; payload: { fromPath: string[]; toPath: string[] } }
+  | { type: 'SET_EDITING_NODE'; payload: FormNode | null }
+  | { type: 'TOGGLE_NODE_EXPANSION'; payload: string }
+  | { type: 'SET_VALIDATION_ERRORS'; payload: string[] }
+  | { type: 'SET_GRAPH_SETTINGS'; payload: GraphSettings }
+  | { type: 'RESET_FORM' };
 
+// Node templates for quick creation
+export interface NodeTemplate {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  type: 'group' | 'question';
+  defaultNode: Partial<FormNode>;
+}
+
+// API Response wrapper
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  errors?: string[];
+}

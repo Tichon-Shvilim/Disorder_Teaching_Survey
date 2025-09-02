@@ -9,8 +9,6 @@ import RoleRoute from "./components/RoleRoute";
 
 // Pages
 import SignIn from "./components/user/signIn/SignIn";
-import QuestionnaireList from "./components/formManagement/QuestionnaireList";
-import CreateQuestionnaire from "./components/formManagement/CreateQuestionnaire";
 import StudentList from "./components/studentManagement/StudentList";
 import StudentDetails from "./components/studentManagement/StudentDetails";
 import EditStudent from "./components/studentManagement/EditStudent";
@@ -22,15 +20,12 @@ import ModernClassManagement from "./components/classManagement/ModernClassManag
 import UserList from "./components/user/userManagement/UserList";
 import EditUser from "./components/user/editUser/EditUser";
 import SignUp from "./components/user/signUp/SignUp";
+import QuestionnaireList from "./components/formManagement/QuestionnaireList";
+import QuestionnaireBuilder from "./components/formManagement/QuestionnaireBuilder";
 import FillForm from "./components/formManagement/FillForm";
 import ViewSubmissions from "./components/formManagement/ViewSubmissions";
-
-// V2 Components
-import QuestionnaireListV2 from "./components/formManagement/QuestionnaireListV2";
-import QuestionnaireBuilderV2 from "./components/formManagement/QuestionnaireBuilderV2";
-import FillFormV2 from "./components/formManagement/FillFormV2";
-import ViewSubmissionsV2 from "./components/formManagement/ViewSubmissionsV2";
-import QuestionnaireViewerV2 from "./components/formManagement/QuestionnaireViewerV2";
+import QuestionnaireViewer from "./components/formManagement/QuestionnaireViewer";
+import SaveHebrewQuestionnaire from "./components/formManagement/SaveHebrewQuestionnaire";
 
 const App: React.FC = () => {
   return (
@@ -56,18 +51,13 @@ const App: React.FC = () => {
           <Route path="forms/fill" element={<FillForm />} />
           <Route path="forms/fill/:questionnaireId" element={<FillForm />} />
           <Route path="forms/submissions" element={<ViewSubmissions />} />
-          {/* V2 Form Routes */}
-          <Route path="forms/v2/fill" element={<FillFormV2 />} />
-          <Route path="forms/v2/fill/:questionnaireId" element={<FillFormV2 />} />
-          <Route path="forms/v2/submissions" element={<ViewSubmissionsV2 />} />
           <Route path="classes" element={<ClassList/>} />
           <Route path="classes/:id" element={<ModernClassManagement />} />
           <Route path="classes/:id/edit" element={<EditClass />} />
           <Route path="addStudent" element={<AddStudent />} />
           <Route path="addClass" element={<AddClass />} />
           <Route path="signup" element={<SignUp/>} />
-
-          {/* Role-specific routes */}
+          
           <Route
             path="questionnaires"
             element={
@@ -77,44 +67,34 @@ const App: React.FC = () => {
             }
           />
           <Route
+            path="save-hebrew-questionnaire"
+            element={
+              <RoleRoute allowedRoles={["Admin"]}>
+                <SaveHebrewQuestionnaire />
+              </RoleRoute>
+            }
+          />
+          <Route
             path="create-questionnaire"
             element={
               <RoleRoute allowedRoles={["Admin"]}>
-                <CreateQuestionnaire/>
-              </RoleRoute>
-            }
-          />
-          
-          {/* V2 Enhanced Questionnaire Routes - New Hierarchical System */}
-          <Route
-            path="questionnaires-v2"
-            element={
-              <RoleRoute allowedRoles={["Admin"]}>
-                <QuestionnaireListV2 />
+                <QuestionnaireBuilder />
               </RoleRoute>
             }
           />
           <Route
-            path="create-questionnaire-v2"
+            path="create-questionnaire/:id"
             element={
               <RoleRoute allowedRoles={["Admin"]}>
-                <QuestionnaireBuilderV2 />
+                <QuestionnaireBuilder />
               </RoleRoute>
             }
           />
           <Route
-            path="create-questionnaire-v2/:id"
+            path="view-questionnaire/:id"
             element={
               <RoleRoute allowedRoles={["Admin"]}>
-                <QuestionnaireBuilderV2 />
-              </RoleRoute>
-            }
-          />
-          <Route
-            path="view-questionnaire-v2/:id"
-            element={
-              <RoleRoute allowedRoles={["Admin"]}>
-                <QuestionnaireViewerV2 />
+                <QuestionnaireViewer />
               </RoleRoute>
             }
           />

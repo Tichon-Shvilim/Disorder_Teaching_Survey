@@ -30,12 +30,12 @@ import {
   Tablet as TabletIcon,
   Computer as DesktopIcon,
 } from '@mui/icons-material';
-import type { FormNodeV2 } from './models/FormModelsV2';
+import type { FormNode } from './models/FormModels';
 
 interface FormPreviewProps {
   title?: string;
   description?: string;
-  structure: FormNodeV2[];
+  structure: FormNode[];
   onClose: () => void;
 }
 
@@ -49,7 +49,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
   // Check if conditional questions should be shown based on current form data
-  const shouldShowConditionalQuestion = (conditionalQuestion: FormNodeV2): boolean => {
+  const shouldShowConditionalQuestion = (conditionalQuestion: FormNode): boolean => {
     if (!conditionalQuestion.condition) return true;
     
     const { parentQuestionId, parentOptionId } = conditionalQuestion.condition;
@@ -86,7 +86,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
     });
   };
 
-  const renderQuestion = (node: FormNodeV2) => {
+  const renderQuestion = (node: FormNode) => {
     const value = formData[node.id] || '';
 
     switch (node.inputType) {
@@ -377,7 +377,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
     }
   };
 
-  const renderNode = (node: FormNodeV2, level: number = 0) => {
+  const renderNode = (node: FormNode, level: number = 0) => {
     // Check if this is a conditional question that shouldn't be shown
     const isConditional = Boolean(node.condition);
     const shouldShow = !isConditional || shouldShowConditionalQuestion(node);
@@ -515,7 +515,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
     }
   };
 
-  const getQuestionCount = (nodes: FormNodeV2[]): number => {
+  const getQuestionCount = (nodes: FormNode[]): number => {
     return nodes.reduce((count, node) => {
       if (node.type === 'question') {
         return count + 1;
