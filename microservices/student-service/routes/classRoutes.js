@@ -123,8 +123,47 @@ router.post('/', authenticateJWT, authorizeRole(['Admin']), async (req, res) => 
 // UPDATE a class - Admin only
 router.put('/:id', authenticateJWT, authorizeRole(['Admin']), async (req, res) => {
   try {
+    const classId = req.params.id;
+    const { students: newStudentIds } = req.body;
+    
+    // Get the current class to see what students were previously assigned
+    const currentClass = await Class.findById(classId);
+    if (!currentClass) {
+      return res.status(404).json({ message: 'Class not found' });
+    }
+    
+    // If students are being updated, validate and handle transfers
+    if (newStudentIds && Array.isArray(newStudentIds)) {
+      const Student = require('../models/Student');
+      
+      // Check which students are being added (not previously in this class)
+      const currentStudentIds = currentClass.students.map(id => id.toString());
+      const studentsBeingAdded = newStudentIds.filter(id => !currentStudentIds.includes(id));
+      
+      // For each student being added, check if they're already in another class
+      for (const studentId of studentsBeingAdded) {
+        const student = await Student.findById(studentId).populate('classId', 'classNumber');
+        if (student && student.classId && student.classId._id.toString() !== classId) {
+          return res.status(400).json({ 
+            message: `Student ${student.name} is already assigned to class ${student.classId.classNumber}. Please remove them from their current class first.` 
+          });
+        }
+      }
+      
+      // Update student records - remove classId from students no longer in this class
+      const studentsBeingRemoved = currentStudentIds.filter(id => !newStudentIds.includes(id));
+      for (const studentId of studentsBeingRemoved) {
+        await Student.findByIdAndUpdate(studentId, { classId: null });
+      }
+      
+      // Update student records - set classId for students being added to this class
+      for (const studentId of studentsBeingAdded) {
+        await Student.findByIdAndUpdate(studentId, { classId: classId });
+      }
+    }
+    
     const updatedClass = await Class.findByIdAndUpdate(
-      req.params.id,
+      classId,
       req.body,
       { new: true }
     )

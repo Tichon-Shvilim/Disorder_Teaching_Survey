@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save, User, Calendar, GraduationCap } from 'lucide-react';
-import { getStudentById, updateStudent } from './Api-Requests/StudentAPIService';
+import { getStudentById, updateStudent, checkClassTransfer } from './Api-Requests/StudentAPIService';
 import type { UpdateStudentRequest } from './Api-Requests/StudentAPIService';
 import { getAllClasses } from './Api-Requests/ClassAPIService';
 import type { Class } from './Api-Requests/ClassAPIService';
@@ -15,6 +15,7 @@ const EditStudent: React.FC = () => {
     DOB: '',
     classId: ''
   });
+  const [originalClassId, setOriginalClassId] = useState<string>('');
   const [classes, setClasses] = useState<Class[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingStudent, setLoadingStudent] = useState(true);
@@ -42,12 +43,19 @@ const EditStudent: React.FC = () => {
         setLoadingStudent(true);
         const response = await getStudentById(id!);
         const student = response.data;
+        
+        // Handle populated or unpopulated classId
+        const classId = typeof student.classId === 'object' && student.classId !== null 
+          ? student.classId._id 
+          : student.classId || '';
+        
         setFormData({
           _id: student._id,
           name: student.name,
           DOB: student.DOB.split('T')[0], // Format date for input
-          classId: student.classId || ''
+          classId: classId
         });
+        setOriginalClassId(classId);
       } catch (error) {
         console.error('Error fetching student:', error);
         toast.error('Failed to load student data');
@@ -110,15 +118,41 @@ const EditStudent: React.FC = () => {
       return;
     }
 
+    // Check if class is being changed
+    if (originalClassId !== formData.classId && formData.classId) {
+      try {
+        const transferCheck = await checkClassTransfer(id!, formData.classId);
+        
+        if (transferCheck.data.needsTransfer) {
+          const currentClass = transferCheck.data.currentClass!;
+          const newClass = transferCheck.data.newClass!;
+          
+          const confirmTransfer = window.confirm(
+            `התלמיד ${transferCheck.data.studentName} כרגע בכיתה "${currentClass.classNumber}".\n\n` +
+            `האם ברצונך להעביר אותו לכיתה "${newClass.classNumber}"?\n` +
+            `פעולה זו תסיר אותו מהכיתה הקיימת ותוסיף אותו לכיתה החדשה.`
+          );
+          
+          if (!confirmTransfer) {
+            return; // Cancel the operation
+          }
+        }
+      } catch (error: unknown) {
+        console.error('Error checking class transfer:', error);
+        toast.error('שגיאה בבדיקת העברת כיתה');
+        return;
+      }
+    }
+
     setLoading(true);
     
     try {
       await updateStudent(id!, formData);
-      toast.success('Student updated successfully!');
+      toast.success('הפרטי התלמיד עודכנו בהצלחה!');
       navigate('../students');
     } catch (error: unknown) {
       console.error('Error updating student:', error);
-      toast.error('Failed to update student. Please try again.');
+      toast.error('שגיאה בעדכון פרטי התלמיד. אנא נסה שוב.');
     } finally {
       setLoading(false);
     }

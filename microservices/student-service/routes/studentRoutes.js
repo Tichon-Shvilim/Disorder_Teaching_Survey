@@ -123,10 +123,17 @@ router.post('/', authenticateJWT, authorizeRole(['Admin']), async (req, res) => 
     const newStudent = new Student(req.body);
     const savedStudent = await newStudent.save();
     
+    console.log('Student saved with classId:', savedStudent.classId);
+    
     // Add student to the class's students array
     if (!classExists.students.includes(savedStudent._id)) {
+      console.log('Adding student to class:', classExists._id); 
+      console.log('Class students before:', classExists.students);
       classExists.students.push(savedStudent._id);
       await classExists.save();
+      console.log('Class students after:', classExists.students);
+    } else {
+      console.log('Student already in class students array');
     }
     
     res.status(201).json(savedStudent);
@@ -364,6 +371,55 @@ router.delete('/:studentId/remove-therapist', authenticateJWT, authorizeRole(['A
 
   } catch (error) {
     console.error('Error removing therapist:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// CHECK if student can be moved to a new class - Admin only
+router.post('/check-class-transfer', authenticateJWT, authorizeRole(['Admin']), async (req, res) => {
+  try {
+    const { studentId, newClassId } = req.body;
+    
+    if (!studentId || !newClassId) {
+      return res.status(400).json({ message: 'Student ID and new class ID are required' });
+    }
+    
+    // Find student and populate current class info
+    const student = await Student.findById(studentId).populate('classId', 'classNumber');
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+    
+    // Find new class
+    const newClass = await Class.findById(newClassId);
+    if (!newClass) {
+      return res.status(404).json({ message: 'New class not found' });
+    }
+    
+    // If student already has a class and it's different from the new one
+    if (student.classId && student.classId._id.toString() !== newClassId) {
+      return res.json({
+        needsTransfer: true,
+        currentClass: {
+          _id: student.classId._id,
+          classNumber: student.classId.classNumber
+        },
+        newClass: {
+          _id: newClass._id,
+          classNumber: newClass.classNumber
+        },
+        studentName: student.name
+      });
+    }
+    
+    // If student has no class or is being assigned to the same class
+    return res.json({
+      needsTransfer: false,
+      message: student.classId ? 'Student is already in this class' : 'Student has no current class assignment'
+    });
+    
+  } catch (error) {
+    console.error('Error checking class transfer:', error);
     res.status(500).json({ message: error.message });
   }
 });

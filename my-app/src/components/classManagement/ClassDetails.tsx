@@ -10,7 +10,7 @@ import {
   Save
 } from 'lucide-react';
 import { getClassById, updateClass } from '../studentManagement/Api-Requests/ClassAPIService';
-import { getAllStudents } from '../studentManagement/Api-Requests/StudentAPIService';
+import { getAllStudents, checkClassTransfer } from '../studentManagement/Api-Requests/StudentAPIService';
 import type { Class, UpdateClassRequest } from '../studentManagement/Api-Requests/ClassAPIService';
 import type { Student } from '../studentManagement/Api-Requests/StudentAPIService';
 import { toast } from 'react-toastify';
@@ -46,18 +46,28 @@ const ClassDetails: React.FC = () => {
     try {
       const response = await getAllStudents();
       const students = response.data;
-      console.log("all students" + students.length);
-      // Filter out students who are already in other classes or this class
-      const available = students.filter(student => 
-        !student.classId || student.classId === classData?._id
-      );
-      setAvailableStudents(available);
-      console.log('Total students:', students.length, 'Available:', available.length);
+      console.log("=== FETCH ALL STUDENTS DEBUG ===");
+      console.log("Total students fetched:", students.length);
+      
+      // Log a few students to see their structure
+      if (students.length > 0) {
+        console.log("Sample student data:", students.slice(0, 3).map(s => ({
+          name: s.name,
+          _id: s._id,
+          classId: s.classId,
+          classIdType: typeof s.classId
+        })));
+      }
+      
+      // Show ALL students but we'll handle class transfer validation during save
+      // This allows admins to see all students and make informed decisions
+      setAvailableStudents(students);
+      console.log('Total students:', students.length, 'All available for selection (transfers will be confirmed)');
     } catch (err: unknown) {
       console.error('Error fetching students:', err);
       toast.error('Failed to load students');
     }
-  }, [classData?._id]);
+  }, []);
 
   useEffect(() => {
     if (id) {
@@ -83,28 +93,103 @@ const ClassDetails: React.FC = () => {
         teachers: classData.teachers // Keep existing teacher IDs
       };
       
+      console.log('Updating class with students:', {
+        classId: classData._id,
+        currentStudents: classData.students.map(s => s._id),
+        newStudents: selectedStudents
+      });
+      
       await updateClass(classData._id, updateData);
       
-      // Here you would typically update each student's classNumber
-      // For now, we'll just refresh the class data
+      // Refresh the class data to show updated students
       await fetchClassData();
       
       setEditingStudents(false);
-      toast.success('Students updated successfully!');
+      toast.success('התלמידים עודכנו בהצלחה!');
     } catch (err: unknown) {
       console.error('Error updating students:', err);
-      toast.error('Failed to update students');
+      
+      // Handle specific error messages from server
+      if (err && typeof err === 'object' && 'response' in err) {
+        const errorWithResponse = err as { 
+          response?: { 
+            data?: { message?: string }; 
+            status?: number;
+          } 
+        };
+        
+        const errorMessage = errorWithResponse.response?.data?.message;
+        const status = errorWithResponse.response?.status;
+        
+        console.log('Server error:', { status, message: errorMessage });
+        
+        if (errorMessage) {
+          // Show server error message (includes Hebrew text for multi-class conflicts)
+          toast.error(errorMessage);
+        } else if (status === 400) {
+          toast.error('שגיאת קלט: אחד התלמידים כבר משוייך לכיתה אחרת');
+        } else {
+          toast.error('שגיאה בעדכון התלמידים');
+        }
+      } else {
+        toast.error('שגיאה בעדכון התלמידים');
+      }
     } finally {
       setSaving(false);
     }
   };
 
-  const handleStudentToggle = (studentId: string) => {
-    setSelectedStudents(prev => 
-      prev.includes(studentId) 
-        ? prev.filter(id => id !== studentId)
-        : [...prev, studentId]
-    );
+  const handleStudentToggle = async (studentId: string) => {
+    console.log('=== STUDENT TOGGLE DEBUG ===');
+    console.log('Student ID:', studentId);
+    console.log('Class ID:', classData!._id);
+    
+    // If student is being deselected (already selected), just remove them
+    if (selectedStudents.includes(studentId)) {
+      console.log('Student being deselected, removing from selection');
+      setSelectedStudents(prev => prev.filter(id => id !== studentId));
+      return;
+    }
+    
+    // If student is being selected, check for class transfer
+    try {
+      console.log('Checking class transfer for student:', studentId);
+      const transferCheck = await checkClassTransfer(studentId, classData!._id);
+      console.log('Transfer check response:', transferCheck.data);
+      
+      if (transferCheck.data.needsTransfer) {
+        const { currentClass, newClass, studentName } = transferCheck.data;
+        console.log('Transfer needed:', { currentClass, newClass, studentName });
+        
+        // Show confirmation dialog in Hebrew
+        const confirmTransfer = window.confirm(
+          `התלמיד/ה ${studentName} כבר משוייך/ת לכיתה ${currentClass?.classNumber}.\n` +
+          `האם ברצונך להעביר אותו/ה לכיתה ${newClass?.classNumber}?\n\n` +
+          `לחיצה על "אישור" תעביר את התלמיד/ה לכיתה החדשה.\n` +
+          `לחיצה על "ביטול" תבטל את הפעולה.`
+        );
+        
+        if (confirmTransfer) {
+          // User confirmed transfer, add student to selection
+          console.log('User confirmed transfer, adding student to selection');
+          setSelectedStudents(prev => [...prev, studentId]);
+          toast.info(`${studentName} יועבר לכיתה ${newClass?.classNumber}`);
+        } else {
+          // User declined transfer, don't add student
+          console.log('User declined transfer');
+          toast.info(`העברת ${studentName} לכיתה בוטלה`);
+        }
+      } else {
+        // No transfer needed, just add the student
+        console.log('No transfer needed, adding student to selection');
+        setSelectedStudents(prev => [...prev, studentId]);
+      }
+    } catch (error) {
+      console.error('Error checking class transfer:', error);
+      // If check fails, still allow selection but show warning
+      setSelectedStudents(prev => [...prev, studentId]);
+      toast.warning('לא ניתן לבדוק אם התלמיד משוייך לכיתה אחרת. ההוספה תתבצע בכל מקרה.');
+    }
   };
 
   const handleBack = () => {
@@ -515,61 +600,126 @@ const ClassDetails: React.FC = () => {
             
             {editingStudents ? (
               <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                {availableStudents.map((student) => (
-                  <div
-                    key={student._id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      padding: '12px',
-                      backgroundColor: selectedStudents.includes(student._id) ? '#eff6ff' : '#f8fafc',
-                      borderRadius: '8px',
-                      border: `1px solid ${selectedStudents.includes(student._id) ? '#2563eb' : '#e2e8f0'}`,
-                      marginBottom: '8px',
-                      cursor: 'pointer'
-                    }}
-                    onClick={() => handleStudentToggle(student._id)}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedStudents.includes(student._id)}
-                      onChange={() => handleStudentToggle(student._id)}
-                      style={{ margin: '0 8px 0 0' }}
-                    />
-                    <div style={{
-                      width: '40px',
-                      height: '40px',
-                      background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: 'white',
-                      fontWeight: '600',
-                      fontSize: '14px'
-                    }}>
-                      {student.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <h4 style={{ 
-                        fontSize: '14px', 
-                        fontWeight: '500', 
-                        color: '#111827', 
-                        margin: '0 0 2px 0' 
-                      }}>
-                        {student.name}
-                      </h4>
-                      <p style={{ 
-                        fontSize: '12px', 
-                        color: '#6b7280', 
-                        margin: 0 
-                      }}>
-                        Age: {student.age || 'N/A'}
-                      </p>
-                    </div>
+                {availableStudents.length === 0 ? (
+                  <div style={{ 
+                    textAlign: 'center', 
+                    padding: '32px 0', 
+                    color: '#9ca3af' 
+                  }}>
+                    <Users style={{ 
+                      height: '48px', 
+                      width: '48px', 
+                      margin: '0 auto 12px' 
+                    }} />
+                    <p style={{ margin: 0 }}>No students found in the system</p>
                   </div>
-                ))}
+                ) : (
+                  availableStudents.map((student) => {
+                    const isSelected = selectedStudents.includes(student._id);
+                    
+                    // Determine student's current class status
+                    let classStatus = '';
+                    let isInCurrentClass = false;
+                    let isInOtherClass = false;
+                    
+                    if (student.classId) {
+                      if (typeof student.classId === 'object' && student.classId._id) {
+                        isInCurrentClass = student.classId._id === classData?._id;
+                        if (!isInCurrentClass) {
+                          isInOtherClass = true;
+                          classStatus = ` (in class ${student.classId.classNumber})`;
+                        } else {
+                          classStatus = ' (in this class)';
+                        }
+                      } else if (typeof student.classId === 'string') {
+                        isInCurrentClass = student.classId === classData?._id;
+                        if (!isInCurrentClass) {
+                          isInOtherClass = true;
+                          classStatus = ' (in another class)';
+                        } else {
+                          classStatus = ' (in this class)';
+                        }
+                      }
+                    } else {
+                      classStatus = ' (no class)';
+                    }
+                    
+                    return (
+                      <div
+                        key={student._id}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '12px',
+                          padding: '12px',
+                          backgroundColor: isSelected ? '#eff6ff' : '#f8fafc',
+                          borderRadius: '8px',
+                          border: `1px solid ${isSelected ? '#2563eb' : (isInOtherClass ? '#f59e0b' : '#e2e8f0')}`,
+                          marginBottom: '8px',
+                          cursor: 'pointer',
+                          opacity: isInOtherClass ? 0.8 : 1
+                        }}
+                        onClick={() => handleStudentToggle(student._id)}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => handleStudentToggle(student._id)}
+                          style={{ margin: '0 8px 0 0' }}
+                        />
+                        <div style={{
+                          width: '40px',
+                          height: '40px',
+                          background: isInOtherClass 
+                            ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'
+                            : 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                          borderRadius: '50%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'white',
+                          fontWeight: '600',
+                          fontSize: '14px'
+                        }}>
+                          {student.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <h4 style={{ 
+                            fontSize: '14px', 
+                            fontWeight: '500', 
+                            color: isInOtherClass ? '#d97706' : '#111827', 
+                            margin: '0 0 2px 0' 
+                          }}>
+                            {student.name}
+                            <span style={{
+                              fontSize: '12px',
+                              color: isInOtherClass ? '#f59e0b' : (isInCurrentClass ? '#2563eb' : '#6b7280'),
+                              fontWeight: '400'
+                            }}>
+                              {classStatus}
+                            </span>
+                          </h4>
+                          <p style={{ 
+                            fontSize: '12px', 
+                            color: '#6b7280', 
+                            margin: 0 
+                          }}>
+                            Age: {student.age || 'N/A'}
+                            {isInOtherClass && (
+                              <span style={{ 
+                                marginLeft: '8px',
+                                color: '#f59e0b',
+                                fontWeight: '500'
+                              }}>
+                                • Will request transfer
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             ) : (
               <>

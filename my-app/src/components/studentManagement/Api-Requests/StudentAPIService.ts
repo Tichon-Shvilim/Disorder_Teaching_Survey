@@ -5,7 +5,7 @@ export interface Student {
   _id: string;
   name: string;
   DOB: string;
-  classId?: string; // ObjectId reference to Class - Required for new students, may be missing in legacy data
+  classId?: string | { _id: string; classNumber: string }; // ObjectId reference to Class - Can be populated or just ID
   therapists?: Array<{
     _id: string;
     name: string;
@@ -32,6 +32,20 @@ export interface RemoveTherapistRequest {
   therapistId: string;
 }
 
+export interface ClassTransferCheck {
+  needsTransfer: boolean;
+  currentClass?: {
+    _id: string;
+    classNumber: string;
+  };
+  newClass?: {
+    _id: string;
+    classNumber: string;
+  };
+  studentName?: string;
+  message?: string;
+}
+
 export interface TherapistAssignmentResponse {
   message: string;
   student: Student;
@@ -56,6 +70,14 @@ export const updateStudent = (id: string, student: UpdateStudentRequest) => {
 
 export const deleteStudent = (id: string) => {
   return deleteItem<{ message: string }>('api/students', id);
+};
+
+// Check if student can be moved to new class
+export const checkClassTransfer = (studentId: string, newClassId: string) => {
+  return httpService.post<ClassTransferCheck>('/api/students/check-class-transfer', {
+    studentId,
+    newClassId
+  });
 };
 
 // Therapist assignment functions

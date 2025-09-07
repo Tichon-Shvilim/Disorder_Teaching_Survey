@@ -69,12 +69,14 @@ const StudentList: React.FC = () => {
 
   // Helper function to get class name by ID
   const getClassNameById = (classId: string | { _id: string; classNumber: string }): string => {
-    // Handle case where classId might be an object (for backward compatibility)
-    const searchId = typeof classId === 'object' && classId !== null 
-      ? classId._id || classId.classNumber
-      : classId;
+    // Handle case where classId might be an object (populated) or string (ID only)
+    if (typeof classId === 'object' && classId !== null) {
+      // If it's populated, return the classNumber directly
+      return classId.classNumber;
+    }
     
-    const classItem = classes.find(c => c._id === searchId);
+    // If it's just an ID string, look it up in the classes array
+    const classItem = classes.find(c => c._id === classId);
     return classItem ? classItem.classNumber : '';
   };
 
@@ -137,8 +139,14 @@ const StudentList: React.FC = () => {
     const matchesSearch = student.name
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
+    
+    // Handle both populated and unpopulated classId
+    const studentClassId = typeof student.classId === 'object' && student.classId !== null 
+      ? student.classId._id 
+      : student.classId;
+    
     const matchesClass =
-      selectedClass === "" || student.classId === selectedClass;
+      selectedClass === "" || studentClassId === selectedClass;
     return matchesSearch && matchesClass;
   });
 

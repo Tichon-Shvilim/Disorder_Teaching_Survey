@@ -11,10 +11,10 @@ import {
   BookOpen
 } from 'lucide-react';
 import { getClassById, updateClass } from '../studentManagement/Api-Requests/ClassAPIService';
-import { getAllStudents } from '../studentManagement/Api-Requests/StudentAPIService';
+import { getAllStudents, checkClassTransfer, updateStudent } from '../studentManagement/Api-Requests/StudentAPIService';
 import { getAllItems, updateItem } from '../user/Api-Requests/genericRequests';
 import type { Class, UpdateClassRequest } from '../studentManagement/Api-Requests/ClassAPIService';
-import type { Student } from '../studentManagement/Api-Requests/StudentAPIService';
+import type { Student, UpdateStudentRequest } from '../studentManagement/Api-Requests/StudentAPIService';
 import type UserModel from '../user/UserModel';
 import { toast } from 'react-toastify';
 
@@ -33,6 +33,15 @@ const ModernClassManagement: React.FC = () => {
   const [teacherDialogOpen, setTeacherDialogOpen] = useState(false);
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
   const [selectedTeachers, setSelectedTeachers] = useState<string[]>([]);
+  
+  // Confirmation dialog state
+  const [confirmationDialog, setConfirmationDialog] = useState<{
+    isOpen: boolean;
+    studentId: string;
+    studentName: string;
+    currentClass: string;
+    newClass: string;
+  } | null>(null);
   
   // Search states
   const [studentSearch, setStudentSearch] = useState('');
@@ -90,10 +99,94 @@ const ModernClassManagement: React.FC = () => {
     return teacher ? teacher.name : 'Unknown Teacher';
   };
 
+  // Handle student selection with immediate class transfer checking
+  const handleStudentSelection = async (studentId: string, isChecked: boolean) => {
+    if (!isChecked) {
+      // Student is being deselected, just remove them
+      setSelectedStudents(prev => prev.filter(id => id !== studentId));
+      return;
+    }
+
+    // Student is being selected, check for class transfer
+    if (!classData) return;
+
+    try {
+      const transferCheck = await checkClassTransfer(studentId, classData._id);
+      
+      if (transferCheck.data.needsTransfer) {
+        const { currentClass, newClass, studentName } = transferCheck.data;
+        
+        // Show confirmation dialog
+        setConfirmationDialog({
+          isOpen: true,
+          studentId,
+          studentName: studentName || 'Unknown Student',
+          currentClass: currentClass?.classNumber || 'Unknown Class',
+          newClass: newClass?.classNumber || classData.classNumber
+        });
+      } else {
+        // No transfer needed, just add the student
+        setSelectedStudents(prev => [...prev, studentId]);
+      }
+    } catch (error) {
+      console.error('Error checking class transfer:', error);
+      // If check fails, still allow selection but show warning
+      setSelectedStudents(prev => [...prev, studentId]);
+      toast.warning('לא ניתן לבדוק אם התלמיד משוייך לכיתה אחרת. ההוספה תתבצע בכל מקרה.');
+    }
+  };
+
+  // Handle confirmation dialog response
+  const handleConfirmTransfer = (confirmed: boolean) => {
+    if (!confirmationDialog) return;
+
+    if (confirmed) {
+      // User confirmed transfer, add student to selection
+      setSelectedStudents(prev => [...prev, confirmationDialog.studentId]);
+      toast.info(`${confirmationDialog.studentName} יועבר לכיתה ${confirmationDialog.newClass}`);
+    } else {
+      // User declined transfer
+      toast.info(`העברת ${confirmationDialog.studentName} לכיתה בוטלה`);
+    }
+
+    // Close the dialog
+    setConfirmationDialog(null);
+  };
+
   const handleAddStudents = async () => {
     if (!classData || selectedStudents.length === 0) return;
 
     try {
+      // For each student being added, update their individual record to transfer them
+      // The backend will automatically handle removing them from old classes
+      for (const studentId of selectedStudents) {
+        const student = allStudents.find(s => s._id === studentId);
+        if (student) {
+          // Update student's classId to this class - backend handles transfers automatically
+          const updateRequest: UpdateStudentRequest = {
+            _id: studentId,
+            name: student.name,
+            DOB: student.DOB,
+            classId: classData._id
+          };
+          await updateStudent(studentId, updateRequest);
+        }
+      }
+
+      // Now update the class with all students (existing + new)
+      const currentStudentIds = classData.students.map(s => s._id);
+      const allStudentIds = [...currentStudentIds, ...selectedStudents];
+
+      const updatedClassData: UpdateClassRequest = {
+        _id: classData._id,
+        classNumber: classData.classNumber,
+        teachers: classData.teachers,
+        students: allStudentIds
+      };
+
+      await updateClass(classData._id, updatedClassData);
+      
+      // Update local state with new students
       const newStudents = selectedStudents.map(studentId => {
         const student = allStudents.find(s => s._id === studentId);
         return student ? {
@@ -104,15 +197,6 @@ const ModernClassManagement: React.FC = () => {
         } : null;
       }).filter(Boolean) as Array<{_id: string; name: string; DOB: string; classNumber: string}>;
 
-      const updatedClassData: UpdateClassRequest = {
-        _id: classData._id,
-        classNumber: classData.classNumber,
-        teachers: classData.teachers,
-        students: [...classData.students.map(s => s._id), ...selectedStudents]
-      };
-
-      await updateClass(classData._id, updatedClassData);
-      
       setClassData({
         ...classData,
         students: [...classData.students, ...newStudents]
@@ -120,10 +204,23 @@ const ModernClassManagement: React.FC = () => {
       
       setSelectedStudents([]);
       setStudentDialogOpen(false);
-      toast.success(`Added ${selectedStudents.length} student(s) to class`);
+      toast.success(`Successfully added ${selectedStudents.length} student(s) to class`);
+      
+      // Refresh data to ensure consistency
+      fetchData();
+      
     } catch (err) {
       console.error('Error adding students:', err);
-      toast.error('Failed to add students to class');
+      let errorMessage = 'Failed to add students to class';
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      } else if (typeof err === 'object' && err !== null && 'response' in err) {
+        const response = (err as { response?: { data?: { message?: string } } }).response;
+        if (response?.data?.message) {
+          errorMessage = response.data.message;
+        }
+      }
+      toast.error(errorMessage);
     }
   };
 
@@ -747,13 +844,7 @@ const ModernClassManagement: React.FC = () => {
                       <input
                         type="checkbox"
                         checked={selectedStudents.includes(student._id)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedStudents([...selectedStudents, student._id]);
-                          } else {
-                            setSelectedStudents(selectedStudents.filter(id => id !== student._id));
-                          }
-                        }}
+                        onChange={(e) => handleStudentSelection(student._id, e.target.checked)}
                         style={{ cursor: 'pointer' }}
                       />
                       <div style={{
@@ -1042,6 +1133,135 @@ const ModernClassManagement: React.FC = () => {
                 }}
               >
                 Add {selectedTeachers.length} Teacher{selectedTeachers.length !== 1 ? 's' : ''}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Class Transfer Confirmation Dialog */}
+      {confirmationDialog?.isOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            padding: '24px',
+            maxWidth: '500px',
+            width: '90%',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            direction: 'rtl'
+          }}>
+            <h3 style={{
+              fontSize: '18px',
+              fontWeight: '600',
+              color: '#111827',
+              margin: '0 0 16px 0',
+              textAlign: 'center'
+            }}>
+              🔄 העברת תלמיד בין כיתות
+            </h3>
+            
+            <div style={{
+              backgroundColor: '#fef3c7',
+              border: '1px solid #f59e0b',
+              borderRadius: '8px',
+              padding: '16px',
+              marginBottom: '20px'
+            }}>
+              <p style={{
+                color: '#92400e',
+                margin: '0 0 8px 0',
+                fontSize: '14px',
+                lineHeight: '1.5'
+              }}>
+                <strong>{confirmationDialog.studentName}</strong> כבר משוייך לכיתה <strong>{confirmationDialog.currentClass}</strong>
+              </p>
+              <p style={{
+                color: '#92400e',
+                margin: 0,
+                fontSize: '14px',
+                lineHeight: '1.5'
+              }}>
+                האם ברצונך להעביר אותו לכיתה <strong>{confirmationDialog.newClass}</strong>?
+              </p>
+            </div>
+
+            <div style={{
+              backgroundColor: '#f0f9ff',
+              border: '1px solid #0ea5e9',
+              borderRadius: '8px',
+              padding: '12px',
+              marginBottom: '20px'
+            }}>
+              <p style={{
+                color: '#0369a1',
+                margin: 0,
+                fontSize: '13px',
+                lineHeight: '1.4'
+              }}>
+                💡 העברה תעדכן את פרטי התלמיד במערכת ותסיר אותו מהכיתה הקודמת
+              </p>
+            </div>
+
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'center'
+            }}>
+              <button
+                onClick={() => handleConfirmTransfer(false)}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#e5e7eb',
+                  color: '#374151',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  transition: 'all 0.2s'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = '#d1d5db';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor = '#e5e7eb';
+                }}
+              >
+                ❌ ביטול
+              </button>
+              <button
+                onClick={() => handleConfirmTransfer(true)}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#2563eb',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  transition: 'all 0.2s'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = '#1d4ed8';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor = '#2563eb';
+                }}
+              >
+                ✅ אישור העברה
               </button>
             </div>
           </div>
