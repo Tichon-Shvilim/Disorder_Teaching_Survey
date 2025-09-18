@@ -6,6 +6,7 @@ import type { FormSubmission, QuestionnaireTemplate } from './models/FormModels'
 import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
+import { PDFDownloadButton } from '../common';
 
 const ViewSubmissions: React.FC = () => {
   const location = useLocation();
@@ -36,7 +37,7 @@ const ViewSubmissions: React.FC = () => {
         
         // Fetch student submissions and available questionnaires
         const [submissionsResult, questionnairesData] = await Promise.all([
-          FormAPIService.getSubmission(studentId),
+          FormAPIService.getStudentSubmissions(studentId),
           FormAPIService.getQuestionnaireTemplates()
         ]);
         
@@ -420,7 +421,7 @@ const ViewSubmissions: React.FC = () => {
                         {submission.submittedAt ? formatDate(submission.submittedAt) : 'Draft - ' + formatDate(submission.createdAt)}
                       </span>
                       <span>
-                        {submission.answers.length} answers
+                        {submission.answers?.length || 0} answers
                       </span>
                       {submission.totalScore && (
                         <span>
@@ -450,6 +451,13 @@ const ViewSubmissions: React.FC = () => {
                       <Eye style={{ height: '14px', width: '14px' }} />
                       View
                     </button>
+
+                    <PDFDownloadButton 
+                      submission={submission}
+                      variant="secondary"
+                      size="small"
+                      fileName={`${studentName}_${submission.questionnaireTitle}_${submission.submittedAt ? new Date(submission.submittedAt).toLocaleDateString().replace(/\//g, '-') : 'draft'}`}
+                    />
 
                     {(submission.status === 'draft' || currentUser?.role === 'Admin') && (
                       <button
@@ -567,18 +575,26 @@ const ViewSubmissions: React.FC = () => {
                   <h2 style={{ fontSize: '24px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
                     Submission Details
                   </h2>
-                  <button
-                    onClick={() => setSelectedSubmission(null)}
-                    style={{
-                      padding: '8px',
-                      backgroundColor: '#f3f4f6',
-                      border: 'none',
-                      borderRadius: '6px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <X style={{ height: '20px', width: '20px', color: '#6b7280' }} />
-                  </button>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <PDFDownloadButton 
+                      submission={selectedSubmission}
+                      variant="secondary"
+                      size="medium"
+                      fileName={`${studentName}_${selectedSubmission.questionnaireTitle}_${selectedSubmission.submittedAt ? new Date(selectedSubmission.submittedAt).toLocaleDateString().replace(/\//g, '-') : 'draft'}`}
+                    />
+                    <button
+                      onClick={() => setSelectedSubmission(null)}
+                      style={{
+                        padding: '8px',
+                        backgroundColor: '#f3f4f6',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <X style={{ height: '20px', width: '20px', color: '#6b7280' }} />
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -612,10 +628,10 @@ const ViewSubmissions: React.FC = () => {
 
                 <div>
                   <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: '0 0 16px 0' }}>
-                    Answers ({selectedSubmission.answers.length})
+                    Answers ({selectedSubmission.answers?.length || 0})
                   </h4>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    {selectedSubmission.answers.map((answer, index) => (
+                    {(selectedSubmission.answers || []).map((answer, index) => (
                       <div key={answer.questionId} style={{
                         padding: '16px',
                         backgroundColor: '#f9fafb',
