@@ -130,6 +130,7 @@ class FormApiService {
       if (params?.limit) queryParams.append('limit', params.limit.toString());
 
       const url = `api/forms/submissions${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+      
       const response = await getAllItems<{
         data: FormSubmission[];
         pagination: {
@@ -150,8 +151,29 @@ class FormApiService {
         };
       }>(response);
       
-      if (apiResponse.success && apiResponse.data) {
-        return apiResponse.data;
+      if (apiResponse.success) {
+        // The server returns {success: true, data: [...], pagination: {...}}
+        // We need to restructure this to match our expected format
+        const serverResponse = apiResponse as unknown as {
+          success: boolean;
+          data: FormSubmission[];
+          pagination: {
+            page: number;
+            limit: number;
+            total: number;
+            pages: number;
+          };
+        };
+        const restructuredData = {
+          data: serverResponse.data || [],
+          pagination: serverResponse.pagination || {
+            page: 1,
+            limit: 20,
+            total: Array.isArray(serverResponse.data) ? serverResponse.data.length : 0,
+            pages: 1
+          }
+        };
+        return restructuredData;
       }
       
       throw new Error(apiResponse.error || 'Failed to fetch submissions');

@@ -36,7 +36,7 @@ const ViewSubmissions: React.FC = () => {
         
         // Fetch student submissions and available questionnaires
         const [submissionsResult, questionnairesData] = await Promise.all([
-          FormAPIService.getSubmission(studentId),
+          FormAPIService.getStudentSubmissions(studentId),
           FormAPIService.getQuestionnaireTemplates()
         ]);
         
@@ -420,7 +420,7 @@ const ViewSubmissions: React.FC = () => {
                         {submission.submittedAt ? formatDate(submission.submittedAt) : 'Draft - ' + formatDate(submission.createdAt)}
                       </span>
                       <span>
-                        {submission.answers.length} answers
+                        {submission.answers?.length || 0} answers
                       </span>
                       {submission.totalScore && (
                         <span>
@@ -612,10 +612,10 @@ const ViewSubmissions: React.FC = () => {
 
                 <div>
                   <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: '0 0 16px 0' }}>
-                    Answers ({selectedSubmission.answers.length})
+                    Answers ({selectedSubmission.answers?.length || 0})
                   </h4>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    {selectedSubmission.answers.map((answer, index) => (
+                    {(selectedSubmission.answers || []).map((answer, index) => (
                       <div key={answer.questionId} style={{
                         padding: '16px',
                         backgroundColor: '#f9fafb',
