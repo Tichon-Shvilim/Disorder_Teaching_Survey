@@ -1,0 +1,194 @@
+{
+  "title": "Option-Specific Sub-Questions Demo",
+  "description": "This demonstrates how sub-questions appear only for specific selected options",
+  "sections": [
+    {
+      "id": "demo-section",
+      "title": "Interactive Options Demo",
+      "nodes": [
+        {
+          "id": "single-choice-demo",
+          "type": "question",
+          "title": "What is your primary teaching method?",
+          "description": "Select the method you use most often. Each option has its own specific follow-up questions.",
+          "inputType": "single-choice",
+          "required": true,
+          "options": [
+            {
+              "id": "lecture-option",
+              "label": "Traditional Lecture",
+              "value": "lecture",
+              "children": [
+                {
+                  "id": "lecture-duration",
+                  "type": "question",
+                  "title": "How long are your typical lectures?",
+                  "inputType": "single-choice",
+                  "required": true,
+                  "options": [
+                    { "id": "30min", "label": "30 minutes", "value": "30" },
+                    { "id": "45min", "label": "45 minutes", "value": "45" },
+                    { "id": "60min", "label": "60 minutes", "value": "60" },
+                    { "id": "90min", "label": "90+ minutes", "value": "90" }
+                  ]
+                },
+                {
+                  "id": "lecture-interaction",
+                  "type": "question",
+                  "title": "Do you include Q&A sessions during lectures?",
+                  "inputType": "single-choice",
+                  "required": true,
+                  "options": [
+                    { "id": "always", "label": "Always", "value": "always" },
+                    { "id": "sometimes", "label": "Sometimes", "value": "sometimes" },
+                    { "id": "rarely", "label": "Rarely", "value": "rarely" },
+                    { "id": "never", "label": "Never", "value": "never" }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "interactive-option",
+              "label": "Interactive Activities",
+              "value": "interactive",
+              "children": [
+                {
+                  "id": "activity-types",
+                  "type": "question",
+                  "title": "Which interactive activities do you use?",
+                  "inputType": "multiple-choice",
+                  "required": true,
+                  "options": [
+                    { "id": "group-work", "label": "Group Work", "value": "group" },
+                    { "id": "role-play", "label": "Role Playing", "value": "roleplay" },
+                    { "id": "discussions", "label": "Class Discussions", "value": "discussions" },
+                    { "id": "games", "label": "Educational Games", "value": "games" }
+                  ]
+                },
+                {
+                  "id": "activity-frequency",
+                  "type": "question",
+                  "title": "How often do you use interactive activities?",
+                  "inputType": "scale",
+                  "scaleMin": 1,
+                  "scaleMax": 5,
+                  "required": true
+                }
+              ]
+            },
+            {
+              "id": "online-option",
+              "label": "Online/Digital Tools",
+              "value": "online",
+              "children": [
+                {
+                  "id": "digital-platforms",
+                  "type": "question",
+                  "title": "Which digital platforms do you use?",
+                  "inputType": "multiple-choice",
+                  "required": true,
+                  "options": [
+                    { "id": "zoom", "label": "Zoom", "value": "zoom" },
+                    { "id": "teams", "label": "Microsoft Teams", "value": "teams" },
+                    { "id": "canvas", "label": "Canvas LMS", "value": "canvas" },
+                    { "id": "moodle", "label": "Moodle", "value": "moodle" },
+                    { "id": "other", "label": "Other", "value": "other" }
+                  ]
+                },
+                {
+                  "id": "tech-comfort",
+                  "type": "question",
+                  "title": "How comfortable are you with technology in teaching?",
+                  "inputType": "scale",
+                  "scaleMin": 1,
+                  "scaleMax": 10,
+                  "required": true
+                }
+              ]
+            },
+            {
+              "id": "hybrid-option",
+              "label": "Hybrid Approach",
+              "value": "hybrid"
+            }
+          ]
+        },
+        {
+          "id": "multiple-choice-demo",
+          "type": "question",
+          "title": "Which subjects do you teach? (Select all that apply)",
+          "description": "Each subject has its own specific considerations.",
+          "inputType": "multiple-choice",
+          "required": true,
+          "options": [
+            {
+              "id": "math-subject",
+              "label": "Mathematics",
+              "value": "math",
+              "children": [
+                {
+                  "id": "math-level",
+                  "type": "question",
+                  "title": "What level of mathematics do you teach?",
+                  "inputType": "single-choice",
+                  "required": true,
+                  "options": [
+                    { "id": "elementary", "label": "Elementary", "value": "elementary" },
+                    { "id": "middle", "label": "Middle School", "value": "middle" },
+                    { "id": "high", "label": "High School", "value": "high" },
+                    { "id": "college", "label": "College/University", "value": "college" }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "science-subject",
+              "label": "Science",
+              "value": "science",
+              "children": [
+                {
+                  "id": "science-type",
+                  "type": "question",
+                  "title": "Which science subjects do you teach?",
+                  "inputType": "multiple-choice",
+                  "required": true,
+                  "options": [
+                    { "id": "biology", "label": "Biology", "value": "biology" },
+                    { "id": "chemistry", "label": "Chemistry", "value": "chemistry" },
+                    { "id": "physics", "label": "Physics", "value": "physics" },
+                    { "id": "earth", "label": "Earth Science", "value": "earth" }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "language-subject",
+              "label": "Language Arts",
+              "value": "language",
+              "children": [
+                {
+                  "id": "language-focus",
+                  "type": "question",
+                  "title": "What is your primary focus in language arts?",
+                  "inputType": "single-choice",
+                  "required": true,
+                  "options": [
+                    { "id": "reading", "label": "Reading Comprehension", "value": "reading" },
+                    { "id": "writing", "label": "Creative Writing", "value": "writing" },
+                    { "id": "literature", "label": "Literature Analysis", "value": "literature" },
+                    { "id": "grammar", "label": "Grammar & Mechanics", "value": "grammar" }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "history-subject",
+              "label": "History/Social Studies",
+              "value": "history"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,242 @@
+{
+  "title": "Option-Specific Sub-Questions Demo",
+  "description": "Each option has its own specific sub-questions that appear only when that option is selected",
+  "structure": [
+    {
+      "id": "demo-group",
+      "type": "group",
+      "title": "Demo: Option-Specific Questions",
+      "description": "Each choice will show different follow-up questions",
+      "weight": 1,
+      "graphable": false,
+      "preferredChartType": "bar",
+      "children": [
+        {
+          "id": "student-attention",
+          "type": "question",
+          "title": "How would you rate this student's attention span?",
+          "description": "Each rating has specific follow-up questions",
+          "weight": 1,
+          "required": true,
+          "inputType": "single-choice",
+          "graphable": true,
+          "preferredChartType": "bar",
+          "children": [],
+          "options": [
+            {
+              "id": "attention-poor",
+              "label": "Poor - Cannot focus for more than 2 minutes",
+              "value": 1,
+              "children": [
+                {
+                  "id": "poor-interventions",
+                  "type": "question",
+                  "title": "What intensive interventions are you using?",
+                  "description": "For students with very poor attention",
+                  "weight": 1,
+                  "required": false,
+                  "inputType": "multiple-choice",
+                  "graphable": true,
+                  "preferredChartType": "bar",
+                  "children": [],
+                  "options": [
+                    { "id": "int-1", "label": "One-on-one support", "value": 1 },
+                    { "id": "int-2", "label": "Sensory breaks every 5 minutes", "value": 2 },
+                    { "id": "int-3", "label": "Visual timers", "value": 3 },
+                    { "id": "int-4", "label": "Fidget tools", "value": 4 }
+                  ]
+                },
+                {
+                  "id": "poor-frequency",
+                  "type": "question",
+                  "title": "How often do attention issues disrupt learning?",
+                  "description": "Frequency for poor attention",
+                  "weight": 1,
+                  "required": false,
+                  "inputType": "single-choice",
+                  "graphable": true,
+                  "preferredChartType": "bar",
+                  "children": [],
+                  "options": [
+                    { "id": "freq-1", "label": "Constantly", "value": 1 },
+                    { "id": "freq-2", "label": "Multiple times per hour", "value": 2 },
+                    { "id": "freq-3", "label": "Every few hours", "value": 3 }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "attention-fair",
+              "label": "Fair - Focuses for 5-10 minutes",
+              "value": 2,
+              "children": [
+                {
+                  "id": "fair-strategies",
+                  "type": "question",
+                  "title": "Which strategies help extend focus time?",
+                  "description": "For students with fair attention",
+                  "weight": 1,
+                  "required": false,
+                  "inputType": "text",
+                  "graphable": false,
+                  "preferredChartType": "bar",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "attention-good",
+              "label": "Good - Focuses for 15-20 minutes",
+              "value": 3,
+              "children": [
+                {
+                  "id": "good-maintain",
+                  "type": "question",
+                  "title": "How do you maintain this good focus level?",
+                  "description": "Maintenance strategies for good attention",
+                  "weight": 1,
+                  "required": false,
+                  "inputType": "single-choice",
+                  "graphable": true,
+                  "preferredChartType": "bar",
+                  "children": [],
+                  "options": [
+                    { "id": "main-1", "label": "Consistent routine", "value": 1 },
+                    { "id": "main-2", "label": "Regular breaks", "value": 2 },
+                    { "id": "main-3", "label": "Engaging activities", "value": 3 },
+                    { "id": "main-4", "label": "Positive reinforcement", "value": 4 }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "attention-excellent",
+              "label": "Excellent - Focuses for 30+ minutes",
+              "value": 4,
+              "children": [
+                {
+                  "id": "excellent-leadership",
+                  "type": "question",
+                  "title": "Does this student show leadership potential?",
+                  "description": "For students with excellent attention",
+                  "weight": 1,
+                  "required": false,
+                  "inputType": "scale",
+                  "scaleMin": 1,
+                  "scaleMax": 5,
+                  "graphable": true,
+                  "preferredChartType": "gauge",
+                  "children": []
+                },
+                {
+                  "id": "excellent-help-others",
+                  "type": "question",
+                  "title": "Can this student help peers with attention issues?",
+                  "description": "Peer support capability",
+                  "weight": 1,
+                  "required": false,
+                  "inputType": "single-choice",
+                  "graphable": true,
+                  "preferredChartType": "bar",
+                  "children": [],
+                  "options": [
+                    { "id": "help-1", "label": "Yes, naturally mentors others", "value": 1 },
+                    { "id": "help-2", "label": "Yes, with guidance", "value": 2 },
+                    { "id": "help-3", "label": "Sometimes", "value": 3 },
+                    { "id": "help-4", "label": "Not yet ready", "value": 4 }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "support-type",
+          "type": "question",
+          "title": "What type of support does the student need most? (Multiple allowed)",
+          "description": "Each support type has specific follow-up questions",
+          "weight": 1,
+          "required": true,
+          "inputType": "multiple-choice",
+          "graphable": true,
+          "preferredChartType": "bar",
+          "children": [],
+          "options": [
+            {
+              "id": "support-academic",
+              "label": "Academic Support",
+              "value": 1,
+              "children": [
+                {
+                  "id": "academic-subjects",
+                  "type": "question",
+                  "title": "Which subjects need the most academic support?",
+                  "description": "Specific to academic support selection",
+                  "weight": 1,
+                  "required": false,
+                  "inputType": "multiple-choice",
+                  "graphable": true,
+                  "preferredChartType": "bar",
+                  "children": [],
+                  "options": [
+                    { "id": "subj-1", "label": "Mathematics", "value": 1 },
+                    { "id": "subj-2", "label": "Reading", "value": 2 },
+                    { "id": "subj-3", "label": "Writing", "value": 3 },
+                    { "id": "subj-4", "label": "Science", "value": 4 }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "support-behavioral",
+              "label": "Behavioral Support",
+              "value": 2,
+              "children": [
+                {
+                  "id": "behavior-type",
+                  "type": "question",
+                  "title": "What type of behavioral issues are most common?",
+                  "description": "For behavioral support selection",
+                  "weight": 1,
+                  "required": false,
+                  "inputType": "text",
+                  "graphable": false,
+                  "preferredChartType": "bar",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "support-social",
+              "label": "Social Support",
+              "value": 3,
+              "children": [
+                {
+                  "id": "social-goals",
+                  "type": "question",
+                  "title": "What are the primary social development goals?",
+                  "description": "For social support selection",
+                  "weight": 1,
+                  "required": false,
+                  "inputType": "scale",
+                  "scaleMin": 1,
+                  "scaleMax": 10,
+                  "graphable": true,
+                  "preferredChartType": "gauge",
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "graphSettings": {
+    "colorRanges": [
+      { "label": "Low", "min": 1, "max": 2, "color": "#ef4444" },
+      { "label": "Medium", "min": 3, "max": 3, "color": "#fbbf24" },
+      { "label": "High", "min": 4, "max": 5, "color": "#10b981" }
+    ]
+  }
+}

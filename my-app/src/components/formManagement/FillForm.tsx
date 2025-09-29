@@ -91,11 +91,12 @@ const FillForm: React.FC = () => {
         
         const extractQuestions = (nodes: FormNode[], path: string[] = []) => {
           nodes.forEach(node => {
+            const currentPath = [...path, node.id];
+            
             if (node.type === 'question') {
-              const nodePath = [...path, node.id];
               initialAnswers[node.id] = {
                 questionId: node.id,
-                nodePath,
+                nodePath: currentPath,
                 inputType: node.inputType!,
                 answer: node.inputType === 'multiple-choice' ? [] : '',
                 selectedOptions: [],
@@ -103,10 +104,25 @@ const FillForm: React.FC = () => {
                 weight: node.weight || 1,
                 graphable: node.graphable || false
               };
-            }
-            
-            if (node.children && node.children.length > 0) {
-              extractQuestions(node.children, [...path, node.id]);
+              
+              // Process children of questions (traditional sub-questions)
+              if (node.children && node.children.length > 0) {
+                extractQuestions(node.children, currentPath);
+              }
+              
+              // Process option-specific sub-questions for choice questions
+              if (node.options && (node.inputType === 'single-choice' || node.inputType === 'multiple-choice')) {
+                node.options.forEach(option => {
+                  if (option.children && option.children.length > 0) {
+                    extractQuestions(option.children, [...currentPath, option.id]);
+                  }
+                });
+              }
+            } else if (node.type === 'group') {
+              // Process children of groups
+              if (node.children && node.children.length > 0) {
+                extractQuestions(node.children, currentPath);
+              }
             }
           });
         };
@@ -152,7 +168,11 @@ const FillForm: React.FC = () => {
     }
   };
 
-  const renderQuestion = (node: FormNode): React.ReactNode => {
+
+
+
+
+  const renderQuestion = (node: FormNode, path: string[] = []): React.ReactNode => {
     if (node.type !== 'question') return null;
 
     const currentAnswer = answers[node.id];
@@ -185,8 +205,8 @@ const FillForm: React.FC = () => {
               {node.description}
             </p>
           )}
-          {/* Show weight and graphable info */}
-          <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+          {/* Show weight, graphable info, and sub-questions indicator */}
+          <div style={{ display: 'flex', gap: '8px', marginTop: '8px', flexWrap: 'wrap' }}>
             {node.weight && node.weight !== 1 && (
               <span style={{
                 backgroundColor: '#f3f4f6',
@@ -208,7 +228,21 @@ const FillForm: React.FC = () => {
                 fontSize: '12px',
                 fontWeight: '500'
               }}>
-                Analytics
+                📊 Analytics
+              </span>
+            )}
+            {/* Show indicator for option-specific sub-questions */}
+            {node.options && node.options.some(opt => opt.children && opt.children.length > 0) && (
+              <span style={{
+                backgroundColor: '#fef3c7',
+                color: '#92400e',
+                padding: '4px 8px',
+                borderRadius: '12px',
+                fontSize: '12px',
+                fontWeight: '500',
+                border: '1px solid #f59e0b'
+              }}>
+                💫 Interactive Options
               </span>
             )}
           </div>
@@ -249,47 +283,132 @@ const FillForm: React.FC = () => {
 
         {node.inputType === 'single-choice' && node.options && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {node.options.map((option) => (
-              <label
-                key={option.id}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  padding: '16px',
-                  border: '2px solid #e5e7eb',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  backgroundColor: currentAnswer?.answer === option.value ? '#f0f9ff' : 'white',
-                  borderColor: currentAnswer?.answer === option.value ? '#0ea5e9' : '#e5e7eb',
-                  transition: 'all 0.2s'
-                }}
-              >
-                <input
-                  type="radio"
-                  name={node.id}
-                  value={option.value}
-                  checked={currentAnswer?.answer === option.value}
-                  onChange={() => handleAnswerChange(node.id, option.value, [option])}
-                  style={{ transform: 'scale(1.2)' }}
-                />
-                <div style={{ flex: 1 }}>
-                  <span style={{ fontSize: '16px', fontWeight: '500' }}>{option.label}</span>
-                  {option.value !== undefined && (
-                    <span style={{
-                      backgroundColor: '#e5e7eb',
-                      color: '#374151',
-                      padding: '2px 6px',
-                      borderRadius: '4px',
-                      fontSize: '12px',
-                      marginLeft: '8px'
+            {node.options.map((option) => {
+              const isSelected = currentAnswer?.answer === option.value;
+              const hasSubQuestions = !!(option.children && option.children.length > 0);
+              
+              // Debug logging for selected options only
+              if (isSelected) {
+                console.log(`Selected Option "${option.label}":`, {
+                  hasSubQuestions,
+                  childrenCount: option.children?.length || 0,
+                  optionStructure: option
+                });
+                
+                if (!hasSubQuestions && node.children && node.children.length > 0) {
+                  const optionIndex = node.options?.findIndex((opt: Option) => opt.id === option.id) || 0;
+                  const childrenPerOption = Math.ceil(node.children.length / (node.options?.length || 1));
+                  const startIndex = optionIndex * childrenPerOption;
+                  const endIndex = Math.min(startIndex + childrenPerOption, node.children.length);
+                  const assignedChildren = node.children.slice(startIndex, endIndex);
+                  
+                  console.log(`🎯 Option "${option.label}" will show these sub-questions:`, 
+                    assignedChildren.map(child => ({ id: child.id, title: child.title }))
+                  );
+                } else if (!hasSubQuestions) {
+                  console.log('💡 No sub-questions available for this option');
+                }
+              }
+              
+              return (
+                <div key={option.id} style={{ width: '100%' }}>
+                  {/* Main Option */}
+                  <label
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '16px',
+                      border: '2px solid #e5e7eb',
+                      borderRadius: hasSubQuestions && isSelected ? '8px 8px 0 0' : '8px',
+                      cursor: 'pointer',
+                      backgroundColor: isSelected ? '#f0f9ff' : 'white',
+                      borderColor: isSelected ? '#0ea5e9' : '#e5e7eb',
+                      transition: 'all 0.2s',
+                      position: 'relative'
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      name={node.id}
+                      value={option.value}
+                      checked={isSelected}
+                      onChange={() => handleAnswerChange(node.id, option.value, [option])}
+                      style={{ transform: 'scale(1.2)' }}
+                    />
+                    <div style={{ flex: 1 }}>
+                      <span style={{ fontSize: '16px', fontWeight: '500' }}>{option.label}</span>
+                      {option.value !== undefined && (
+                        <span style={{
+                          backgroundColor: '#e5e7eb',
+                          color: '#374151',
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          marginLeft: '8px'
+                        }}>
+                          Value: {option.value}
+                        </span>
+                      )}
+                      {hasSubQuestions && (
+                        <span style={{
+                          backgroundColor: isSelected ? '#22c55e' : '#f3f4f6',
+                          color: isSelected ? 'white' : '#6b7280',
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          fontSize: '11px',
+                          marginLeft: '8px',
+                          fontWeight: '500'
+                        }}>
+                          {isSelected ? '✨ Questions Active' : `+${option.children?.length || 0} questions`}
+                        </span>
+                      )}
+                    </div>
+                  </label>
+
+                  {/* Option-Specific Sub-questions */}
+                  {isSelected && (hasSubQuestions || (node.children && node.children.length > 0)) && (
+                    <div style={{
+                      border: '2px solid #0ea5e9',
+                      borderTop: 'none',
+                      borderRadius: '0 0 8px 8px',
+                      backgroundColor: '#f0f9ff',
+                      padding: '16px',
+                      animation: 'slideIn 0.4s ease-out'
                     }}>
-                      Value: {option.value}
-                    </span>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        marginBottom: '12px'
+                      }}>
+                        <span style={{ fontSize: '16px' }}>💫</span>
+                        <span style={{
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          color: '#075985'
+                        }}>
+                          Additional questions for "{option.label}":
+                        </span>
+                      </div>
+                      <div style={{
+                        backgroundColor: 'white',
+                        padding: '12px',
+                        borderRadius: '6px',
+                        border: '1px solid #0ea5e9'
+                      }}>
+                        {hasSubQuestions 
+                          ? (option.children && renderNodes(option.children, [...path, node.id, option.id]))
+                          : (node.children && renderOptionSpecificChildren(node.children, option, node, [...path, node.id]))
+                        }
+                      </div>
+                    </div>
                   )}
                 </div>
-              </label>
-            ))}
+              );
+            })}
+            
+
           </div>
         )}
 
@@ -298,63 +417,134 @@ const FillForm: React.FC = () => {
             {node.options.map((option) => {
               const currentAnswerArray = Array.isArray(currentAnswer?.answer) ? currentAnswer.answer : [];
               const isChecked = currentAnswerArray.includes(option.value);
+              const hasSubQuestions = !!(option.children && option.children.length > 0);
+              
+              // Debug logging for checked options only
+              if (isChecked) {
+                console.log(`Checked Option "${option.label}":`, {
+                  hasSubQuestions,
+                  childrenCount: option.children?.length || 0
+                });
+              }
+              
+              // Debug logging for multiple-choice
+              if (isChecked) {
+                console.log('Multiple-choice selected option:', option.label, 'Has sub-questions:', hasSubQuestions, 'Children:', option.children);
+              }
 
               return (
-                <label
-                  key={option.id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    padding: '16px',
-                    border: '2px solid #e5e7eb',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    backgroundColor: isChecked ? '#f0fdf4' : 'white',
-                    borderColor: isChecked ? '#22c55e' : '#e5e7eb',
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={isChecked}
-                    onChange={() => {
-                      const currentSelectedOptions = currentAnswer?.selectedOptions || [];
-                      let newAnswer: (string | number)[];
-                      let newSelectedOptions: Option[];
-
-                      if (isChecked) {
-                        // Remove option
-                        newAnswer = currentAnswerArray.filter(val => val !== option.value);
-                        newSelectedOptions = currentSelectedOptions.filter(opt => opt.id !== option.id);
-                      } else {
-                        // Add option
-                        newAnswer = [...currentAnswerArray, option.value];
-                        newSelectedOptions = [...currentSelectedOptions, option];
-                      }
-
-                      handleAnswerChange(node.id, newAnswer, newSelectedOptions);
+                <div key={option.id} style={{ width: '100%' }}>
+                  {/* Main Option */}
+                  <label
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '16px',
+                      border: '2px solid #e5e7eb',
+                      borderRadius: hasSubQuestions && isChecked ? '8px 8px 0 0' : '8px',
+                      cursor: 'pointer',
+                      backgroundColor: isChecked ? '#f0fdf4' : 'white',
+                      borderColor: isChecked ? '#22c55e' : '#e5e7eb',
+                      transition: 'all 0.2s'
                     }}
-                    style={{ transform: 'scale(1.2)' }}
-                  />
-                  <div style={{ flex: 1 }}>
-                    <span style={{ fontSize: '16px', fontWeight: '500' }}>{option.label}</span>
-                    {option.value !== undefined && (
-                      <span style={{
-                        backgroundColor: '#e5e7eb',
-                        color: '#374151',
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                        fontSize: '12px',
-                        marginLeft: '8px'
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={() => {
+                        const currentSelectedOptions = currentAnswer?.selectedOptions || [];
+                        let newAnswer: (string | number)[];
+                        let newSelectedOptions: Option[];
+
+                        if (isChecked) {
+                          // Remove option
+                          newAnswer = currentAnswerArray.filter(val => val !== option.value);
+                          newSelectedOptions = currentSelectedOptions.filter(opt => opt.id !== option.id);
+                        } else {
+                          // Add option
+                          newAnswer = [...currentAnswerArray, option.value];
+                          newSelectedOptions = [...currentSelectedOptions, option];
+                        }
+
+                        handleAnswerChange(node.id, newAnswer, newSelectedOptions);
+                      }}
+                      style={{ transform: 'scale(1.2)' }}
+                    />
+                    <div style={{ flex: 1 }}>
+                      <span style={{ fontSize: '16px', fontWeight: '500' }}>{option.label}</span>
+                      {option.value !== undefined && (
+                        <span style={{
+                          backgroundColor: '#e5e7eb',
+                          color: '#374151',
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          marginLeft: '8px'
+                        }}>
+                          Value: {option.value}
+                        </span>
+                      )}
+                      {hasSubQuestions && (
+                        <span style={{
+                          backgroundColor: isChecked ? '#22c55e' : '#f3f4f6',
+                          color: isChecked ? 'white' : '#6b7280',
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          fontSize: '11px',
+                          marginLeft: '8px',
+                          fontWeight: '500'
+                        }}>
+                          {isChecked ? '✨ Questions Active' : `+${option.children?.length || 0} questions`}
+                        </span>
+                      )}
+                    </div>
+                  </label>
+
+                  {/* Option-Specific Sub-questions */}
+                  {isChecked && hasSubQuestions && (
+                    <div style={{
+                      border: '2px solid #22c55e',
+                      borderTop: 'none',
+                      borderRadius: '0 0 8px 8px',
+                      backgroundColor: '#f0fdf4',
+                      padding: '16px',
+                      animation: 'slideIn 0.4s ease-out'
+                    }}>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        marginBottom: '12px'
                       }}>
-                        Value: {option.value}
-                      </span>
-                    )}
-                  </div>
-                </label>
+                        <span style={{ fontSize: '16px' }}>🌟</span>
+                        <span style={{
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          color: '#166534'
+                        }}>
+                          Additional questions for "{option.label}":
+                        </span>
+                      </div>
+                      <div style={{
+                        backgroundColor: 'white',
+                        padding: '12px',
+                        borderRadius: '6px',
+                        border: '1px solid #22c55e'
+                      }}>
+                        {hasSubQuestions 
+                          ? (option.children && renderNodes(option.children, [...path, node.id, option.id]))
+                          : (node.children && renderOptionSpecificChildren(node.children, option, node, [...path, node.id]))
+                        }
+                      </div>
+                    </div>
+                  )}
+                </div>
               );
             })}
+            
+
+
           </div>
         )}
 
@@ -395,14 +585,33 @@ const FillForm: React.FC = () => {
             <span style={{ fontSize: '14px' }}>{errors[node.id]}</span>
           </div>
         )}
+
+
       </div>
     );
+  };
+
+  // Function to render sub-questions for specific options
+  const renderOptionSpecificChildren = (children: FormNode[], selectedOption: Option, currentNode: FormNode, path: string[]): React.ReactNode => {
+    if (!children || children.length === 0) return null;
+    
+    // Assign sub-questions to specific options based on option value/index
+    const optionIndex = currentNode.options?.findIndex((opt: Option) => opt.id === selectedOption.id) || 0;
+    const childrenPerOption = Math.ceil(children.length / (currentNode.options?.length || 1));
+    const startIndex = optionIndex * childrenPerOption;
+    const endIndex = Math.min(startIndex + childrenPerOption, children.length);
+    
+    const optionSpecificChildren = children.slice(startIndex, endIndex);
+    
+    if (optionSpecificChildren.length === 0) return null;
+    
+    return renderNodes(optionSpecificChildren, path);
   };
 
   const renderNodes = (nodes: FormNode[], path: string[] = []): React.ReactNode => {
     return nodes.map(node => {
       if (node.type === 'question') {
-        return renderQuestion(node);
+        return renderQuestion(node, path);
       } else if (node.type === 'group') {
         const isVisible = evaluateVisibility(node, answers);
         if (!isVisible) return null;
@@ -484,8 +693,26 @@ const FillForm: React.FC = () => {
           }
         }
 
-        if (node.children) {
+        // Process children regardless of node type (for both groups and questions with sub-questions)
+        if (node.children && node.children.length > 0) {
           validateNodes(node.children);
+        }
+
+        // Process option-specific sub-questions for choice questions
+        if (node.type === 'question' && node.options && (node.inputType === 'single-choice' || node.inputType === 'multiple-choice')) {
+          const currentAnswer = answers[node.id];
+          if (currentAnswer && currentAnswer.answer) {
+            node.options.forEach(option => {
+              // For single-choice, validate sub-questions only if this option is selected
+              if (node.inputType === 'single-choice' && currentAnswer.answer === option.value && option.children) {
+                validateNodes(option.children);
+              }
+              // For multiple-choice, validate sub-questions if this option is selected
+              else if (node.inputType === 'multiple-choice' && Array.isArray(currentAnswer.answer) && currentAnswer.answer.includes(option.value) && option.children) {
+                validateNodes(option.children);
+              }
+            });
+          }
         }
       });
     };
@@ -818,12 +1045,30 @@ const FillForm: React.FC = () => {
         )}
       </div>
 
-      {/* Add CSS animation for spinners */}
+      {/* Add CSS animations */}
       <style>
         {`
           @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+          }
+          
+          @keyframes slideIn {
+            0% { 
+              opacity: 0; 
+              transform: translateY(-10px); 
+              max-height: 0;
+            }
+            100% { 
+              opacity: 1; 
+              transform: translateY(0px); 
+              max-height: 1000px;
+            }
+          }
+          
+          @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
           }
         `}
       </style>

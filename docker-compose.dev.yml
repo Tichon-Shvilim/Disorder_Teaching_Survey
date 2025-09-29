@@ -12,9 +12,12 @@ services:
       - ./microservices/user-service:/app
       - /app/node_modules
     environment:
-      - MONGODB_URI=mongodb://mongo:27017/userDB
+      - MONGODB_URI=mongodb://mongo:27017/disorder_teaching_survey
       - PORT=3001
       - JWT_SECRET=8f7d2b1e-4c3a-4e2b-8e7a-9c6d5b4a3f2e!@#RandomExtraStuff
+    depends_on:
+      mongo:
+        condition: service_healthy
     command: npm run dev
 
   student-service:
@@ -27,10 +30,13 @@ services:
       - ./microservices/student-service:/app
       - /app/node_modules
     environment:
-      - MONGODB_URI=mongodb://mongo:27017/studentDB
+      - MONGODB_URI=mongodb://mongo:27017/disorder_teaching_survey
       - PORT=3002
       - JWT_SECRET=8f7d2b1e-4c3a-4e2b-8e7a-9c6d5b4a3f2e!@#RandomExtraStuff
       - USER_SERVICE_URL=http://user-service:3001
+    depends_on:
+      mongo:
+        condition: service_healthy
     command: npm run dev
 
   form-service:
@@ -43,11 +49,14 @@ services:
       - ./microservices/form-service:/app
       - /app/node_modules
     environment:
-      - MONGODB_URI=mongodb://mongo:27017/formDB
+      - MONGODB_URI=mongodb://mongo:27017/disorder_teaching_survey
       - PORT=3003
       - JWT_SECRET=8f7d2b1e-4c3a-4e2b-8e7a-9c6d5b4a3f2e!@#RandomExtraStuff
       - USER_SERVICE_URL=http://user-service:3001
       - STUDENT_SERVICE_URL=http://student-service:3002
+    depends_on:
+      mongo:
+        condition: service_healthy
     command: npm run dev
 
   analytics-service:
@@ -60,9 +69,12 @@ services:
       - ./microservices/analytics-service:/app
       - /app/node_modules
     environment:
-      - MONGODB_URI=mongodb://mongo:27017/analyticsDB
+      - MONGODB_URI=mongodb://mongo:27017/disorder_teaching_survey
       - PORT=3004
       - JWT_SECRET=8f7d2b1e-4c3a-4e2b-8e7a-9c6d5b4a3f2e!@#RandomExtraStuff
+    depends_on:
+      mongo:
+        condition: service_healthy
     command: npm run dev
 
   

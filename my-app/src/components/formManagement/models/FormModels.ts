@@ -16,6 +16,7 @@ export interface Option {
   id: string;
   label: string;
   value: number;
+  children?: FormNode[]; // Sub-questions specific to this option
 }
 
 // Conditional logic for showing questions based on parent selections

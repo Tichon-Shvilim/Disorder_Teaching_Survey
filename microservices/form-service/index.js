@@ -19,6 +19,7 @@ mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTop
 // Register all routes
 app.use('/api/questionnaires', require('./routes/QuestionnaireTemplateRoutes'));
 app.use('/api/forms', require('./routes/FormSubmissionRoutes'));
+app.use('/api/scoring', require('./routes/scoringRoutes'));
 
 app.get('/healthz', (req, res) => {
   res.status(200).send('OK');
