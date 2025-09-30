@@ -74,11 +74,11 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ variant = 'header' 
         onClose={handleClose}
         anchorOrigin={{
           vertical: 'bottom',
-          horizontal: i18n.language === 'he' ? 'left' : 'right',
+          horizontal: 'right',
         }}
         transformOrigin={{
           vertical: 'top',
-          horizontal: i18n.language === 'he' ? 'left' : 'right',
+          horizontal: 'right',
         }}
         sx={{
           '& .MuiPaper-root': {

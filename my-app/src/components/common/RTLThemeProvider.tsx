@@ -49,12 +49,24 @@ const RTLThemeProvider: React.FC<RTLThemeProviderProps> = ({ children }) => {
       },
       MuiDrawer: {
         styleOverrides: {
-          paper: isRTL ? {
-            right: 0,
-            left: 'auto',
-          } : {
-            left: 0,
-            right: 'auto',
+          paper: {
+            // Let MUI handle RTL positioning automatically
+          },
+        },
+      },
+
+      MuiListItemText: {
+        styleOverrides: {
+          root: {
+            textAlign: isRTL ? 'right' : 'left',
+          },
+        },
+      },
+      MuiListItemButton: {
+        styleOverrides: {
+          root: {
+            borderRight: isRTL ? 'none' : undefined,
+            borderLeft: isRTL ? undefined : 'none',
           },
         },
       },

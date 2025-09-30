@@ -27,8 +27,7 @@ const drawerWidth = 280;
 
 const Sidebar: React.FC = () => {
   const user = useSelector((state: RootState) => state.auth.user);
-  const { t, i18n } = useTranslation();
-  const isRTL = i18n.dir() === 'rtl';
+  const { t } = useTranslation();
 
   const mainNavItems = [
     {
@@ -90,8 +89,7 @@ const Sidebar: React.FC = () => {
             "&:hover .MuiListItemIcon-root .MuiSvgIcon-root": {
               color: "#64b5f6",
             },
-            borderRight: !isRTL && isActive ? "3px solid #64b5f6" : "none",
-            borderLeft: isRTL && isActive ? "3px solid #64b5f6" : "none",
+            borderLeft: isActive ? "3px solid #64b5f6" : "none",
             color: "#667A93",
             paddingY: isSubItem ? 1 : 2,
             paddingX: isSubItem ? 5 : 3,
@@ -103,8 +101,10 @@ const Sidebar: React.FC = () => {
             primary={item.name}
             sx={{ 
               fontWeight: isActive ? "bold" : "normal",
-              textAlign: isRTL ? 'right' : 'left',
-              direction: isRTL ? 'rtl' : 'ltr'
+              textAlign: 'inherit',
+              '& .MuiTypography-root': {
+                textAlign: 'inherit'
+              }
             }}
           />
         </ListItemButton>
@@ -115,7 +115,6 @@ const Sidebar: React.FC = () => {
   return (
     <Drawer
       variant="permanent"
-      anchor={isRTL ? 'right' : 'left'}
       sx={{
         width: drawerWidth,
         flexShrink: 0,
