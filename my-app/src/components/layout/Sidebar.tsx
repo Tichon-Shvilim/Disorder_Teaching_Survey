@@ -14,10 +14,10 @@ import {
   Typography,
 } from "@mui/material";
 import {
-  SpaceDashboardOutlined,
-  PeopleOutlineRounded,
+  /*SpaceDashboardOutlined,
   BarChartOutlined,
-  DescriptionOutlined,
+  DescriptionOutlined,*/
+  PeopleOutlineRounded,
   AssignmentOutlined,
   SchoolOutlined,
   ClassOutlined,
@@ -31,7 +31,7 @@ const Sidebar: React.FC = () => {
   const isRTL = i18n.dir() === 'rtl';
 
   const mainNavItems = [
-    {
+    /*{
       name: t('navigation.dashboard'),
       path: "/layout/dashboard",
       icon: <SpaceDashboardOutlined />,
@@ -45,7 +45,7 @@ const Sidebar: React.FC = () => {
       name: t('navigation.reports'), 
       path: "/layout/reports", 
       icon: <BarChartOutlined /> 
-    },
+    },*/
     {
       name: t('navigation.studentManagement'),
       path: "/layout/students",
