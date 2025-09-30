@@ -79,3 +79,5 @@ docker-compose.override.yaml
 # Optional: Local override files
 *.local
 
+# Amazonq files
+.amazonq 
