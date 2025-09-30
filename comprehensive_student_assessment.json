@@ -1,0 +1,677 @@
+{
+  "title": "Comprehensive Student Assessment Survey",
+  "description": "A detailed questionnaire covering multiple domains of student development with option-specific sub-questions for thorough evaluation.",
+  "structure": [
+    {
+      "id": "academic-domain",
+      "title": "Academic Performance Domain",
+      "nodes": [
+        {
+          "id": "learning-style",
+          "type": "question",
+          "title": "What is the student's preferred learning style?",
+          "description": "Select the primary way this student learns best. Each style has specific follow-up questions.",
+          "inputType": "single-choice",
+          "required": true,
+          "weight": 2,
+          "graphable": true,
+          "options": [
+            {
+              "id": "visual-learner",
+              "label": "Visual Learner",
+              "value": 1,
+              "children": [
+                {
+                  "id": "visual-tools",
+                  "type": "question",
+                  "title": "Which visual tools help this student most?",
+                  "inputType": "multiple-choice",
+                  "required": true,
+                  "weight": 1,
+                  "graphable": true,
+                  "options": [
+                    { "id": "charts", "label": "Charts and Graphs", "value": 1 },
+                    { "id": "diagrams", "label": "Diagrams", "value": 2 },
+                    { "id": "videos", "label": "Educational Videos", "value": 3 },
+                    { "id": "infographics", "label": "Infographics", "value": 4 }
+                  ]
+                },
+                {
+                  "id": "visual-challenges",
+                  "type": "question",
+                  "title": "Rate the student's ability to interpret visual information",
+                  "inputType": "scale",
+                  "scaleMin": 1,
+                  "scaleMax": 5,
+                  "required": true,
+                  "weight": 1,
+                  "graphable": true
+                }
+              ]
+            },
+            {
+              "id": "auditory-learner",
+              "label": "Auditory Learner",
+              "value": 2,
+              "children": [
+                {
+                  "id": "auditory-preferences",
+                  "type": "question",
+                  "title": "Which auditory learning methods work best?",
+                  "inputType": "multiple-choice",
+                  "required": true,
+                  "weight": 1,
+                  "graphable": true,
+                  "options": [
+                    { "id": "lectures", "label": "Traditional Lectures", "value": 1 },
+                    { "id": "discussions", "label": "Group Discussions", "value": 2 },
+                    { "id": "music", "label": "Music-based Learning", "value": 3 },
+                    { "id": "recordings", "label": "Audio Recordings", "value": 4 }
+                  ]
+                },
+                {
+                  "id": "listening-skills",
+                  "type": "question",
+                  "title": "How well does the student follow verbal instructions?",
+                  "inputType": "scale",
+                  "scaleMin": 1,
+                  "scaleMax": 5,
+                  "required": true,
+                  "weight": 1,
+                  "graphable": true
+                }
+              ]
+            },
+            {
+              "id": "kinesthetic-learner",
+              "label": "Kinesthetic/Hands-on Learner",
+              "value": 3,
+              "children": [
+                {
+                  "id": "hands-on-activities",
+                  "type": "question",
+                  "title": "Which hands-on activities engage this student most?",
+                  "inputType": "multiple-choice",
+                  "required": true,
+                  "weight": 1,
+                  "graphable": true,
+                  "options": [
+                    { "id": "experiments", "label": "Science Experiments", "value": 1 },
+                    { "id": "building", "label": "Building/Construction", "value": 2 },
+                    { "id": "role-play", "label": "Role Playing", "value": 3 },
+                    { "id": "movement", "label": "Movement Activities", "value": 4 }
+                  ]
+                },
+                {
+                  "id": "attention-span",
+                  "type": "question",
+                  "title": "How long can the student focus during hands-on activities? (minutes)",
+                  "inputType": "number",
+                  "scaleMin": 5,
+                  "scaleMax": 120,
+                  "required": true,
+                  "weight": 1,
+                  "graphable": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "academic-subjects",
+          "type": "question",
+          "title": "In which academic subjects does the student show the most interest?",
+          "description": "Select all subjects where the student demonstrates engagement. Each subject has specific assessment questions.",
+          "inputType": "multiple-choice",
+          "required": true,
+          "weight": 2,
+          "graphable": true,
+          "options": [
+            {
+              "id": "mathematics",
+              "label": "Mathematics",
+              "value": 1,
+              "children": [
+                {
+                  "id": "math-skills",
+                  "type": "question",
+                  "title": "Rate the student's mathematical problem-solving skills",
+                  "inputType": "scale",
+                  "scaleMin": 1,
+                  "scaleMax": 5,
+                  "required": true,
+                  "weight": 2,
+                  "graphable": true
+                },
+                {
+                  "id": "math-areas",
+                  "type": "question",
+                  "title": "Which mathematical areas show the most strength?",
+                  "inputType": "multiple-choice",
+                  "required": true,
+                  "weight": 1,
+                  "graphable": true,
+                  "options": [
+                    { "id": "arithmetic", "label": "Basic Arithmetic", "value": 1 },
+                    { "id": "geometry", "label": "Geometry", "value": 2 },
+                    { "id": "algebra", "label": "Algebra", "value": 3 },
+                    { "id": "statistics", "label": "Statistics", "value": 4 }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "language-arts",
+              "label": "Language Arts",
+              "value": 2,
+              "children": [
+                {
+                  "id": "reading-level",
+                  "type": "question",
+                  "title": "Rate the student's reading comprehension level",
+                  "inputType": "scale",
+                  "scaleMin": 1,
+                  "scaleMax": 5,
+                  "required": true,
+                  "weight": 2,
+                  "graphable": true
+                },
+                {
+                  "id": "writing-strengths",
+                  "type": "question",
+                  "title": "Which writing skills are most developed?",
+                  "inputType": "multiple-choice",
+                  "required": true,
+                  "weight": 1,
+                  "graphable": true,
+                  "options": [
+                    { "id": "creative", "label": "Creative Writing", "value": 1 },
+                    { "id": "analytical", "label": "Analytical Writing", "value": 2 },
+                    { "id": "grammar", "label": "Grammar & Mechanics", "value": 3 },
+                    { "id": "vocabulary", "label": "Vocabulary Usage", "value": 4 }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "science",
+              "label": "Science",
+              "value": 3,
+              "children": [
+                {
+                  "id": "scientific-thinking",
+                  "type": "question",
+                  "title": "Rate the student's scientific reasoning abilities",
+                  "inputType": "scale",
+                  "scaleMin": 1,
+                  "scaleMax": 5,
+                  "required": true,
+                  "weight": 2,
+                  "graphable": true
+                },
+                {
+                  "id": "science-interests",
+                  "type": "question",
+                  "title": "Which science areas capture the student's interest most?",
+                  "inputType": "multiple-choice",
+                  "required": true,
+                  "weight": 1,
+                  "graphable": true,
+                  "options": [
+                    { "id": "biology", "label": "Biology/Life Science", "value": 1 },
+                    { "id": "chemistry", "label": "Chemistry", "value": 2 },
+                    { "id": "physics", "label": "Physics", "value": 3 },
+                    { "id": "earth-science", "label": "Earth Science", "value": 4 }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "social-emotional-domain",
+      "title": "Social-Emotional Development Domain",
+      "nodes": [
+        {
+          "id": "social-interaction",
+          "type": "question",
+          "title": "How does the student typically interact with peers?",
+          "description": "Select the pattern that best describes the student's social behavior. Each pattern has specific evaluation criteria.",
+          "inputType": "single-choice",
+          "required": true,
+          "weight": 3,
+          "graphable": true,
+          "options": [
+            {
+              "id": "highly-social",
+              "label": "Highly Social - Seeks out interactions",
+              "value": 1,
+              "children": [
+                {
+                  "id": "leadership-skills",
+                  "type": "question",
+                  "title": "Rate the student's leadership abilities in group settings",
+                  "inputType": "scale",
+                  "scaleMin": 1,
+                  "scaleMax": 5,
+                  "required": true,
+                  "weight": 2,
+                  "graphable": true
+                },
+                {
+                  "id": "social-challenges",
+                  "type": "question",
+                  "title": "Which social challenges does the student face?",
+                  "inputType": "multiple-choice",
+                  "required": false,
+                  "weight": 1,
+                  "graphable": true,
+                  "options": [
+                    { "id": "boundaries", "label": "Respecting Boundaries", "value": 1 },
+                    { "id": "dominance", "label": "Being Too Dominant", "value": 2 },
+                    { "id": "attention", "label": "Attention-Seeking", "value": 3 },
+                    { "id": "none", "label": "No Significant Challenges", "value": 4 }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "moderately-social",
+              "label": "Moderately Social - Comfortable in groups",
+              "value": 2,
+              "children": [
+                {
+                  "id": "group-participation",
+                  "type": "question",
+                  "title": "Rate the student's participation in group activities",
+                  "inputType": "scale",
+                  "scaleMin": 1,
+                  "scaleMax": 5,
+                  "required": true,
+                  "weight": 2,
+                  "graphable": true
+                },
+                {
+                  "id": "friendship-quality",
+                  "type": "question",
+                  "title": "How would you describe the student's friendships?",
+                  "inputType": "single-choice",
+                  "required": true,
+                  "weight": 1,
+                  "graphable": true,
+                  "options": [
+                    { "id": "many-shallow", "label": "Many acquaintances, few close friends", "value": 1 },
+                    { "id": "few-deep", "label": "Few but very close friendships", "value": 2 },
+                    { "id": "balanced", "label": "Balanced mix of close and casual friends", "value": 3 },
+                    { "id": "situational", "label": "Friendships vary by context", "value": 4 }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "reserved-social",
+              "label": "Reserved - Prefers smaller groups or one-on-one",
+              "value": 3,
+              "children": [
+                {
+                  "id": "comfort-level",
+                  "type": "question",
+                  "title": "Rate the student's comfort level in small group settings",
+                  "inputType": "scale",
+                  "scaleMin": 1,
+                  "scaleMax": 5,
+                  "required": true,
+                  "weight": 2,
+                  "graphable": true
+                },
+                {
+                  "id": "social-support-needed",
+                  "type": "question",
+                  "title": "What type of social support helps this student most?",
+                  "inputType": "multiple-choice",
+                  "required": true,
+                  "weight": 1,
+                  "graphable": true,
+                  "options": [
+                    { "id": "gentle-encouragement", "label": "Gentle Encouragement", "value": 1 },
+                    { "id": "structured-activities", "label": "Structured Social Activities", "value": 2 },
+                    { "id": "peer-buddy", "label": "Peer Buddy System", "value": 3 },
+                    { "id": "gradual-exposure", "label": "Gradual Group Exposure", "value": 4 }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "emotional-regulation",
+          "type": "question",
+          "title": "How does the student typically handle stress or frustration?",
+          "description": "Select the primary coping mechanism. Each has specific intervention strategies.",
+          "inputType": "single-choice",
+          "required": true,
+          "weight": 3,
+          "graphable": true,
+          "options": [
+            {
+              "id": "healthy-coping",
+              "label": "Uses healthy coping strategies",
+              "value": 1,
+              "children": [
+                {
+                  "id": "coping-strategies",
+                  "type": "question",
+                  "title": "Which healthy coping strategies does the student use?",
+                  "inputType": "multiple-choice",
+                  "required": true,
+                  "weight": 1,
+                  "graphable": true,
+                  "options": [
+                    { "id": "deep-breathing", "label": "Deep Breathing", "value": 1 },
+                    { "id": "talk-it-out", "label": "Talking to Others", "value": 2 },
+                    { "id": "physical-activity", "label": "Physical Activity", "value": 3 },
+                    { "id": "creative-expression", "label": "Creative Expression", "value": 4 }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "mixed-coping",
+              "label": "Uses both healthy and unhealthy strategies",
+              "value": 2,
+              "children": [
+                {
+                  "id": "trigger-situations",
+                  "type": "question",
+                  "title": "In which situations does the student struggle most with coping?",
+                  "inputType": "multiple-choice",
+                  "required": true,
+                  "weight": 2,
+                  "graphable": true,
+                  "options": [
+                    { "id": "academic-pressure", "label": "Academic Pressure", "value": 1 },
+                    { "id": "social-conflicts", "label": "Social Conflicts", "value": 2 },
+                    { "id": "transitions", "label": "Transitions/Changes", "value": 3 },
+                    { "id": "authority-conflicts", "label": "Authority Conflicts", "value": 4 }
+                  ]
+                },
+                {
+                  "id": "intervention-effectiveness",
+                  "type": "question",
+                  "title": "Rate the effectiveness of current interventions",
+                  "inputType": "scale",
+                  "scaleMin": 1,
+                  "scaleMax": 5,
+                  "required": true,
+                  "weight": 1,
+                  "graphable": true
+                }
+              ]
+            },
+            {
+              "id": "needs-support",
+              "label": "Needs significant support with emotional regulation",
+              "value": 3,
+              "children": [
+                {
+                  "id": "behavioral-manifestations",
+                  "type": "question",
+                  "title": "How does emotional dysregulation typically manifest?",
+                  "inputType": "multiple-choice",
+                  "required": true,
+                  "weight": 2,
+                  "graphable": true,
+                  "options": [
+                    { "id": "verbal-outbursts", "label": "Verbal Outbursts", "value": 1 },
+                    { "id": "withdrawal", "label": "Complete Withdrawal", "value": 2 },
+                    { "id": "physical-aggression", "label": "Physical Aggression", "value": 3 },
+                    { "id": "self-harm", "label": "Self-Harmful Behaviors", "value": 4 }
+                  ]
+                },
+                {
+                  "id": "support-urgency",
+                  "type": "question",
+                  "title": "Rate the urgency of need for professional support",
+                  "inputType": "scale",
+                  "scaleMin": 1,
+                  "scaleMax": 5,
+                  "required": true,
+                  "weight": 3,
+                  "graphable": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "behavioral-domain",
+      "title": "Behavioral Patterns Domain",
+      "nodes": [
+        {
+          "id": "attention-focus",
+          "type": "question",
+          "title": "How would you describe the student's attention and focus patterns?",
+          "description": "Each attention pattern requires different support strategies.",
+          "inputType": "single-choice",
+          "required": true,
+          "weight": 2,
+          "graphable": true,
+          "options": [
+            {
+              "id": "excellent-focus",
+              "label": "Excellent - Sustained attention across activities",
+              "value": 1,
+              "children": [
+                {
+                  "id": "focus-duration",
+                  "type": "question",
+                  "title": "Average duration of sustained focus (minutes)",
+                  "inputType": "number",
+                  "scaleMin": 10,
+                  "scaleMax": 180,
+                  "required": true,
+                  "weight": 1,
+                  "graphable": true
+                },
+                {
+                  "id": "hyperfocus-concerns",
+                  "type": "question",
+                  "title": "Are there concerns about hyperfocus or difficulty transitioning?",
+                  "inputType": "single-choice",
+                  "required": true,
+                  "weight": 1,
+                  "graphable": true,
+                  "options": [
+                    { "id": "no-concerns", "label": "No concerns", "value": 1 },
+                    { "id": "minor-transition", "label": "Minor transition difficulties", "value": 2 },
+                    { "id": "significant-hyperfocus", "label": "Significant hyperfocus issues", "value": 3 }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "variable-focus",
+              "label": "Variable - Depends on interest and activity",
+              "value": 2,
+              "children": [
+                {
+                  "id": "focus-factors",
+                  "type": "question",
+                  "title": "Which factors most improve the student's focus?",
+                  "inputType": "multiple-choice",
+                  "required": true,
+                  "weight": 1,
+                  "graphable": true,
+                  "options": [
+                    { "id": "personal-interest", "label": "Personal Interest in Topic", "value": 1 },
+                    { "id": "interactive-methods", "label": "Interactive Teaching Methods", "value": 2 },
+                    { "id": "clear-structure", "label": "Clear Structure and Expectations", "value": 3 },
+                    { "id": "frequent-breaks", "label": "Frequent Breaks", "value": 4 }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "attention-challenges",
+              "label": "Significant attention challenges",
+              "value": 3,
+              "children": [
+                {
+                  "id": "attention-symptoms",
+                  "type": "question",
+                  "title": "Which attention-related symptoms are most prominent?",
+                  "inputType": "multiple-choice",
+                  "required": true,
+                  "weight": 2,
+                  "graphable": true,
+                  "options": [
+                    { "id": "distractibility", "label": "High Distractibility", "value": 1 },
+                    { "id": "impulsivity", "label": "Impulsive Behaviors", "value": 2 },
+                    { "id": "hyperactivity", "label": "Hyperactivity/Restlessness", "value": 3 },
+                    { "id": "task-avoidance", "label": "Task Avoidance", "value": 4 }
+                  ]
+                },
+                {
+                  "id": "accommodation-effectiveness",
+                  "type": "question",
+                  "title": "Rate the effectiveness of current accommodations",
+                  "inputType": "scale",
+                  "scaleMin": 1,
+                  "scaleMax": 5,
+                  "required": true,
+                  "weight": 1,
+                  "graphable": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "communication-domain",
+      "title": "Communication Skills Domain",
+      "nodes": [
+        {
+          "id": "verbal-communication",
+          "type": "question",
+          "title": "How would you rate the student's verbal communication skills?",
+          "description": "Each level has specific areas for development.",
+          "inputType": "single-choice",
+          "required": true,
+          "weight": 2,
+          "graphable": true,
+          "options": [
+            {
+              "id": "advanced-verbal",
+              "label": "Advanced - Rich vocabulary and complex expression",
+              "value": 1,
+              "children": [
+                {
+                  "id": "communication-strengths",
+                  "type": "question",
+                  "title": "Which communication strengths are most notable?",
+                  "inputType": "multiple-choice",
+                  "required": true,
+                  "weight": 1,
+                  "graphable": true,
+                  "options": [
+                    { "id": "storytelling", "label": "Storytelling Ability", "value": 1 },
+                    { "id": "persuasion", "label": "Persuasive Speaking", "value": 2 },
+                    { "id": "academic-discourse", "label": "Academic Discourse", "value": 3 },
+                    { "id": "creative-expression", "label": "Creative Expression", "value": 4 }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "typical-verbal",
+              "label": "Typical - Age-appropriate communication",
+              "value": 2,
+              "children": [
+                {
+                  "id": "communication-preferences",
+                  "type": "question",
+                  "title": "In which communication contexts does the student excel?",
+                  "inputType": "multiple-choice",
+                  "required": true,
+                  "weight": 1,
+                  "graphable": true,
+                  "options": [
+                    { "id": "one-on-one", "label": "One-on-One Conversations", "value": 1 },
+                    { "id": "small-groups", "label": "Small Group Discussions", "value": 2 },
+                    { "id": "presentations", "label": "Formal Presentations", "value": 3 },
+                    { "id": "informal-social", "label": "Informal Social Settings", "value": 4 }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "emerging-verbal",
+              "label": "Emerging - Developing communication skills",
+              "value": 3,
+              "children": [
+                {
+                  "id": "communication-challenges",
+                  "type": "question",
+                  "title": "Which areas of communication need the most support?",
+                  "inputType": "multiple-choice",
+                  "required": true,
+                  "weight": 2,
+                  "graphable": true,
+                  "options": [
+                    { "id": "vocabulary", "label": "Vocabulary Development", "value": 1 },
+                    { "id": "sentence-structure", "label": "Sentence Structure", "value": 2 },
+                    { "id": "social-pragmatics", "label": "Social Pragmatics", "value": 3 },
+                    { "id": "articulation", "label": "Articulation/Clarity", "value": 4 }
+                  ]
+                },
+                {
+                  "id": "support-strategies",
+                  "type": "question",
+                  "title": "Which support strategies are most effective?",
+                  "inputType": "multiple-choice",
+                  "required": true,
+                  "weight": 1,
+                  "graphable": true,
+                  "options": [
+                    { "id": "visual-supports", "label": "Visual Communication Supports", "value": 1 },
+                    { "id": "modeling", "label": "Adult Modeling", "value": 2 },
+                    { "id": "peer-interaction", "label": "Structured Peer Interactions", "value": 3 },
+                    { "id": "technology", "label": "Communication Technology", "value": 4 }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "graphSettings": {
+    "colorRanges": [
+      {
+        "label": "Needs Support",
+        "min": 0,
+        "max": 40,
+        "color": "#ef4444"
+      },
+      {
+        "label": "Developing",
+        "min": 41,
+        "max": 70,
+        "color": "#f59e0b"
+      },
+      {
+        "label": "Proficient",
+        "min": 71,
+        "max": 100,
+        "color": "#10b981"
+      }
+    ]
+  }
+}

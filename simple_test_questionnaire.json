@@ -1,0 +1,73 @@
+{
+  "title": "Test Existing Structure",
+  "description": "Testing sub-questions with the existing question-level children structure",
+  "structure": [
+    {
+      "id": "test-group",
+      "type": "group",
+      "title": "Test Questions",
+      "description": "Testing existing sub-question structure",
+      "weight": 1,
+      "graphable": false,
+      "preferredChartType": "bar",
+      "children": [
+        {
+          "id": "main-question",
+          "type": "question",
+          "title": "How is the student's behavior?",
+          "description": "This should show sub-questions when any option is selected",
+          "weight": 1,
+          "required": true,
+          "inputType": "single-choice",
+          "graphable": true,
+          "preferredChartType": "bar",
+          "options": [
+            { "id": "opt-1", "label": "Poor", "value": 1 },
+            { "id": "opt-2", "label": "Fair", "value": 2 },
+            { "id": "opt-3", "label": "Good", "value": 3 },
+            { "id": "opt-4", "label": "Excellent", "value": 4 }
+          ],
+          "children": [
+            {
+              "id": "followup-1",
+              "type": "question",
+              "title": "What specific strategies have been tried?",
+              "description": "This should appear when any option above is selected",
+              "weight": 1,
+              "required": false,
+              "inputType": "text",
+              "graphable": false,
+              "preferredChartType": "bar",
+              "children": []
+            },
+            {
+              "id": "followup-2",
+              "type": "question",
+              "title": "How long have these behaviors been observed?",
+              "description": "Duration of behaviors",
+              "weight": 1,
+              "required": false,
+              "inputType": "single-choice",
+              "graphable": true,
+              "preferredChartType": "bar",
+              "options": [
+                { "id": "dur-1", "label": "Less than 1 month", "value": 1 },
+                { "id": "dur-2", "label": "1-3 months", "value": 2 },
+                { "id": "dur-3", "label": "3-6 months", "value": 3 },
+                { "id": "dur-4", "label": "More than 6 months", "value": 4 }
+              ],
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "graphSettings": {
+    "colorRanges": [
+      { "label": "Low", "min": 1, "max": 2, "color": "#ef4444" },
+      { "label": "Medium", "min": 3, "max": 3, "color": "#fbbf24" },
+      { "label": "High", "min": 4, "max": 5, "color": "#10b981" }
+    ]
+  }
+}

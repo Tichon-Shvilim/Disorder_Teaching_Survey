@@ -44,15 +44,18 @@ const FormSubmissionSchema = new mongoose.Schema({
   },
   notes: { type: String },
   
-  // Analytics fields - will be populated by analytics-service later
-  // Keeping them optional for now
+  // Analytics fields - will be populated by scoring API
   totalScore: { type: Number, default: null },
   domainScores: [{ // Scores per domain/group
     nodeId: String,
     nodePath: [String],
     title: String,
     score: Number,
-    maxScore: Number
+    maxScore: Number,
+    answeredQuestions: Number,
+    totalQuestions: Number,
+    weightedScore: Number,
+    totalWeight: Number
   }],
   
   // Timestamps

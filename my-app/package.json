@@ -19,6 +19,7 @@
     "@reduxjs/toolkit": "^2.8.2",
     "@tailwindcss/cli": "^4.1.11",
     "@types/react-router-dom": "^5.3.3",
+    "@types/recharts": "^1.8.29",
     "axios": "^1.10.0",
     "bootstrap": "^5.3.7",
     "buffer": "^6.0.3",
@@ -36,6 +37,7 @@
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.6.3",
     "react-toastify": "^11.0.5",
+    "recharts": "^3.2.1",
     "stylis-plugin-rtl": "^2.1.1",
     "tailwindcss": "^4.1.11",
     "toastify": "^2.0.1"

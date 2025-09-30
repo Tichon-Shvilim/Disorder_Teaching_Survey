@@ -327,28 +327,63 @@ const UsersList: React.FC = () => {
                 }}
               >
                 <TableCell sx={{ padding: '16px 24px', textAlign: isRTL ? 'right' : 'left' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, justifyContent: isRTL ? 'flex-end' : 'flex-start', direction: isRTL ? 'rtl' : 'ltr' }}>
-                    <Avatar
-                      sx={{
-                        backgroundColor: '#3182ce',
-                        color: 'white',
-                        width: 40,
-                        height: 40,
-                        fontSize: '14px',
-                        fontWeight: 600,
-                        order: isRTL ? 2 : 1
-                      }}
-                    >
-                      {getUserInitials(user.name)}
-                    </Avatar>
-                    <Box sx={{ textAlign: isRTL ? 'right' : 'left', order: isRTL ? 1 : 2 }}>
-                      <Typography sx={{ fontWeight: 500, color: '#1a202c', fontSize: '14px' }}>
-                        {user.name}
-                      </Typography>
-                      <Typography sx={{ color: '#718096', fontSize: '12px' }}>
-                        {user.email}
-                      </Typography>
-                    </Box>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: 2,
+                    flexDirection: isRTL ? 'row-reverse' : 'row',
+                    justifyContent: 'flex-start',
+                    width: '100%'
+                  }}>
+                    {isRTL ? (
+                      <>
+                        <Box sx={{ textAlign: 'right', flex: 1 }}>
+                          <Typography sx={{ fontWeight: 500, color: '#1a202c', fontSize: '14px' }}>
+                            {user.name}
+                          </Typography>
+                          <Typography sx={{ color: '#718096', fontSize: '12px' }}>
+                            {user.email}
+                          </Typography>
+                        </Box>
+                        <Avatar
+                          sx={{
+                            backgroundColor: '#3182ce',
+                            color: 'white',
+                            width: 40,
+                            height: 40,
+                            fontSize: '14px',
+                            fontWeight: 600,
+                            flexShrink: 0
+                          }}
+                        >
+                          {getUserInitials(user.name)}
+                        </Avatar>
+                      </>
+                    ) : (
+                      <>
+                        <Avatar
+                          sx={{
+                            backgroundColor: '#3182ce',
+                            color: 'white',
+                            width: 40,
+                            height: 40,
+                            fontSize: '14px',
+                            fontWeight: 600,
+                            flexShrink: 0
+                          }}
+                        >
+                          {getUserInitials(user.name)}
+                        </Avatar>
+                        <Box sx={{ textAlign: 'left', flex: 1 }}>
+                          <Typography sx={{ fontWeight: 500, color: '#1a202c', fontSize: '14px' }}>
+                            {user.name}
+                          </Typography>
+                          <Typography sx={{ color: '#718096', fontSize: '12px' }}>
+                            {user.email}
+                          </Typography>
+                        </Box>
+                      </>
+                    )}
                   </Box>
                 </TableCell>
                 <TableCell sx={{ padding: '16px 24px', textAlign: isRTL ? 'right' : 'left' }}>

@@ -26,6 +26,8 @@ const FormNodeSchema = new mongoose.Schema({
     enum: ['single-choice', 'multiple-choice', 'scale', 'number', 'text'],
   },
   options: [OptionSchema], // Only for questions with choices or scale
+  scaleMin: Number, // For scale and number questions
+  scaleMax: Number, // For scale and number questions
 
   // Optional conditional logic: only show if parentOptionId is selected
   condition: {

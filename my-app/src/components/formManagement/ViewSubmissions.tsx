@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, Calendar, FileText, Eye, Plus, Edit, Trash2, X, Filter } from 'lucide-react';
+import { ArrowLeft, Calendar, FileText, Eye, Plus, Edit, Trash2, X, Filter, BarChart3 } from 'lucide-react';
 import { FormAPIService } from './Api-Requests/FormAPIService';
 import type { FormSubmission, QuestionnaireTemplate } from './models/FormModels';
 import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import { PDFDownloadButton } from '../common';
+import SubmissionAnalytics from '../analytics/SubmissionAnalytics';
 
 const ViewSubmissions: React.FC = () => {
   const location = useLocation();
@@ -24,6 +25,8 @@ const ViewSubmissions: React.FC = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [submissionToDelete, setSubmissionToDelete] = useState<FormSubmission | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(false);
+  const [analyticsSubmissionId, setAnalyticsSubmissionId] = useState<string | null>(null);
   
   // Filters
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -89,6 +92,11 @@ const ViewSubmissions: React.FC = () => {
   const handleDeleteSubmission = (submission: FormSubmission) => {
     setSubmissionToDelete(submission);
     setShowDeleteDialog(true);
+  };
+
+  const handleViewAnalytics = (submission: FormSubmission) => {
+    setAnalyticsSubmissionId(submission._id);
+    setShowAnalytics(true);
   };
 
   const confirmDelete = async () => {
@@ -452,6 +460,26 @@ const ViewSubmissions: React.FC = () => {
                       View
                     </button>
 
+                    <button
+                      onClick={() => handleViewAnalytics(submission)}
+                      style={{
+                        padding: '8px 12px',
+                        backgroundColor: '#e0f2fe',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontSize: '14px',
+                        color: '#0277bd'
+                      }}
+                      title="View Analytics"
+                    >
+                      <BarChart3 style={{ height: '14px', width: '14px' }} />
+                      Analytics
+                    </button>
+
                     <PDFDownloadButton 
                       submission={submission}
                       variant="secondary"
@@ -576,6 +604,25 @@ const ViewSubmissions: React.FC = () => {
                     Submission Details
                   </h2>
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <button
+                      onClick={() => handleViewAnalytics(selectedSubmission)}
+                      style={{
+                        padding: '8px 12px',
+                        backgroundColor: '#e0f2fe',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontSize: '14px',
+                        color: '#0277bd'
+                      }}
+                      title="View Analytics"
+                    >
+                      <BarChart3 style={{ height: '16px', width: '16px' }} />
+                      Analytics
+                    </button>
                     <PDFDownloadButton 
                       submission={selectedSubmission}
                       variant="secondary"
@@ -719,6 +766,41 @@ const ViewSubmissions: React.FC = () => {
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Analytics Modal */}
+        {showAnalytics && analyticsSubmissionId && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '20px'
+          }}>
+            <div style={{
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              maxWidth: '1400px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflow: 'auto',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+            }}>
+              <SubmissionAnalytics 
+                submissionId={analyticsSubmissionId}
+                onClose={() => {
+                  setShowAnalytics(false);
+                  setAnalyticsSubmissionId(null);
+                }}
+              />
             </div>
           </div>
         )}
