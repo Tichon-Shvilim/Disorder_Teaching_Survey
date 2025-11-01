@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, Calendar, FileText, Eye, Plus, Edit, Trash2, X, Filter, BarChart3 } from 'lucide-react';
+import { ArrowLeft, Calendar, FileText, Eye, Plus, Edit, Trash2, X, Filter } from 'lucide-react';
 import { FormAPIService } from './Api-Requests/FormAPIService';
 import type { FormSubmission, QuestionnaireTemplate } from './models/FormModels';
 import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import { PDFDownloadButton } from '../common';
-import SubmissionAnalytics from '../analytics/SubmissionAnalytics';
 
 const ViewSubmissions: React.FC = () => {
   const location = useLocation();
@@ -25,8 +24,6 @@ const ViewSubmissions: React.FC = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [submissionToDelete, setSubmissionToDelete] = useState<FormSubmission | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [showAnalytics, setShowAnalytics] = useState(false);
-  const [analyticsSubmissionId, setAnalyticsSubmissionId] = useState<string | null>(null);
   
   // Filters
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -70,8 +67,21 @@ const ViewSubmissions: React.FC = () => {
     });
   };
 
-  const handleViewSubmission = (submission: FormSubmission) => {
-    setSelectedSubmission(submission);
+  const handleViewSubmission = async (submission: FormSubmission) => {
+    try {
+      console.log('Fetching full submission for ID:', submission._id);
+      // Fetch the complete submission with all answers
+      const fullSubmission = await FormAPIService.getSubmission(submission._id);
+      console.log('Full submission received:', fullSubmission);
+      console.log('Full submission answers:', fullSubmission.answers);
+      setSelectedSubmission(fullSubmission);
+    } catch (error) {
+      console.error('Error fetching submission details:', error);
+      toast.error('Failed to load submission details');
+      // Fallback to the partial submission from the list
+      console.log('Using fallback submission:', submission);
+      setSelectedSubmission(submission);
+    }
   };
 
   const handleEditSubmission = (submission: FormSubmission) => {
@@ -92,11 +102,6 @@ const ViewSubmissions: React.FC = () => {
   const handleDeleteSubmission = (submission: FormSubmission) => {
     setSubmissionToDelete(submission);
     setShowDeleteDialog(true);
-  };
-
-  const handleViewAnalytics = (submission: FormSubmission) => {
-    setAnalyticsSubmissionId(submission._id);
-    setShowAnalytics(true);
   };
 
   const confirmDelete = async () => {
@@ -460,26 +465,6 @@ const ViewSubmissions: React.FC = () => {
                       View
                     </button>
 
-                    <button
-                      onClick={() => handleViewAnalytics(submission)}
-                      style={{
-                        padding: '8px 12px',
-                        backgroundColor: '#e0f2fe',
-                        border: 'none',
-                        borderRadius: '6px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        fontSize: '14px',
-                        color: '#0277bd'
-                      }}
-                      title="View Analytics"
-                    >
-                      <BarChart3 style={{ height: '14px', width: '14px' }} />
-                      Analytics
-                    </button>
-
                     <PDFDownloadButton 
                       submission={submission}
                       variant="secondary"
@@ -604,25 +589,6 @@ const ViewSubmissions: React.FC = () => {
                     Submission Details
                   </h2>
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <button
-                      onClick={() => handleViewAnalytics(selectedSubmission)}
-                      style={{
-                        padding: '8px 12px',
-                        backgroundColor: '#e0f2fe',
-                        border: 'none',
-                        borderRadius: '6px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        fontSize: '14px',
-                        color: '#0277bd'
-                      }}
-                      title="View Analytics"
-                    >
-                      <BarChart3 style={{ height: '16px', width: '16px' }} />
-                      Analytics
-                    </button>
                     <PDFDownloadButton 
                       submission={selectedSubmission}
                       variant="secondary"
@@ -674,60 +640,158 @@ const ViewSubmissions: React.FC = () => {
                 )}
 
                 <div>
-                  <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: '0 0 16px 0' }}>
-                    Answers ({selectedSubmission.answers?.length || 0})
+                  <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: '0 0 24px 0' }}>
+                    Form Responses
                   </h4>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    {(selectedSubmission.answers || []).map((answer, index) => (
-                      <div key={answer.questionId} style={{
-                        padding: '16px',
-                        backgroundColor: '#f9fafb',
-                        borderRadius: '8px',
-                        border: '1px solid #e5e7eb'
-                      }}>
-                        <div style={{ marginBottom: '8px' }}>
-                          <span style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937' }}>
-                            {answer.questionTitle || `Question ${index + 1}`}
-                          </span>
-                          {answer.weight > 1 && (
-                            <span style={{
-                              backgroundColor: '#e5e7eb',
-                              color: '#374151',
-                              padding: '2px 6px',
-                              borderRadius: '4px',
-                              fontSize: '12px',
-                              marginLeft: '8px'
-                            }}>
-                              Weight: {answer.weight}
-                            </span>
-                          )}
-                          {answer.graphable && (
-                            <span style={{
-                              backgroundColor: '#dbeafe',
-                              color: '#1d4ed8',
-                              padding: '2px 6px',
-                              borderRadius: '4px',
-                              fontSize: '12px',
-                              marginLeft: '4px'
-                            }}>
-                              Analytics
-                            </span>
-                          )}
-                        </div>
-                        <div style={{ fontSize: '14px', color: '#374151' }}>
-                          <strong>Answer:</strong> {
-                            Array.isArray(answer.answer) 
-                              ? answer.answer.join(', ')
-                              : answer.answer.toString()
-                          }
-                        </div>
-                        {answer.selectedOptions && answer.selectedOptions.length > 0 && (
-                          <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
-                            Options: {answer.selectedOptions.map(opt => `${opt.label} (${opt.value})`).join(', ')}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    {(selectedSubmission.answers || []).map((answer, index) => {
+                      const isSubQuestion = answer.questionTitle?.includes('→') || answer.questionTitle?.includes('Follow-up');
+                      
+                      return (
+                        <div key={answer.questionId} style={{
+                          padding: isSubQuestion ? '16px 20px 16px 32px' : '20px',
+                          backgroundColor: isSubQuestion ? '#f8fafc' : 'white',
+                          borderRadius: '12px',
+                          border: isSubQuestion ? '1px solid #e2e8f0' : '2px solid #e5e7eb',
+                          borderLeft: isSubQuestion ? '4px solid #3b82f6' : '2px solid #e5e7eb',
+                          boxShadow: isSubQuestion ? '0 1px 3px rgba(0, 0, 0, 0.1)' : '0 2px 4px rgba(0, 0, 0, 0.1)'
+                        }}>
+                          {/* Question Header */}
+                          <div style={{ marginBottom: '12px' }}>
+                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '8px' }}>
+                              {isSubQuestion && (
+                                <span style={{ color: '#3b82f6', fontSize: '14px', marginTop: '2px' }}>└─</span>
+                              )}
+                              <h5 style={{ 
+                                fontSize: isSubQuestion ? '15px' : '16px', 
+                                fontWeight: isSubQuestion ? '500' : '600', 
+                                color: isSubQuestion ? '#475569' : '#1f2937', 
+                                margin: 0,
+                                lineHeight: '1.5'
+                              }}>
+                                {answer.questionTitle || `Question ${index + 1}`}
+                              </h5>
+                            </div>
+                            
+                            {/* Question Metadata */}
+                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                              {answer.weight > 1 && (
+                                <span style={{
+                                  backgroundColor: '#f59e0b',
+                                  color: 'white',
+                                  padding: '2px 8px',
+                                  borderRadius: '12px',
+                                  fontSize: '11px',
+                                  fontWeight: '500'
+                                }}>
+                                  Weight: {answer.weight}
+                                </span>
+                              )}
+                              {answer.graphable && (
+                                <span style={{
+                                  backgroundColor: '#10b981',
+                                  color: 'white',
+                                  padding: '2px 8px',
+                                  borderRadius: '12px',
+                                  fontSize: '11px',
+                                  fontWeight: '500'
+                                }}>
+                                  📊 Analytics
+                                </span>
+                              )}
+                              {isSubQuestion && (
+                                <span style={{
+                                  backgroundColor: '#3b82f6',
+                                  color: 'white',
+                                  padding: '2px 8px',
+                                  borderRadius: '12px',
+                                  fontSize: '11px',
+                                  fontWeight: '500'
+                                }}>
+                                  Follow-up
+                                </span>
+                              )}
+                            </div>
                           </div>
-                        )}
-                      </div>
-                    ))}
+
+                          {/* Answer Content */}
+                          <div style={{ 
+                            backgroundColor: isSubQuestion ? 'white' : '#f9fafb',
+                            padding: '16px',
+                            borderRadius: '8px',
+                            border: '1px solid #e5e7eb'
+                          }}>
+                            <div style={{ 
+                              fontSize: '15px', 
+                              color: '#374151',
+                              lineHeight: '1.6',
+                              fontWeight: '500'
+                            }}>
+                              {Array.isArray(answer.answer) 
+                                ? (
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    {answer.answer.map((ans, i) => (
+                                      <span key={i} style={{
+                                        display: 'inline-block',
+                                        backgroundColor: '#dbeafe',
+                                        color: '#1e40af',
+                                        padding: '6px 12px',
+                                        borderRadius: '6px',
+                                        fontSize: '14px'
+                                      }}>
+                                        {ans}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )
+                                : (
+                                  <span style={{
+                                    display: 'inline-block',
+                                    backgroundColor: answer.answer.toString().length > 50 ? 'transparent' : '#e0f2fe',
+                                    color: answer.answer.toString().length > 50 ? '#374151' : '#0891b2',
+                                    padding: answer.answer.toString().length > 50 ? '0' : '6px 12px',
+                                    borderRadius: '6px',
+                                    fontSize: '14px',
+                                    whiteSpace: answer.answer.toString().length > 50 ? 'pre-wrap' : 'nowrap'
+                                  }}>
+                                    {answer.answer.toString()}
+                                  </span>
+                                )
+                              }
+                            </div>
+
+                            {/* Selected Options Details */}
+                            {answer.selectedOptions && answer.selectedOptions.length > 0 && (
+                              <div style={{ 
+                                marginTop: '12px',
+                                padding: '12px',
+                                backgroundColor: '#f0f9ff',
+                                borderRadius: '6px',
+                                border: '1px solid #bae6fd'
+                              }}>
+                                <div style={{ fontSize: '12px', color: '#0369a1', fontWeight: '600', marginBottom: '6px' }}>
+                                  Selected Options:
+                                </div>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                                  {answer.selectedOptions.map((opt, i) => (
+                                    <span key={i} style={{
+                                      backgroundColor: '#0ea5e9',
+                                      color: 'white',
+                                      padding: '4px 8px',
+                                      borderRadius: '4px',
+                                      fontSize: '11px',
+                                      fontWeight: '500'
+                                    }}>
+                                      {opt.label} ({opt.value})
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -766,41 +830,6 @@ const ViewSubmissions: React.FC = () => {
                   </div>
                 )}
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* Analytics Modal */}
-        {showAnalytics && analyticsSubmissionId && (
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            padding: '20px'
-          }}>
-            <div style={{
-              backgroundColor: 'white',
-              borderRadius: '12px',
-              maxWidth: '1400px',
-              width: '100%',
-              maxHeight: '90vh',
-              overflow: 'auto',
-              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
-            }}>
-              <SubmissionAnalytics 
-                submissionId={analyticsSubmissionId}
-                onClose={() => {
-                  setShowAnalytics(false);
-                  setAnalyticsSubmissionId(null);
-                }}
-              />
             </div>
           </div>
         )}
