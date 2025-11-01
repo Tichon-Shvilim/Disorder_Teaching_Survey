@@ -26,6 +26,7 @@ import FillForm from "./components/formManagement/FillForm";
 import ViewSubmissions from "./components/formManagement/ViewSubmissions";
 import QuestionnaireViewer from "./components/formManagement/QuestionnaireViewer";
 import SaveHebrewQuestionnaire from "./components/formManagement/SaveHebrewQuestionnaire";
+import FormResults from "./components/formManagement/FormResults";
 
 const App: React.FC = () => {
   return (
@@ -51,6 +52,7 @@ const App: React.FC = () => {
           <Route path="forms/fill" element={<FillForm />} />
           <Route path="forms/fill/:questionnaireId" element={<FillForm />} />
           <Route path="forms/submissions" element={<ViewSubmissions />} />
+          <Route path="form-results/:submissionId" element={<FormResults />} />
           <Route path="classes" element={<ClassList/>} />
           <Route path="classes/:id" element={<ModernClassManagement />} />
           <Route path="classes/:id/edit" element={<EditClass />} />

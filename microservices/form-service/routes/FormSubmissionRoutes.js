@@ -151,6 +151,28 @@ router.post('/submit', authenticateJWT, authorizeRole(['Teacher', 'Therapist', '
 
     await formSubmission.save();
 
+    // Auto-calculate analytics if form is completed (non-blocking)
+    let analyticsCalculated = false;
+    if (status === 'completed') {
+      // Fire and forget - don't wait for analytics calculation
+      setImmediate(async () => {
+        try {
+          await axios.post(
+            `${process.env.ANALYTICS_SERVICE_URL || 'http://analytics-service:3004'}/api/analytics/calculate/${formSubmission._id}`,
+            {},
+            { 
+              headers: { Authorization: req.headers.authorization },
+              timeout: 5000 // 5 second timeout
+            }
+          );
+          console.log(`Analytics calculated for submission ${formSubmission._id}`);
+        } catch (error) {
+          console.error('Error calculating analytics:', error.message);
+        }
+      });
+      analyticsCalculated = true; // Assume it will work
+    }
+
     res.status(201).json({
       success: true,
       message: `Form ${status} successfully`,
@@ -160,7 +182,8 @@ router.post('/submit', authenticateJWT, authorizeRole(['Teacher', 'Therapist', '
         questionnaireTitle: validation.questionnaire.title,
         status,
         submittedAt: formSubmission.submittedAt,
-        answersCount: answers.length
+        answersCount: answers.length,
+        analyticsCalculated
       }
     });
 
@@ -451,10 +474,35 @@ router.put('/submissions/:id', authenticateJWT, authorizeRole(['Teacher', 'Thera
       { new: true, runValidators: true }
     );
 
+    // Auto-calculate analytics if status changed to completed (non-blocking)
+    let analyticsCalculated = false;
+    if (status === 'completed') {
+      // Fire and forget - don't wait for analytics calculation
+      setImmediate(async () => {
+        try {
+          await axios.post(
+            `${process.env.ANALYTICS_SERVICE_URL || 'http://analytics-service:3004'}/api/analytics/calculate/${id}`,
+            {},
+            { 
+              headers: { Authorization: req.headers.authorization },
+              timeout: 5000 // 5 second timeout
+            }
+          );
+          console.log(`Analytics calculated for submission ${id}`);
+        } catch (error) {
+          console.error('Error calculating analytics:', error.message);
+        }
+      });
+      analyticsCalculated = true; // Assume it will work
+    }
+
     res.json({
       success: true,
       message: 'Form submission updated successfully',
-      data: updatedSubmission
+      data: {
+        ...updatedSubmission.toObject(),
+        analyticsCalculated
+      }
     });
 
   } catch (error) {

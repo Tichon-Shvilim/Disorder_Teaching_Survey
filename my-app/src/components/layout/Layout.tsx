@@ -1,7 +1,6 @@
 // src/components/layout/Layout.tsx
 import React from "react";
 import { Outlet } from "react-router-dom";
-import { useTranslation } from "react-i18next";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import Box from "@mui/material/Box";
@@ -10,11 +9,8 @@ const drawerWidth = 280;
 const headerHeight = 120;
 
 const Layout: React.FC = () => {
-  const { i18n } = useTranslation();
-  const isRTL = i18n.dir() === 'rtl';
-
   return (
-    <Box sx={{ display: "flex", height: "100vh", direction: isRTL ? 'rtl' : 'ltr' }}>
+    <Box sx={{ display: "flex", height: "100vh" }}>
       <Sidebar />
       <Box
         sx={{
@@ -29,8 +25,7 @@ const Layout: React.FC = () => {
           sx={{
             position: "fixed",
             top: 0,
-            left: isRTL ? 0 : drawerWidth,
-            right: isRTL ? drawerWidth : 0,
+            left: drawerWidth,
             width: `calc(100% - ${drawerWidth}px)`,
             height: `${headerHeight}px`,
             zIndex: 1200,

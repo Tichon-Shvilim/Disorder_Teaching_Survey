@@ -782,11 +782,21 @@ const FillForm: React.FC = () => {
 
       if (currentSubmissionId && !isDraft) {
         // Update existing submission to completed
-        await FormAPIService.updateSubmission(currentSubmissionId, {
+        const result = await FormAPIService.updateSubmission(currentSubmissionId, {
           answers: answersArray,
           status: 'completed'
         });
         toast.success('Form submitted successfully!');
+        
+        // Navigate to results page
+        navigate(`/layout/form-results/${currentSubmissionId}`, {
+          state: { 
+            studentId, 
+            studentName, 
+            questionnaireTitle: questionnaire.title 
+          }
+        });
+        return;
       } else if (!currentSubmissionId) {
         // Create new submission
         const submission = {
@@ -796,8 +806,20 @@ const FillForm: React.FC = () => {
           status: isDraft ? 'draft' as const : 'completed' as const
         };
 
-        await FormAPIService.submitForm(submission);
+        const result = await FormAPIService.submitForm(submission);
         toast.success(`Form ${isDraft ? 'saved as draft' : 'submitted'} successfully!`);
+        
+        if (!isDraft) {
+          // Navigate to results page for completed forms
+          navigate(`/layout/form-results/${result.submissionId}`, {
+            state: { 
+              studentId, 
+              studentName, 
+              questionnaireTitle: questionnaire.title 
+            }
+          });
+          return;
+        }
       }
 
       navigate(-1);
