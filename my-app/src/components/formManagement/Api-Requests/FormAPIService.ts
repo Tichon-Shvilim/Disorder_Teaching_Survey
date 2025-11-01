@@ -31,6 +31,12 @@ interface SubmitFormResponse {
   status: string;
   submittedAt: Date | null;
   answersCount: number;
+  analyticsCalculated?: boolean;
+}
+
+// Update submission response interface
+interface UpdateSubmissionResponse extends FormSubmission {
+  analyticsCalculated?: boolean;
 }
 
 class FormApiService {
@@ -216,10 +222,10 @@ class FormApiService {
     answers: FormAnswer[];
     status: 'draft' | 'completed' | 'reviewed';
     notes: string;
-  }>): Promise<FormSubmission> {
+  }>): Promise<UpdateSubmissionResponse> {
     try {
       const response = await updateItem<Partial<FormSubmission>>('api/forms/submissions', id, updates);
-      const apiResponse = this.handleResponse<FormSubmission>(response);
+      const apiResponse = this.handleResponse<UpdateSubmissionResponse>(response);
       
       if (apiResponse.success && apiResponse.data) {
         return apiResponse.data;

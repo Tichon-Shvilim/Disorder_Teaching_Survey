@@ -25,18 +25,17 @@ const SubmissionAnalyticsSchema = new mongoose.Schema({
   // Reference data
   submissionId: { 
     type: mongoose.Schema.Types.ObjectId, 
-    ref: 'FormSubmissionV2', 
+    ref: 'FormSubmission', 
     required: true,
     unique: true // One analytics record per submission
   },
   studentId: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'Student', 
+    type: String, 
     required: true 
   },
   questionnaireId: { 
     type: mongoose.Schema.Types.ObjectId, 
-    ref: 'QuestionnaireTemplateV2', 
+    ref: 'QuestionnaireTemplate', 
     required: true 
   },
   

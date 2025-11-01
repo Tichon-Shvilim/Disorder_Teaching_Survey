@@ -26,10 +26,13 @@ const SignIn: React.FC = () => {
     setError("");
     try {
       const response = await signIn("api/users", { email, password });
-      type SignInResponse = { token: string; user: UserModel };
+      type SignInResponse = { token: string; refreshToken?: string; user: UserModel };
       const data = response.data as SignInResponse;
-      dispatch(loginSuccess({ token: data.token, user: data.user }));
+      dispatch(loginSuccess({ token: data.token, refreshToken: data.refreshToken, user: data.user }));
       localStorage.setItem("token", data.token);
+      if (data.refreshToken) {
+        localStorage.setItem("refreshToken", data.refreshToken);
+      }
       localStorage.setItem("user", JSON.stringify(data.user));
       console.log("Sign in successful:", data.user);
     } catch {

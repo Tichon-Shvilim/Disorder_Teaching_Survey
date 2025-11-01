@@ -1,6 +1,8 @@
 const express = require('express');
+const axios = require('axios');
 const Analytics = require('../models/Analytics');
 const SubmissionAnalytics = require('../models/SubmissionAnalytics');
+const { authenticateJWT, authorizeRole } = require('../middleware/auth');
 const { 
   extractDomainScores, 
   calculateOverallScore 
@@ -20,14 +22,7 @@ router.get('/', async (req, res) => {
   res.send(analyticsData);
 });
 
-// Simple analytics endpoints - let's start basic and build up
-router.get('/test', async (req, res) => {
-  res.json({
-    success: true,
-    message: 'Analytics service is working!',
-    timestamp: new Date().toISOString()
-  });
-});
+
 
 // Helper function to calculate standard deviation
 function calculateStandardDeviation(values) {
@@ -40,48 +35,51 @@ function calculateStandardDeviation(values) {
   return Math.sqrt(avgSquaredDiff);
 }
 
-module.exports = router;
 
-// Log a new action
-router.post('/log', async (req, res) => {
-  const analytics = new Analytics(req.body);
-  await analytics.save();
-  res.status(201).send(analytics);
-});
 
-// Get analytics data
-router.get('/', async (req, res) => {
-  const analyticsData = await Analytics.find().populate('userId');
-  res.send(analyticsData);
-});
-
-// Calculate and store analytics for a form submission
+// Calculate and store analytics for a form submission (internal endpoint)
 router.post('/calculate/:submissionId', async (req, res) => {
   try {
     const { submissionId } = req.params;
+    
+    // Check if analytics already exist
+    const existingAnalytics = await SubmissionAnalytics.findOne({ submissionId });
+    if (existingAnalytics) {
+      return res.json({
+        success: true,
+        message: 'Analytics already exist',
+        data: existingAnalytics
+      });
+    }
     
     // Fetch submission data from form-service
     const formServiceUrl = process.env.FORM_SERVICE_URL || 'http://form-service:3003';
     
     // Get the submission
     const submissionResponse = await axios.get(
-      `${formServiceUrl}/api/forms/submissions/${submissionId}/v2`,
-      { headers: req.headers }
+      `${formServiceUrl}/api/forms/submissions/${submissionId}`,
+      { 
+        headers: req.headers.authorization ? { Authorization: req.headers.authorization } : {},
+        timeout: 10000
+      }
     );
     
-    if (!submissionResponse.data) {
+    if (!submissionResponse.data.success) {
       return res.status(404).json({
         success: false,
         message: 'Form submission not found'
       });
     }
     
-    const submission = submissionResponse.data;
+    const submission = submissionResponse.data.data;
     
     // Get the questionnaire structure
     const questionnaireResponse = await axios.get(
-      `${formServiceUrl}/api/questionnaires/v2/templates/${submission.questionnaireId}`,
-      { headers: req.headers }
+      `${formServiceUrl}/api/questionnaires/templates/${submission.questionnaireId}`,
+      { 
+        headers: req.headers.authorization ? { Authorization: req.headers.authorization } : {},
+        timeout: 10000
+      }
     );
     
     if (!questionnaireResponse.data.success) {
@@ -348,16 +346,40 @@ router.get('/domains/class/:classId', async (req, res) => {
 });
 
 // Get detailed analytics for a specific submission
-router.get('/submission/:submissionId', async (req, res) => {
+router.get('/submission/:submissionId', authenticateJWT, async (req, res) => {
   try {
     const { submissionId } = req.params;
     
-    const analytics = await SubmissionAnalytics.findOne({ submissionId });
+    let analytics = await SubmissionAnalytics.findOne({ submissionId });
+    
+    if (!analytics) {
+      // Try to calculate analytics if not found
+      console.log(`Analytics not found for submission ${submissionId}, attempting to calculate...`);
+      
+      try {
+        // Trigger calculation
+        const calcResponse = await axios.post(
+          `http://localhost:3004/api/analytics/calculate/${submissionId}`,
+          {},
+          { 
+            headers: req.headers.authorization ? { Authorization: req.headers.authorization } : {},
+            timeout: 15000
+          }
+        );
+        
+        if (calcResponse.data.success) {
+          // Fetch the newly calculated analytics
+          analytics = await SubmissionAnalytics.findOne({ submissionId });
+        }
+      } catch (calcError) {
+        console.error('Error calculating analytics:', calcError.message);
+      }
+    }
     
     if (!analytics) {
       return res.status(404).json({
         success: false,
-        message: 'Analytics not found for this submission'
+        message: 'Analytics not found for this submission and calculation failed'
       });
     }
     
