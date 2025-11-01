@@ -115,7 +115,6 @@
   "classes": {
     "title": "Class Management",
     "addClass": "Add Class",
-    "classDetails": "Class Details",
     "classList": "Class List",
     "classNumber": "Class Number",
     "className": "Class Name",
