@@ -15,6 +15,7 @@ services:
       - MONGODB_URI=mongodb://mongo:27017/userDB
       - PORT=3001
       - JWT_SECRET=8f7d2b1e-4c3a-4e2b-8e7a-9c6d5b4a3f2e!@#RandomExtraStuff
+      - CORS_ORIGIN=http://localhost:5173
     command: npm run dev
 
   student-service:
@@ -31,6 +32,7 @@ services:
       - PORT=3002
       - JWT_SECRET=8f7d2b1e-4c3a-4e2b-8e7a-9c6d5b4a3f2e!@#RandomExtraStuff
       - USER_SERVICE_URL=http://user-service:3001
+      - CORS_ORIGIN=http://localhost:5173
     command: npm run dev
 
   form-service:
@@ -48,6 +50,8 @@ services:
       - JWT_SECRET=8f7d2b1e-4c3a-4e2b-8e7a-9c6d5b4a3f2e!@#RandomExtraStuff
       - USER_SERVICE_URL=http://user-service:3001
       - STUDENT_SERVICE_URL=http://student-service:3002
+      - ANALYTICS_SERVICE_URL=http://analytics-service:3004
+      - CORS_ORIGIN=http://localhost:5173
     command: npm run dev
 
   analytics-service:
@@ -63,6 +67,10 @@ services:
       - MONGODB_URI=mongodb://mongo:27017/analyticsDB
       - PORT=3004
       - JWT_SECRET=8f7d2b1e-4c3a-4e2b-8e7a-9c6d5b4a3f2e!@#RandomExtraStuff
+      - FORM_SERVICE_URL=http://form-service:3003
+      - STUDENT_SERVICE_URL=http://student-service:3002
+      - USER_SERVICE_URL=http://user-service:3001
+      - CORS_ORIGIN=http://localhost:5173
     command: npm run dev
 
   
@@ -90,6 +98,8 @@ services:
       - ./my-app:/app
       - /app/node_modules
     environment:
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
       # - VITE_API_URL=http://localhost:4001 # match dev ports
       - VITE_USER_SERVICE_URL=http://localhost:4001
       - VITE_STUDENT_SERVICE_URL=http://localhost:4002

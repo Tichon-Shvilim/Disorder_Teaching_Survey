@@ -24,29 +24,29 @@ import {
   Radar as RadarIcon,
   CallSplit as ConditionalIcon,
 } from '@mui/icons-material';
-import type { FormNodeV2, OptionV2 } from './models/FormModelsV2';
+import type { FormNode, Option } from './models/FormModels';
 
 interface NodeFormData {
   title: string;
   description: string;
   type: 'group' | 'question';
   inputType?: 'single-choice' | 'multiple-choice' | 'scale' | 'number' | 'text';
-  options?: OptionV2[];
+  options?: Option[];
   weight: number;
   graphable: boolean;
   preferredChartType: 'bar' | 'line' | 'radar' | 'gauge' | 'pie';
 }
 
 interface ConditionalContext {
-  parentQuestion: FormNodeV2;
-  triggerOption: OptionV2;
+  parentQuestion: FormNode;
+  triggerOption: Option;
 }
 
 interface AddNodeDialogProps {
   open: boolean;
   onClose: () => void;
   onSave: (formData: NodeFormData) => void;
-  editingNode?: FormNodeV2 | null;
+  editingNode?: FormNode | null;
   formData: NodeFormData;
   setFormData: (data: NodeFormData) => void;
   conditionalContext?: ConditionalContext;

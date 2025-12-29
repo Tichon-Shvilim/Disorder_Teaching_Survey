@@ -19,7 +19,6 @@ import {
   Paper,
   Stack,
   Tooltip,
-  Badge,
   Divider,
 } from '@mui/material';
 import {
@@ -29,19 +28,20 @@ import {
   Visibility as ViewIcon,
   Quiz as QuizIcon,
   QuestionAnswer as QuestionIcon,
-  Category as CategoryIcon,
+  AccountTree as TreeIcon,
+  BarChart as AnalyticsIcon,
   Schedule as ScheduleIcon,
-  MoreVert as MoreVertIcon,
 } from '@mui/icons-material';
+
+import type { QuestionnaireTemplateWithMetadata } from './models/FormModels';
 import { questionnaireApiService } from './Api-Requests/questionnaireApi';
-import type { QuestionnaireModel } from './models/FormModels';
 
 const QuestionnaireList: React.FC = () => {
   const navigate = useNavigate();
-  const [questionnaires, setQuestionnaires] = useState<QuestionnaireModel[]>([]);
+  const [questionnaires, setQuestionnaires] = useState<QuestionnaireTemplateWithMetadata[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedQuestionnaire, setSelectedQuestionnaire] = useState<QuestionnaireModel | null>(null);
+  const [selectedQuestionnaire, setSelectedQuestionnaire] = useState<QuestionnaireTemplateWithMetadata | null>(null);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -59,7 +59,7 @@ const QuestionnaireList: React.FC = () => {
       if (response.success && response.data) {
         setQuestionnaires(response.data);
       } else {
-        showSnackbar(response.error || 'Failed to fetch questionnaires', 'error');
+        showSnackbar(response.message || 'Failed to fetch questionnaires', 'error');
       }
     } catch (error) {
       console.error('Error loading questionnaires:', error);
@@ -82,7 +82,7 @@ const QuestionnaireList: React.FC = () => {
         setQuestionnaires(questionnaires.filter(q => q._id !== selectedQuestionnaire._id));
         showSnackbar('Questionnaire deleted successfully', 'success');
       } else {
-        showSnackbar(response.error || 'Failed to delete questionnaire', 'error');
+        showSnackbar(response.message || 'Failed to delete questionnaire', 'error');
       }
     } catch (error) {
       console.error('Error deleting questionnaire:', error);
@@ -97,14 +97,12 @@ const QuestionnaireList: React.FC = () => {
     setSnackbar({ open: true, message, severity });
   };
 
-  const handleEdit = (questionnaire: QuestionnaireModel) => {
-    // Navigate to edit mode with questionnaire data
-    navigate(`/layout/create-questionnaire`, { state: { questionnaire } });
+  const handleEdit = (questionnaire: QuestionnaireTemplateWithMetadata) => {
+    navigate(`/layout/create-questionnaire/${questionnaire._id}`);
   };
 
-  const handleView = (questionnaire: QuestionnaireModel) => {
-    // Navigate to view mode with questionnaire data
-    navigate(`/layout/create-questionnaire`, { state: { questionnaire, viewOnly: true } });
+  const handleView = (questionnaire: QuestionnaireTemplateWithMetadata) => {
+    navigate(`/layout/view-questionnaire/${questionnaire._id}`);
   };
 
   const formatDate = (date: Date | string) => {
@@ -113,15 +111,6 @@ const QuestionnaireList: React.FC = () => {
       month: 'short',
       day: 'numeric',
     });
-  };
-
-  const getTotalSubQuestions = (questionnaire: QuestionnaireModel) => {
-    return questionnaire.questions.reduce((total: number, question: QuestionnaireModel['questions'][0]) => {
-      const subQuestions = question.options.reduce((subTotal: number, option: QuestionnaireModel['questions'][0]['options'][0]) => {
-        return subTotal + (option.subQuestions?.length || 0);
-      }, 0);
-      return total + subQuestions;
-    }, 0);
   };
 
   if (loading) {
@@ -139,13 +128,13 @@ const QuestionnaireList: React.FC = () => {
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-              <QuizIcon sx={{ fontSize: 40, color: 'primary.main' }} />
+              <TreeIcon sx={{ fontSize: 40, color: 'primary.main' }} />
               <Typography variant="h4" color="primary" fontWeight="bold">
-                Assessment Forms
+                Enhanced Questionnaires
               </Typography>
             </Box>
             <Typography variant="subtitle1" color="text.secondary">
-              Manage your questionnaire templates and assessment forms
+              Manage hierarchical questionnaires with advanced analytics
             </Typography>
           </Box>
           <Button
@@ -155,65 +144,62 @@ const QuestionnaireList: React.FC = () => {
             size="large"
             sx={{ borderRadius: 2, px: 3, py: 1.5 }}
           >
-            Create New Questionnaire
+            Create Enhanced Questionnaire
           </Button>
         </Box>
       </Paper>
 
       {/* Statistics Cards */}
-      <Box sx={{ display: 'flex', gap: 3, mb: 4, flexWrap: 'wrap' }}>
-        <Box sx={{ flex: 1, minWidth: 250 }}>
-          <Card sx={{ borderRadius: 2, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-            <CardContent sx={{ color: 'white' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <QuizIcon />
-                <Typography variant="h6">Total Forms</Typography>
-              </Box>
-              <Typography variant="h3" fontWeight="bold">
-                {questionnaires.length}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Box>
-        <Box sx={{ flex: 1, minWidth: 250 }}>
-          <Card sx={{ borderRadius: 2, background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' }}>
-            <CardContent sx={{ color: 'white' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <QuestionIcon />
-                <Typography variant="h6">Total Questions</Typography>
-              </Box>
-              <Typography variant="h3" fontWeight="bold">
-                {questionnaires.reduce((total, q) => total + q.questions.length, 0)}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Box>
-        <Box sx={{ flex: 1, minWidth: 250 }}>
-          <Card sx={{ borderRadius: 2, background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' }}>
-            <CardContent sx={{ color: 'white' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <CategoryIcon />
-                <Typography variant="h6">Active Forms</Typography>
-              </Box>
-              <Typography variant="h3" fontWeight="bold">
-                {questionnaires.filter(q => q.isActive).length}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Box>
-        <Box sx={{ flex: 1, minWidth: 250 }}>
-          <Card sx={{ borderRadius: 2, background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)' }}>
-            <CardContent sx={{ color: 'white' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <ScheduleIcon />
-                <Typography variant="h6">Sub-Questions</Typography>
-              </Box>
-              <Typography variant="h3" fontWeight="bold">
-                {questionnaires.reduce((total, q) => total + getTotalSubQuestions(q), 0)}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Box>
+      <Box sx={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+        gap: 3,
+        mb: 4 
+      }}>
+        <Card sx={{ borderRadius: 2, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+          <CardContent sx={{ color: 'white' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <QuizIcon />
+              <Typography variant="h6">Total Forms</Typography>
+            </Box>
+            <Typography variant="h3" fontWeight="bold">
+              {questionnaires.length}
+            </Typography>
+          </CardContent>
+        </Card>
+        <Card sx={{ borderRadius: 2, background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' }}>
+          <CardContent sx={{ color: 'white' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <QuestionIcon />
+              <Typography variant="h6">Total Questions</Typography>
+            </Box>
+            <Typography variant="h3" fontWeight="bold">
+              {questionnaires.reduce((total, q) => total + (q.metadata?.totalQuestions || 0), 0)}
+            </Typography>
+          </CardContent>
+        </Card>
+        <Card sx={{ borderRadius: 2, background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' }}>
+          <CardContent sx={{ color: 'white' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <AnalyticsIcon />
+              <Typography variant="h6">Graphable Questions</Typography>
+            </Box>
+            <Typography variant="h3" fontWeight="bold">
+              {questionnaires.reduce((total, q) => total + (q.metadata?.graphableQuestions || 0), 0)}
+            </Typography>
+          </CardContent>
+        </Card>
+        <Card sx={{ borderRadius: 2, background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)' }}>
+          <CardContent sx={{ color: 'white' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <TreeIcon />
+              <Typography variant="h6">Total Nodes</Typography>
+            </Box>
+            <Typography variant="h3" fontWeight="bold">
+              {questionnaires.reduce((total, q) => total + (q.metadata?.totalNodes || 0), 0)}
+            </Typography>
+          </CardContent>
+        </Card>
       </Box>
 
       {/* Questionnaires Grid */}
@@ -229,12 +215,12 @@ const QuestionnaireList: React.FC = () => {
             bgcolor: 'grey.50'
           }}
         >
-          <QuizIcon sx={{ fontSize: 80, color: 'grey.400', mb: 2 }} />
+          <TreeIcon sx={{ fontSize: 80, color: 'grey.400', mb: 2 }} />
           <Typography variant="h5" color="text.secondary" gutterBottom>
-            No questionnaires found
+            No enhanced questionnaires found
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-            Create your first questionnaire to get started with assessments
+            Create your first hierarchical questionnaire with advanced analytics
           </Typography>
           <Button
             variant="contained"
@@ -242,7 +228,7 @@ const QuestionnaireList: React.FC = () => {
             onClick={() => navigate('/layout/create-questionnaire')}
             size="large"
           >
-            Create Your First Questionnaire
+            Create Your First Enhanced Questionnaire
           </Button>
         </Paper>
       ) : (
@@ -266,157 +252,127 @@ const QuestionnaireList: React.FC = () => {
                 }
               }}
             >
-                <CardContent sx={{ flexGrow: 1, p: 3 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                    <Box sx={{ flexGrow: 1 }}>
-                      <Typography variant="h6" gutterBottom fontWeight="bold" sx={{ mb: 1 }}>
-                        {questionnaire.title}
-                      </Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                        <Chip
-                          label={questionnaire.isActive ? 'Active' : 'Inactive'}
-                          color={questionnaire.isActive ? 'success' : 'default'}
-                          size="small"
-                        />
-                        <Chip
-                          label={`v${questionnaire.version}`}
-                          variant="outlined"
-                          size="small"
-                        />
-                      </Box>
+              <CardContent sx={{ flexGrow: 1, p: 3 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                  <Box sx={{ flexGrow: 1 }}>
+                    <Typography variant="h6" gutterBottom fontWeight="bold" sx={{ mb: 1 }}>
+                      {questionnaire.title}
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                      <Chip
+                        label={questionnaire.isActive ? 'Active' : 'Inactive'}
+                        color={questionnaire.isActive ? 'success' : 'default'}
+                        size="small"
+                      />
+                      <Chip
+                        label={`v${questionnaire.version}`}
+                        variant="outlined"
+                        size="small"
+                      />
                     </Box>
-                    <IconButton size="small" color="primary">
-                      <MoreVertIcon />
-                    </IconButton>
+                  </Box>
+                </Box>
+
+                {questionnaire.description && (
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    {questionnaire.description.length > 100 
+                      ? `${questionnaire.description.substring(0, 100)}...` 
+                      : questionnaire.description}
+                  </Typography>
+                )}
+
+                <Divider sx={{ my: 2 }} />
+
+                {/* Enhanced Statistics */}
+                <Stack spacing={1}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <QuestionIcon color="primary" fontSize="small" />
+                      <Typography variant="body2">Questions</Typography>
+                    </Box>
+                    <Typography variant="body2" fontWeight="bold">
+                      {questionnaire.metadata?.totalQuestions || 0}
+                    </Typography>
+                  </Box>
+                  
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <TreeIcon color="primary" fontSize="small" />
+                      <Typography variant="body2">Total Nodes</Typography>
+                    </Box>
+                    <Typography variant="body2" fontWeight="bold">
+                      {questionnaire.metadata?.totalNodes || 0}
+                    </Typography>
                   </Box>
 
-                  {questionnaire.description && (
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                      {questionnaire.description.length > 100 
-                        ? `${questionnaire.description.substring(0, 100)}...` 
-                        : questionnaire.description}
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <AnalyticsIcon color="primary" fontSize="small" />
+                      <Typography variant="body2">Graphable</Typography>
+                    </Box>
+                    <Typography variant="body2" fontWeight="bold">
+                      {questionnaire.metadata?.graphableQuestions || 0}
                     </Typography>
-                  )}
+                  </Box>
 
-                  <Divider sx={{ my: 2 }} />
-
-                  {/* Statistics */}
-                  <Stack spacing={1}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <QuestionIcon color="primary" fontSize="small" />
-                        <Typography variant="body2">Questions</Typography>
-                      </Box>
-                      <Badge badgeContent={getTotalSubQuestions(questionnaire)} color="secondary">
-                        <Typography variant="body2" fontWeight="bold">
-                          {questionnaire.questions.length}
-                        </Typography>
-                      </Badge>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <ScheduleIcon color="primary" fontSize="small" />
+                      <Typography variant="body2">Created</Typography>
                     </Box>
-                    
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <CategoryIcon color="primary" fontSize="small" />
-                        <Typography variant="body2">Domains</Typography>
-                      </Box>
-                      <Typography variant="body2" fontWeight="bold">
-                        {questionnaire.domains.length}
-                      </Typography>
-                    </Box>
+                    <Typography variant="body2" fontWeight="bold">
+                      {formatDate(questionnaire.createdAt)}
+                    </Typography>
+                  </Box>
+                </Stack>
+              </CardContent>
 
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <ScheduleIcon color="primary" fontSize="small" />
-                        <Typography variant="body2">Created</Typography>
-                      </Box>
-                      <Typography variant="body2" fontWeight="bold">
-                        {formatDate(questionnaire.createdAt)}
-                      </Typography>
-                    </Box>
-                  </Stack>
-
-                  {/* Domain Chips */}
-                  {questionnaire.domains.length > 0 && (
-                    <Box sx={{ mt: 2 }}>
-                      <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
-                        Domains:
-                      </Typography>
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                        {questionnaire.domains.slice(0, 3).map((domain: QuestionnaireModel['domains'][0]) => (
-                          <Chip
-                            key={domain._id}
-                            label={domain.name}
-                            size="small"
-                            sx={{ 
-                              bgcolor: domain.color || 'primary.main', 
-                              color: 'white',
-                              fontSize: '0.7rem',
-                              height: 20,
-                            }}
-                          />
-                        ))}
-                        {questionnaire.domains.length > 3 && (
-                          <Chip
-                            label={`+${questionnaire.domains.length - 3} more`}
-                            size="small"
-                            variant="outlined"
-                            sx={{ fontSize: '0.7rem', height: 20 }}
-                          />
-                        )}
-                      </Box>
-                    </Box>
-                  )}
-                </CardContent>
-
-                <CardActions sx={{ p: 2, pt: 0 }}>
-                  <Stack direction="row" spacing={1} sx={{ width: '100%' }}>
-                    <Tooltip title="View Details">
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        startIcon={<ViewIcon />}
-                        onClick={() => handleView(questionnaire)}
-                        sx={{ flex: 1 }}
-                      >
-                        View
-                      </Button>
-                    </Tooltip>
-                    <Tooltip title="Edit Questionnaire">
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        startIcon={<EditIcon />}
-                        onClick={() => handleEdit(questionnaire)}
-                        sx={{ flex: 1 }}
-                      >
-                        Edit
-                      </Button>
-                    </Tooltip>
-                    <Tooltip title="Delete Questionnaire">
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        color="error"
-                        startIcon={<DeleteIcon />}
-                        onClick={() => {
-                          setSelectedQuestionnaire(questionnaire);
-                          setDeleteDialogOpen(true);
-                        }}
-                        sx={{ flex: 1 }}
-                      >
-                        Delete
-                      </Button>
-                    </Tooltip>
-                  </Stack>
-                </CardActions>
-              </Card>
-            ))}
-          </Box>
+              <CardActions sx={{ p: 2, pt: 0 }}>
+                <Stack direction="row" spacing={1} sx={{ width: '100%' }}>
+                  <Tooltip title="View Details">
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      startIcon={<ViewIcon />}
+                      onClick={() => handleView(questionnaire)}
+                      sx={{ flex: 1 }}
+                    >
+                      View
+                    </Button>
+                  </Tooltip>
+                  <Tooltip title="Edit Questionnaire">
+                    <Button
+                      variant="contained"
+                      size="small"
+                      startIcon={<EditIcon />}
+                      onClick={() => handleEdit(questionnaire)}
+                      sx={{ flex: 1 }}
+                    >
+                      Edit
+                    </Button>
+                  </Tooltip>
+                  <Tooltip title="Delete">
+                    <IconButton
+                      color="error"
+                      onClick={() => {
+                        setSelectedQuestionnaire(questionnaire);
+                        setDeleteDialogOpen(true);
+                      }}
+                      size="small"
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Tooltip>
+                </Stack>
+              </CardActions>
+            </Card>
+          ))}
+        </Box>
       )}
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-        <DialogTitle>Delete Questionnaire</DialogTitle>
+        <DialogTitle>Confirm Delete</DialogTitle>
         <DialogContent>
           <Typography>
             Are you sure you want to delete "{selectedQuestionnaire?.title}"? This action cannot be undone.
@@ -434,14 +390,9 @@ const QuestionnaireList: React.FC = () => {
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
       >
-        <Alert
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          severity={snackbar.severity}
-          sx={{ width: '100%' }}
-        >
+        <Alert severity={snackbar.severity} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}>
           {snackbar.message}
         </Alert>
       </Snackbar>

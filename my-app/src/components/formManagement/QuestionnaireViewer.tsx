@@ -33,15 +33,15 @@ import {
   Person as PersonIcon,
 } from '@mui/icons-material';
 
-import type { QuestionnaireTemplateV2WithMetadata, FormNodeV2 } from './models/FormModelsV2';
-import { questionnaireApiServiceV2 } from './Api-Requests/questionnaireApiV2';
+import type { QuestionnaireTemplateWithMetadata, FormNode } from './models/FormModels';
+import { questionnaireApiService } from './Api-Requests/questionnaireApi';
 import FormPreview from './FormPreview';
 
-const QuestionnaireViewerV2: React.FC = () => {
+const QuestionnaireViewer: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   
-  const [questionnaire, setQuestionnaire] = useState<QuestionnaireTemplateV2WithMetadata | null>(null);
+  const [questionnaire, setQuestionnaire] = useState<QuestionnaireTemplateWithMetadata | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
@@ -57,7 +57,7 @@ const QuestionnaireViewerV2: React.FC = () => {
 
     try {
       setLoading(true);
-      const response = await questionnaireApiServiceV2.getQuestionnaire(id);
+      const response = await questionnaireApiService.getQuestionnaire(id);
       
       if (response.success && response.data) {
         setQuestionnaire(response.data);
@@ -87,12 +87,12 @@ const QuestionnaireViewerV2: React.FC = () => {
 
   const handleEdit = () => {
     if (questionnaire) {
-      navigate(`/layout/create-questionnaire-v2/${questionnaire._id}`);
+      navigate(`/layout/create-questionnaire/${questionnaire._id}`);
     }
   };
 
   const handleBack = () => {
-    navigate('/layout/questionnaires-v2');
+    navigate('/layout/questionnaires');
   };
 
   const formatDate = (date: Date | string) => {
@@ -116,7 +116,7 @@ const QuestionnaireViewerV2: React.FC = () => {
     }
   };
 
-  const getQuestionCount = (nodes: FormNodeV2[]): number => {
+  const getQuestionCount = (nodes: FormNode[]): number => {
     return nodes.reduce((count, node) => {
       if (node.type === 'question') {
         return count + 1;
@@ -137,7 +137,7 @@ const QuestionnaireViewerV2: React.FC = () => {
     });
   };
 
-  const renderStructureNode = (node: FormNodeV2, level: number = 0) => {
+  const renderStructureNode = (node: FormNode, level: number = 0) => {
     const isExpanded = expandedNodes.has(node.id);
 
     return (
@@ -430,7 +430,7 @@ const QuestionnaireViewerV2: React.FC = () => {
             variant="text"
             onClick={() => {
               const allNodeIds = new Set<string>();
-              const collectIds = (nodes: FormNodeV2[]) => {
+              const collectIds = (nodes: FormNode[]) => {
                 nodes.forEach(node => {
                   allNodeIds.add(node.id);
                   collectIds(node.children);
@@ -455,7 +455,7 @@ const QuestionnaireViewerV2: React.FC = () => {
           </Alert>
         ) : (
           <Box>
-            {questionnaire.structure.map(node => renderStructureNode(node))}
+            {questionnaire.structure.map((node) => renderStructureNode(node))}
           </Box>
         )}
       </Paper>
@@ -473,4 +473,4 @@ const QuestionnaireViewerV2: React.FC = () => {
   );
 };
 
-export default QuestionnaireViewerV2;
+export default QuestionnaireViewer;

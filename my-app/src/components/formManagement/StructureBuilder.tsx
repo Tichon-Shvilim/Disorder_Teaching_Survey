@@ -36,13 +36,13 @@ import {
   Radar as RadarIcon,
   CallSplit as ConditionalIcon,
 } from '@mui/icons-material';
-import type { FormNodeV2, OptionV2 } from './models/FormModelsV2';
+import type { FormNode, Option } from './models/FormModels';
 import AddNodeDialog from './AddNodeDialog';
 
 interface StructureBuilderProps {
-  structure: FormNodeV2[];
-  onChange: (structure: FormNodeV2[]) => void;
-  onPreview: (structure: FormNodeV2[]) => void;
+  structure: FormNode[];
+  onChange: (structure: FormNode[]) => void;
+  onPreview: (structure: FormNode[]) => void;
 }
 
 interface NodeFormData {
@@ -50,7 +50,7 @@ interface NodeFormData {
   description: string;
   type: 'group' | 'question';
   inputType?: 'single-choice' | 'multiple-choice' | 'scale' | 'number' | 'text';
-  options?: OptionV2[];
+  options?: Option[];
   weight: number;
   graphable: boolean;
   preferredChartType: 'bar' | 'line' | 'radar' | 'gauge' | 'pie';
@@ -64,7 +64,7 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
   const [isAddingNode, setIsAddingNode] = useState(false);
   const [addingToParentId, setAddingToParentId] = useState<string | null>(null);
-  const [editingNode, setEditingNode] = useState<FormNodeV2 | null>(null);
+  const [editingNode, setEditingNode] = useState<FormNode | null>(null);
   const [newNodeForm, setNewNodeForm] = useState<NodeFormData>({
     title: '',
     description: '',
@@ -77,8 +77,8 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
   
   // State for conditional question creation
   const [conditionalContext, setConditionalContext] = useState<{
-    parentQuestion: FormNodeV2;
-    triggerOption: OptionV2;
+    parentQuestion: FormNode;
+    triggerOption: Option;
   } | null>(null);
 
   const inputTypes: { value: 'single-choice' | 'multiple-choice' | 'scale' | 'number' | 'text'; label: string }[] = [
@@ -113,14 +113,14 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
   }, []);
 
   // Option management for questions
-  const handleAddOption = useCallback((questionNode: FormNodeV2) => {
-    const newOption: OptionV2 = {
+  const handleAddOption = useCallback((questionNode: FormNode) => {
+    const newOption: Option = {
       id: generateId(),
       label: `Option ${(questionNode.options?.length || 0) + 1}`,
       value: (questionNode.options?.length || 0) + 1
     };
 
-    const updateStructure = (nodes: FormNodeV2[]): FormNodeV2[] => {
+    const updateStructure = (nodes: FormNode[]): FormNode[] => {
       return nodes.map(node => {
         if (node.id === questionNode.id) {
           return { 
@@ -138,8 +138,8 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
     onChange(updateStructure(structure));
   }, [structure, onChange]);
 
-  const handleEditOption = useCallback((questionNode: FormNodeV2, optionIndex: number, updates: Partial<OptionV2>) => {
-    const updateStructure = (nodes: FormNodeV2[]): FormNodeV2[] => {
+  const handleEditOption = useCallback((questionNode: FormNode, optionIndex: number, updates: Partial<Option>) => {
+    const updateStructure = (nodes: FormNode[]): FormNode[] => {
       return nodes.map(node => {
         if (node.id === questionNode.id) {
           return { 
@@ -159,8 +159,8 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
     onChange(updateStructure(structure));
   }, [structure, onChange]);
 
-  const handleDeleteOption = useCallback((questionNode: FormNodeV2, optionIndex: number) => {
-    const updateStructure = (nodes: FormNodeV2[]): FormNodeV2[] => {
+  const handleDeleteOption = useCallback((questionNode: FormNode, optionIndex: number) => {
+    const updateStructure = (nodes: FormNode[]): FormNode[] => {
       return nodes.map(node => {
         if (node.id === questionNode.id) {
           return { 
@@ -194,8 +194,8 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
   }, []);
 
   // Create node from form data
-  const createNodeFromForm = useCallback((formData: NodeFormData): FormNodeV2 => {
-    const node: FormNodeV2 = {
+  const createNodeFromForm = useCallback((formData: NodeFormData): FormNode => {
+    const node: FormNode = {
       id: generateId(),
       title: formData.title,
       description: formData.description,
@@ -216,7 +216,7 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
 
   // Delete node
   const handleDeleteNode = useCallback((nodeId: string) => {
-    const deleteFromStructure = (nodes: FormNodeV2[]): FormNodeV2[] => {
+    const deleteFromStructure = (nodes: FormNode[]): FormNode[] => {
       return nodes
         .filter(node => node.id !== nodeId)
         .map(node => ({
@@ -228,8 +228,8 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
   }, [structure, onChange]);
 
   // Duplicate node
-  const handleDuplicateNode = useCallback((node: FormNodeV2) => {
-    const duplicateNode = (original: FormNodeV2): FormNodeV2 => ({
+  const handleDuplicateNode = useCallback((node: FormNode) => {
+    const duplicateNode = (original: FormNode): FormNode => ({
       ...original,
       id: generateId(),
       title: `${original.title} (Copy)`,
@@ -242,7 +242,7 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
 
   // Move node up/down
   const handleMoveNode = useCallback((nodeId: string, direction: 'up' | 'down') => {
-    const moveInArray = (nodes: FormNodeV2[]): FormNodeV2[] => {
+    const moveInArray = (nodes: FormNode[]): FormNode[] => {
       const index = nodes.findIndex(n => n.id === nodeId);
       if (index === -1) {
         return nodes.map(node => ({
@@ -263,7 +263,7 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
   }, [structure, onChange]);
 
   // Edit node
-  const handleEditNode = useCallback((node: FormNodeV2) => {
+  const handleEditNode = useCallback((node: FormNode) => {
     setEditingNode(node);
     setNewNodeForm({
       title: node.title || '',
@@ -279,7 +279,7 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
   }, []);
 
   // Add conditional question to a specific option
-  const handleAddConditionalQuestion = useCallback((parentNode: FormNodeV2, triggerOption: OptionV2) => {
+  const handleAddConditionalQuestion = useCallback((parentNode: FormNode, triggerOption: Option) => {
     setConditionalContext({
       parentQuestion: parentNode,
       triggerOption: triggerOption
@@ -318,7 +318,7 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
         // Update existing node
         const updatedNode = { ...editingNode, ...newNode, id: editingNode.id };
         
-        const updateInStructure = (nodes: FormNodeV2[]): FormNodeV2[] => {
+        const updateInStructure = (nodes: FormNode[]): FormNode[] => {
           return nodes.map(node => {
             if (node.id === editingNode.id) {
               return { ...updatedNode, children: node.children };
@@ -333,7 +333,7 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
         onChange(updateInStructure(structure));
       } else if (conditionalContext) {
         // Add conditional question under the parent question
-        const updateStructure = (nodes: FormNodeV2[]): FormNodeV2[] => {
+        const updateStructure = (nodes: FormNode[]): FormNode[] => {
           return nodes.map(node => {
             if (node.id === conditionalContext.parentQuestion.id) {
               return { ...node, children: [...node.children, newNode] };
@@ -347,7 +347,7 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
         onChange(updateStructure(structure));
       } else if (addingToParentId) {
         // Add to specific parent
-        const updateStructure = (nodes: FormNodeV2[]): FormNodeV2[] => {
+        const updateStructure = (nodes: FormNode[]): FormNode[] => {
           return nodes.map(node => {
             if (node.id === addingToParentId) {
               return { ...node, children: [...node.children, newNode] };
@@ -383,7 +383,7 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
   }, []);
 
   // Render node tree
-  const renderNode = (node: FormNodeV2, level: number = 0, parentPath: string = '') => {
+  const renderNode = (node: FormNode, level: number = 0, parentPath: string = '') => {
     const nodePath = parentPath ? `${parentPath} > ${node.title}` : node.title;
     const isExpanded = expandedNodes.has(node.id);
 

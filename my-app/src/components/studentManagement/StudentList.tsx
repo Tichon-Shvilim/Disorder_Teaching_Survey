@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Eye,
   Edit,
@@ -22,6 +23,8 @@ import { toast } from "react-toastify";
 import { PermissionGate, usePermissions } from '../common';
 
 const StudentList: React.FC = () => {
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.dir() === 'rtl';
   const [students, setStudents] = useState<Student[]>([]);
   const [classes, setClasses] = useState<Class[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -46,12 +49,12 @@ const StudentList: React.FC = () => {
       setStudents(studentsData);
     } catch (err: unknown) {
       console.error("Error fetching students:", err);
-      setError("Failed to load students");
-      toast.error("Failed to load students");
+      setError(t('students.failedToLoad', 'Failed to load students'));
+      toast.error(t('students.failedToLoad', 'Failed to load students'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   // Fetch classes from API
   const fetchClasses = useCallback(async () => {
@@ -66,12 +69,14 @@ const StudentList: React.FC = () => {
 
   // Helper function to get class name by ID
   const getClassNameById = (classId: string | { _id: string; classNumber: string }): string => {
-    // Handle case where classId might be an object (for backward compatibility)
-    const searchId = typeof classId === 'object' && classId !== null 
-      ? classId._id || classId.classNumber
-      : classId;
+    // Handle case where classId might be an object (populated) or string (ID only)
+    if (typeof classId === 'object' && classId !== null) {
+      // If it's populated, return the classNumber directly
+      return classId.classNumber;
+    }
     
-    const classItem = classes.find(c => c._id === searchId);
+    // If it's just an ID string, look it up in the classes array
+    const classItem = classes.find(c => c._id === classId);
     return classItem ? classItem.classNumber : '';
   };
 
@@ -97,14 +102,14 @@ const StudentList: React.FC = () => {
   };
 
   const handleDeleteStudent = async (studentId: string) => {
-    if (window.confirm("Are you sure you want to delete this student?")) {
+    if (window.confirm(t('students.confirmDelete', 'Are you sure you want to delete this student?'))) {
       try {
         await deleteStudent(studentId);
         setStudents(students.filter((student) => student._id !== studentId));
-        toast.success("Student deleted successfully");
+        toast.success(t('students.deleteStudentSuccess', 'Student deleted successfully'));
       } catch (err: unknown) {
         console.error("Error deleting student:", err);
-        toast.error("Failed to delete student");
+        toast.error(t('students.failedToLoad', 'Failed to delete student'));
       }
     }
   };
@@ -121,6 +126,7 @@ const StudentList: React.FC = () => {
     navigate(`${studentId}/edit`);
   };
 
+
   const handleFillForm = (studentId: string, studentName: string) => {
     navigate(`../forms/fill`, { state: { studentId, studentName } });
   };
@@ -133,8 +139,14 @@ const StudentList: React.FC = () => {
     const matchesSearch = student.name
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
+    
+    // Handle both populated and unpopulated classId
+    const studentClassId = typeof student.classId === 'object' && student.classId !== null 
+      ? student.classId._id 
+      : student.classId;
+    
     const matchesClass =
-      selectedClass === "" || student.classId === selectedClass;
+      selectedClass === "" || studentClassId === selectedClass;
     return matchesSearch && matchesClass;
   });
 
@@ -187,6 +199,8 @@ const StudentList: React.FC = () => {
             padding: "24px",
             borderRadius: "8px",
             boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+            direction: isRTL ? 'rtl' : 'ltr',
+            textAlign: isRTL ? 'right' : 'left'
           }}
         >
           <p style={{ fontWeight: "500", margin: "0 0 12px 0" }}>{error}</p>
@@ -208,7 +222,7 @@ const StudentList: React.FC = () => {
               e.currentTarget.style.backgroundColor = "#dc2626";
             }}
           >
-            Retry
+            {t('students.retry', 'Retry')}
           </button>
         </div>
       </div>
@@ -221,6 +235,7 @@ const StudentList: React.FC = () => {
         padding: "24px",
         //background: "linear-gradient(135deg, #f0f7ff 0%, #e6f2ff 100%)",
         minHeight: "100vh",
+        direction: isRTL ? 'rtl' : 'ltr'
       }}
     >
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
@@ -245,7 +260,7 @@ const StudentList: React.FC = () => {
                 margin: 0,
               }}
             >
-              Students
+              {t('students.title', 'Students')}
             </h1>
           </div>
           <PermissionGate permission="student.create">
@@ -277,7 +292,7 @@ const StudentList: React.FC = () => {
               }}
             >
               <Plus style={{ height: "20px", width: "20px" }} />
-              <span>Add Student</span>
+              <span>{t('students.addStudent', 'Add Student')}</span>
             </button>
           </PermissionGate>
         </div>
@@ -295,7 +310,8 @@ const StudentList: React.FC = () => {
             <Search
               style={{
                 position: "absolute",
-                left: "12px",
+                left: isRTL ? "auto" : "12px",
+                right: isRTL ? "12px" : "auto",
                 top: "50%",
                 transform: "translateY(-50%)",
                 height: "20px",
@@ -305,13 +321,13 @@ const StudentList: React.FC = () => {
             />
             <input
               type="text"
-              placeholder="Search students..."
+              placeholder={t('students.searchStudents', 'Search students...')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               style={{
                 width: "100%",
-                paddingLeft: "40px",
-                paddingRight: "16px",
+                paddingLeft: isRTL ? "16px" : "40px",
+                paddingRight: isRTL ? "40px" : "16px",
                 paddingTop: "12px",
                 paddingBottom: "12px",
                 border: "1px solid #d1d5db",
@@ -320,6 +336,8 @@ const StudentList: React.FC = () => {
                 outline: "none",
                 backgroundColor: "white",
                 boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+                textAlign: isRTL ? 'right' : 'left',
+                direction: isRTL ? 'rtl' : 'ltr'
               }}
               onFocus={(e) => {
                 e.currentTarget.style.borderColor = "#2563eb";
@@ -338,7 +356,8 @@ const StudentList: React.FC = () => {
             <Filter
               style={{
                 position: "absolute",
-                left: "12px",
+                left: isRTL ? "auto" : "12px",
+                right: isRTL ? "12px" : "auto",
                 top: "50%",
                 transform: "translateY(-50%)",
                 height: "20px",
@@ -351,8 +370,8 @@ const StudentList: React.FC = () => {
               onChange={(e) => setSelectedClass(e.target.value)}
               style={{
                 width: "100%",
-                paddingLeft: "40px",
-                paddingRight: "40px",
+                paddingLeft: isRTL ? "40px" : "40px",
+                paddingRight: isRTL ? "40px" : "40px",
                 paddingTop: "12px",
                 paddingBottom: "12px",
                 border: "1px solid #d1d5db",
@@ -363,6 +382,8 @@ const StudentList: React.FC = () => {
                 boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
                 appearance: "none",
                 cursor: "pointer",
+                textAlign: isRTL ? 'right' : 'left',
+                direction: isRTL ? 'rtl' : 'ltr'
               }}
               onFocus={(e) => {
                 e.currentTarget.style.borderColor = "#2563eb";
@@ -375,7 +396,7 @@ const StudentList: React.FC = () => {
                   "0 1px 3px rgba(0, 0, 0, 0.1)";
               }}
             >
-              <option value="">All Classes</option>
+              <option value="">{t('students.allClasses', 'All Classes')}</option>
               {classes.map((classItem) => (
                 <option key={classItem._id} value={classItem._id}>
                   {classItem.classNumber}
@@ -385,7 +406,8 @@ const StudentList: React.FC = () => {
             <svg
               style={{
                 position: "absolute",
-                right: "12px",
+                right: isRTL ? "auto" : "12px",
+                left: isRTL ? "12px" : "auto",
                 top: "50%",
                 transform: "translateY(-50%)",
                 height: "16px",
@@ -482,7 +504,7 @@ const StudentList: React.FC = () => {
                       margin: "0 0 8px 0",
                     }}
                   >
-                    Age {student.age || 0}
+                    {t('students.age', 'Age')} {student.age || 0}
                   </p>
                   <div
                     style={{
@@ -496,7 +518,7 @@ const StudentList: React.FC = () => {
                       color: "#166534",
                     }}
                   >
-                    Active
+                    {t('students.active', 'Active')}
                   </div>
                 </div>
                 <PermissionGate permission="student.edit">
@@ -519,13 +541,13 @@ const StudentList: React.FC = () => {
                       e.currentTarget.style.backgroundColor = "transparent";
                       e.currentTarget.style.color = "#9ca3af";
                     }}
-                    title="Edit Student"
+                    title={t('students.editStudent', 'Edit Student')}
                   >
                     <Edit style={{ height: "16px", width: "16px" }} />
                   </button>
                 </PermissionGate>
                 
-                <button
+                {/* <button
                   onClick={() => handleFillForm(student._id, student.name)}
                   style={{
                     padding: "8px",
@@ -544,7 +566,7 @@ const StudentList: React.FC = () => {
                     e.currentTarget.style.backgroundColor = "transparent";
                     e.currentTarget.style.color = "#9ca3af";
                   }}
-                  title="Fill Form"
+                  title={t('students.fillForm', 'Fill Form')}
                 >
                   <FileText style={{ height: "16px", width: "16px" }} />
                 </button>
@@ -568,9 +590,58 @@ const StudentList: React.FC = () => {
                     e.currentTarget.style.backgroundColor = "transparent";
                     e.currentTarget.style.color = "#9ca3af";
                   }}
-                  title="View Past Forms"
+                  title={t('students.viewSubmissions', 'View Past Forms')}
                 >
                   <History style={{ height: "16px", width: "16px" }} />
+                </button> */}
+
+                {/* Form Buttons */}
+                <button
+                  onClick={() => handleFillForm(student._id, student.name)}
+                  style={{
+                    padding: "8px",
+                    backgroundColor: "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                    borderRadius: "8px",
+                    color: "#9ca3af",
+                    transition: "all 0.2s",
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.backgroundColor = "#f0f3ff";
+                    e.currentTarget.style.color = "#6366f1";
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                    e.currentTarget.style.color = "#9ca3af";
+                  }}
+                  title="Fill Form"
+                >
+                  <FileText style={{ height: "16px", width: "16px", strokeWidth: 2.5 }} />
+                </button>
+                
+                <button
+                  onClick={() => handleViewSubmissions(student._id, student.name)}
+                  style={{
+                    padding: "8px",
+                    backgroundColor: "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                    borderRadius: "8px",
+                    color: "#9ca3af",
+                    transition: "all 0.2s",
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.backgroundColor = "#f0fdfa";
+                    e.currentTarget.style.color = "#14b8a6";
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                    e.currentTarget.style.color = "#9ca3af";
+                  }}
+                  title="View Submissions"
+                >
+                  <History style={{ height: "16px", width: "16px", strokeWidth: 2.5 }} />
                 </button>
               </div>
 
@@ -581,14 +652,19 @@ const StudentList: React.FC = () => {
                     fontSize: "14px",
                     color: "#4b5563",
                     marginBottom: "4px",
+                    textAlign: isRTL ? 'right' : 'left'
                   }}
                 >
-                  <span style={{ fontWeight: "500" }}>Date of Birth:</span>{" "}
+                  <span style={{ fontWeight: "500" }}>{t('students.dateOfBirth', 'Date of Birth')}:</span>{" "}
                   {new Date(student.DOB).toLocaleDateString()}
                 </div>
                 {student.classId && (
-                  <div style={{ fontSize: "14px", color: "#4b5563" }}>
-                    <span style={{ fontWeight: "500" }}>Class:</span>{" "}
+                  <div style={{ 
+                    fontSize: "14px", 
+                    color: "#4b5563",
+                    textAlign: isRTL ? 'right' : 'left'
+                  }}>
+                    <span style={{ fontWeight: "500" }}>{t('students.class', 'Class')}:</span>{" "}
                     {getClassNameById(student.classId)}
                   </div>
                 )}
@@ -622,7 +698,7 @@ const StudentList: React.FC = () => {
                   }}
                 >
                   <Eye style={{ height: "16px", width: "16px" }} />
-                  <span>View Details</span>
+                  <span>{t('students.viewDetails', 'View Details')}</span>
                 </button>
                 <PermissionGate permission="student.delete">
                   <button
@@ -642,7 +718,7 @@ const StudentList: React.FC = () => {
                     onMouseOut={(e) => {
                       e.currentTarget.style.backgroundColor = "white";
                     }}
-                    title="Delete Student"
+                    title={t('students.deleteStudent', 'Delete Student')}
                   >
                     <Trash2 style={{ height: "16px", width: "16px" }} />
                   </button>
@@ -654,7 +730,11 @@ const StudentList: React.FC = () => {
 
         {/* Empty State */}
         {filteredStudents.length === 0 && (
-          <div style={{ textAlign: "center", padding: "64px 0" }}>
+          <div style={{ 
+            textAlign: "center", 
+            padding: "64px 0",
+            direction: isRTL ? 'rtl' : 'ltr'
+          }}>
             <GraduationCap
               style={{
                 height: "64px",
@@ -670,10 +750,10 @@ const StudentList: React.FC = () => {
                 marginBottom: "8px",
               }}
             >
-              No students found
+              {t('students.noStudentsFound', 'No students found')}
             </div>
             <p style={{ color: "#9ca3af", margin: 0 }}>
-              Try adjusting your search criteria or add a new student
+              {t('students.adjustSearch', 'Try adjusting your search criteria or add a new student')}
             </p>
           </div>
         )}

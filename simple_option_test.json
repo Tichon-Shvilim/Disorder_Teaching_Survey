@@ -1,0 +1,70 @@
+{
+  "title": "Simple Option Test",
+  "description": "Basic test for option-specific sub-questions",
+  "structure": [
+    {
+      "id": "test-group",
+      "type": "group",
+      "title": "Test Group",
+      "weight": 1,
+      "graphable": false,
+      "preferredChartType": "bar",
+      "children": [
+        {
+          "id": "simple-question",
+          "type": "question",
+          "title": "Choose an option to see its specific sub-questions:",
+          "weight": 1,
+          "required": true,
+          "inputType": "single-choice",
+          "graphable": true,
+          "preferredChartType": "bar",
+          "children": [],
+          "options": [
+            {
+              "id": "option-a",
+              "label": "Option A (has sub-questions)",
+              "value": 1,
+              "children": [
+                {
+                  "id": "sub-question-a",
+                  "type": "question",
+                  "title": "This is Option A's specific sub-question",
+                  "weight": 1,
+                  "required": false,
+                  "inputType": "text",
+                  "graphable": false,
+                  "preferredChartType": "bar",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "option-b",
+              "label": "Option B (has different sub-questions)",
+              "value": 2,
+              "children": [
+                {
+                  "id": "sub-question-b",
+                  "type": "question",
+                  "title": "This is Option B's specific sub-question",
+                  "weight": 1,
+                  "required": false,
+                  "inputType": "text",
+                  "graphable": false,
+                  "preferredChartType": "bar",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "option-c",
+              "label": "Option C (no sub-questions)",
+              "value": 3
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "title": "Option-Specific Test",
+  "description": "Test questionnaire with option-specific sub-questions",
+  "sections": [
+    {
+      "id": "test-section",
+      "title": "Test Section",
+      "nodes": [
+        {
+          "id": "test-question",
+          "type": "question",
+          "title": "Which option do you prefer?",
+          "description": "Each option has its own specific follow-up questions",
+          "inputType": "single-choice",
+          "required": true,
+          "options": [
+            {
+              "id": "option-a",
+              "label": "Option A - Sports",
+              "value": "sports",
+              "children": [
+                {
+                  "id": "sports-type",
+                  "type": "question",
+                  "title": "What sports do you play?",
+                  "inputType": "text",
+                  "required": true
+                }
+              ]
+            },
+            {
+              "id": "option-b",
+              "label": "Option B - Music",
+              "value": "music",
+              "children": [
+                {
+                  "id": "music-instrument",
+                  "type": "question",
+                  "title": "What instrument do you play?",
+                  "inputType": "text",
+                  "required": true
+                }
+              ]
+            },
+            {
+              "id": "option-c",
+              "label": "Option C - Art",
+              "value": "art",
+              "children": [
+                {
+                  "id": "art-medium",
+                  "type": "question",
+                  "title": "What art medium do you prefer?",
+                  "inputType": "single-choice",
+                  "required": true,
+                  "options": [
+                    {"id": "painting", "label": "Painting", "value": "painting"},
+                    {"id": "drawing", "label": "Drawing", "value": "drawing"},
+                    {"id": "sculpture", "label": "Sculpture", "value": "sculpture"}
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

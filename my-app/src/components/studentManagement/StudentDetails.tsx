@@ -235,6 +235,77 @@ const StudentDetails: React.FC = () => {
 
           <Divider sx={{ my: 4 }} />
 
+          {/* Form Actions */}
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h6" gutterBottom sx={{ color: 'text.secondary', fontSize: '1rem' }}>
+              Form Assessment
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => navigate(`../forms/fill`, { state: { studentId: id, studentName: student?.name } })}
+                sx={{ 
+                  borderColor: '#2563eb', 
+                  color: '#2563eb',
+                  '&:hover': { 
+                    borderColor: '#1d4ed8', 
+                    backgroundColor: '#f0f9ff' 
+                  }
+                }}
+              >
+                Fill Form (V1)
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => navigate(`../forms/submissions`, { state: { studentId: id, studentName: student?.name } })}
+                sx={{ 
+                  borderColor: '#16a34a', 
+                  color: '#16a34a',
+                  '&:hover': { 
+                    borderColor: '#15803d', 
+                    backgroundColor: '#f0fdf4' 
+                  }
+                }}
+              >
+                View Submissions (V1)
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => navigate(`../forms/fill`, { state: { studentId: id, studentName: student?.name } })}
+                sx={{ 
+                  borderColor: '#6366f1', 
+                  color: '#6366f1',
+                  '&:hover': { 
+                    borderColor: '#4f46e5', 
+                    backgroundColor: '#f0f3ff' 
+                  }
+                }}
+              >
+                Fill Form
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => navigate(`../forms/submissions`, { state: { studentId: id, studentName: student?.name } })}
+                sx={{ 
+                  borderColor: '#14b8a6', 
+                  color: '#14b8a6',
+                  '&:hover': { 
+                    borderColor: '#0f766e', 
+                    backgroundColor: '#f0fdfa' 
+                  }
+                }}
+              >
+                View Submissions
+              </Button>
+            </Box>
+          </Box>
+
+          <Divider sx={{ my: 4 }} />
+
           {/* Actions */}
           <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
             <PermissionGate permission="student.edit">

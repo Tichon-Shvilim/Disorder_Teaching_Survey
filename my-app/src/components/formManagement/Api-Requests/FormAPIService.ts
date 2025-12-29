@@ -1,57 +1,43 @@
 import { getAllItems, getItemById, addItem, updateItem, deleteItem } from './genericRequests';
 import type { AxiosResponse } from 'axios';
 import type { 
-  ApiResponse, 
-  FormSubmission, 
-  QuestionnaireTemplate 
+  QuestionnaireTemplate, 
+  FormSubmission,
+  FormAnswer
 } from '../models/FormModels';
 
-// Helper function to parse malformed option strings
-const parseQuestionOptions = (options: unknown): { id: string; value: number; label: string }[] => {
-  if (!options) return [];
-  if (Array.isArray(options)) {
-    return options.map(option => {
-      if (typeof option === 'string' && option.startsWith('@{')) {
-        // Parse PowerShell-style object string: "@{id=opt-0; value=1; label=1; subQuestions=System.Object[]}"
-        try {
-          const matches = option.match(/id=([^;]+).*?value=([^;]+).*?label=([^;]+)/);
-          if (matches) {
-            return {
-              id: matches[1].trim(),
-              value: parseInt(matches[2].trim()) || 0,
-              label: matches[3].trim()
-            };
-          }
-        } catch {
-          console.warn('Failed to parse option string:', option);
-        }
-        return { id: 'unknown', value: 0, label: 'Unknown Option' };
-      }
-      
-      // If it's already an object, just return it
-      if (typeof option === 'object' && option !== null) {
-        return option;
-      }
-      
-      return option;
-    });
-  }
-  return [];
-};
+// API Response interface
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  message?: string;
+}
 
-// Helper function to fix questionnaire data structure
-const fixQuestionnaireData = (data: QuestionnaireTemplate): QuestionnaireTemplate => {
-  if (!data) return data;
-  
-  if (data.questions && Array.isArray(data.questions)) {
-    data.questions = data.questions.map((question) => ({
-      ...question,
-      options: parseQuestionOptions(question.options)
-    }));
-  }
-  
-  return data;
-};
+// Submit form data interface
+interface SubmitFormData {
+  studentId: string;
+  questionnaireId: string;
+  answers: FormAnswer[];
+  status: 'draft' | 'completed';
+  notes?: string;
+}
+
+// Submit response interface  
+interface SubmitFormResponse {
+  submissionId: string;
+  studentName: string;
+  questionnaireTitle: string;
+  status: string;
+  submittedAt: Date | null;
+  answersCount: number;
+  analyticsCalculated?: boolean;
+}
+
+// Update submission response interface
+interface UpdateSubmissionResponse extends FormSubmission {
+  analyticsCalculated?: boolean;
+}
 
 class FormApiService {
   private handleResponse<T>(response: AxiosResponse): ApiResponse<T> {
@@ -74,50 +60,45 @@ class FormApiService {
     }
   }
 
-  // Get all questionnaire templates
+  // Get all  questionnaire templates
   async getQuestionnaireTemplates(): Promise<QuestionnaireTemplate[]> {
     try {
       const response = await getAllItems<QuestionnaireTemplate[]>('api/questionnaires/templates');
       const apiResponse = this.handleResponse<QuestionnaireTemplate[]>(response);
       
       if (apiResponse.success && apiResponse.data) {
-        // Fix the data structure for all questionnaires
-        if (Array.isArray(apiResponse.data)) {
-          return apiResponse.data.map(fixQuestionnaireData);
-        }
-        return apiResponse.data;
+        return Array.isArray(apiResponse.data) ? apiResponse.data : [];
       }
       
       throw new Error(apiResponse.error || 'Failed to fetch questionnaire templates');
     } catch (error) {
-      console.error('Error fetching questionnaire templates:', error);
+      console.error('Error fetching  questionnaire templates:', error);
       throw error;
     }
   }
 
-  // Get specific questionnaire template
+  // Get specific  questionnaire template
   async getQuestionnaireTemplate(id: string): Promise<QuestionnaireTemplate> {
     try {
       const response = await getItemById<QuestionnaireTemplate>('api/questionnaires/templates', id);
       const apiResponse = this.handleResponse<QuestionnaireTemplate>(response);
       
       if (apiResponse.success && apiResponse.data) {
-        // Fix the data structure
-        return fixQuestionnaireData(apiResponse.data);
+        return apiResponse.data;
       }
       
       throw new Error(apiResponse.error || 'Failed to fetch questionnaire template');
     } catch (error) {
-      console.error('Error fetching questionnaire template:', error);
+      console.error('Error fetching  questionnaire template:', error);
       throw error;
     }
   }
 
-  // Submit completed form
-  async submitForm(submission: Omit<FormSubmission, '_id' | 'submittedAt' | 'createdAt' | 'updatedAt'>): Promise<FormSubmission> {
+  // Submit  form
+  async submitForm(submission: SubmitFormData): Promise<SubmitFormResponse> {
     try {
-      const response = await addItem<FormSubmission>('api/forms/submissions', submission);
-      const apiResponse = this.handleResponse<FormSubmission>(response);
+      const response = await addItem<SubmitFormData>('api/forms/submit', submission);
+      const apiResponse = this.handleResponse<SubmitFormResponse>(response);
       
       if (apiResponse.success && apiResponse.data) {
         return apiResponse.data;
@@ -125,29 +106,101 @@ class FormApiService {
       
       throw new Error(apiResponse.error || 'Failed to submit form');
     } catch (error) {
-      console.error('Error submitting form:', error);
+      console.error('Error submitting  form:', error);
       throw error;
     }
   }
 
-  // Get all submissions for a student
-  async getStudentSubmissions(studentId: string): Promise<FormSubmission[]> {
+  // Get all  submissions (with role-based filtering on backend)
+  async getSubmissions(params?: {
+    questionnaireId?: string;
+    studentId?: string;
+    status?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<{
+    data: FormSubmission[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      pages: number;
+    };
+  }> {
     try {
-      const response = await getAllItems<FormSubmission[]>(`api/forms/submissions/student/${studentId}`);
-      const apiResponse = this.handleResponse<FormSubmission[]>(response);
+      const queryParams = new URLSearchParams();
+      if (params?.questionnaireId) queryParams.append('questionnaireId', params.questionnaireId);
+      if (params?.studentId) queryParams.append('studentId', params.studentId);
+      if (params?.status) queryParams.append('status', params.status);
+      if (params?.page) queryParams.append('page', params.page.toString());
+      if (params?.limit) queryParams.append('limit', params.limit.toString());
+
+      const url = `api/forms/submissions${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
       
-      if (apiResponse.success && apiResponse.data) {
-        return apiResponse.data;
+      const response = await getAllItems<{
+        data: FormSubmission[];
+        pagination: {
+          page: number;
+          limit: number;
+          total: number;
+          pages: number;
+        };
+      }>(url);
+      
+      const apiResponse = this.handleResponse<{
+        data: FormSubmission[];
+        pagination: {
+          page: number;
+          limit: number;
+          total: number;
+          pages: number;
+        };
+      }>(response);
+      
+      if (apiResponse.success) {
+        // The server returns {success: true, data: [...], pagination: {...}}
+        // We need to restructure this to match our expected format
+        const serverResponse = apiResponse as unknown as {
+          success: boolean;
+          data: FormSubmission[];
+          pagination: {
+            page: number;
+            limit: number;
+            total: number;
+            pages: number;
+          };
+        };
+        const restructuredData = {
+          data: serverResponse.data || [],
+          pagination: serverResponse.pagination || {
+            page: 1,
+            limit: 20,
+            total: Array.isArray(serverResponse.data) ? serverResponse.data.length : 0,
+            pages: 1
+          }
+        };
+        return restructuredData;
       }
       
-      throw new Error(apiResponse.error || 'Failed to fetch student submissions');
+      throw new Error(apiResponse.error || 'Failed to fetch submissions');
     } catch (error) {
-      console.error('Error fetching student submissions:', error);
+      console.error('Error fetching  submissions:', error);
       throw error;
     }
   }
 
-  // Get specific submission
+  // Get student submissions (legacy compatibility method)
+  async getStudentSubmissions(studentId: string): Promise<FormSubmission[]> {
+    try {
+      const result = await this.getSubmissions({ studentId });
+      return result.data;
+    } catch (error) {
+      console.error('Error fetching student  submissions:', error);
+      throw error;
+    }
+  }
+
+  // Get specific  submission
   async getSubmission(id: string): Promise<FormSubmission> {
     try {
       const response = await getItemById<FormSubmission>('api/forms/submissions', id);
@@ -159,16 +212,20 @@ class FormApiService {
       
       throw new Error(apiResponse.error || 'Failed to fetch submission');
     } catch (error) {
-      console.error('Error fetching submission:', error);
+      console.error('Error fetching  submission:', error);
       throw error;
     }
   }
 
-  // Update submission
-  async updateSubmission(id: string, updates: Partial<FormSubmission>): Promise<FormSubmission> {
+  // Update  submission
+  async updateSubmission(id: string, updates: Partial<{
+    answers: FormAnswer[];
+    status: 'draft' | 'completed' | 'reviewed';
+    notes: string;
+  }>): Promise<UpdateSubmissionResponse> {
     try {
       const response = await updateItem<Partial<FormSubmission>>('api/forms/submissions', id, updates);
-      const apiResponse = this.handleResponse<FormSubmission>(response);
+      const apiResponse = this.handleResponse<UpdateSubmissionResponse>(response);
       
       if (apiResponse.success && apiResponse.data) {
         return apiResponse.data;
@@ -176,12 +233,12 @@ class FormApiService {
       
       throw new Error(apiResponse.error || 'Failed to update submission');
     } catch (error) {
-      console.error('Error updating submission:', error);
+      console.error('Error updating  submission:', error);
       throw error;
     }
   }
 
-  // Delete submission
+  // Delete  submission (Admin only)
   async deleteSubmission(id: string): Promise<void> {
     try {
       const response = await deleteItem('api/forms/submissions', id);
@@ -191,7 +248,7 @@ class FormApiService {
         throw new Error(apiResponse.error || 'Failed to delete submission');
       }
     } catch (error) {
-      console.error('Error deleting submission:', error);
+      console.error('Error deleting  submission:', error);
       throw error;
     }
   }

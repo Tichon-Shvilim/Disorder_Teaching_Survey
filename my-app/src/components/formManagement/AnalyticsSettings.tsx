@@ -16,7 +16,7 @@ import {
   Delete as DeleteIcon,
   Palette as PaletteIcon,
 } from '@mui/icons-material';
-import type { GraphSettings } from './models/FormModelsV2';
+import type { GraphSettings } from './models/FormModels';
 
 interface AnalyticsSettingsProps {
   graphSettings: GraphSettings;
