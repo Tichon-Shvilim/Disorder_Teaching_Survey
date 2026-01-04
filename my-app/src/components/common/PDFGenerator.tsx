@@ -106,9 +106,7 @@ export const FormPDFDocument: React.FC<FormPDFProps> = ({ submission, includeMet
         <View style={styles.header}>
           <Text style={styles.title}>Form Submission Report</Text>
           <Text style={styles.subtitle}>
-            {typeof submission.questionnaireId === 'object' 
-              ? submission.questionnaireId.title 
-              : submission.questionnaireTitle}
+            {submission.questionnaireTitle || 'Questionnaire'}
           </Text>
           {includeMetadata && (
             <View>

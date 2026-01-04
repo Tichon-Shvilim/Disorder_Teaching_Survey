@@ -754,8 +754,8 @@ const FillForm: React.FC = () => {
           status: 'draft' as const
         };
 
-        const result = await FormAPIService.submitForm(submission);
-        setCurrentSubmissionId(result.submissionId);
+        const draftResult = await FormAPIService.submitForm(submission);
+        setCurrentSubmissionId(draftResult.submissionId);
         toast.success('Draft saved successfully!');
       }
     } catch (error) {
