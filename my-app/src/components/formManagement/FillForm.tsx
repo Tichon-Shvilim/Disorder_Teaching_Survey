@@ -782,7 +782,7 @@ const FillForm: React.FC = () => {
 
       if (currentSubmissionId && !isDraft) {
         // Update existing submission to completed
-        const result = await FormAPIService.updateSubmission(currentSubmissionId, {
+        await FormAPIService.updateSubmission(currentSubmissionId, {
           answers: answersArray,
           status: 'completed'
         });
