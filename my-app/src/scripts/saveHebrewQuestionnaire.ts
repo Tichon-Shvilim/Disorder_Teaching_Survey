@@ -1,6 +1,6 @@
 import { questionnaireApiService } from '../components/formManagement/Api-Requests/questionnaireApi';
 import type { CreateQuestionnaireRequest, FormNode, GraphSettings } from '../components/formManagement/models/FormModels';
-import hebrewQuestionnaireData from '../../hebrew_questionnaire_data.json';
+import { createHebrewQuestionnaireRequest, countQuestions } from '../components/formManagement/hebrewQuestionnaireData';
 
 /**
  * Script to save the Hebrew questionnaire to MongoDB
@@ -42,30 +42,31 @@ const convertToFormNode = (data: any): FormNode => {
   return node;
 };
 
-// Create the questionnaire request
-const createHebrewQuestionnaireRequest = (): CreateQuestionnaireRequest => {
-  // Convert the structure
-  const structure: FormNode[] = hebrewQuestionnaireData.structure.map(convertToFormNode);
+// Remove duplicate function and use imported one
+// const createHebrewQuestionnaireRequest = (): CreateQuestionnaireRequest => {
+//   // Note: This would need to be loaded dynamically or embedded as a TypeScript object
+//   // For now, return a placeholder structure
+//   const structure: FormNode[] = [];
 
-  // Create graph settings
-  const graphSettings: GraphSettings = {
-    colorRanges: hebrewQuestionnaireData.graphSettings?.colorRanges || [
-      { label: "נמוך", min: 1, max: 2, color: "#ef4444" },
-      { label: "בינוני", min: 3, max: 3, color: "#fbbf24" },
-      { label: "גבוה", min: 4, max: 5, color: "#10b981" }
-    ]
-  };
+//   // Create graph settings
+//   const graphSettings: GraphSettings = {
+//     colorRanges: [
+//       { label: "נמוך", min: 1, max: 2, color: "#ef4444" },
+//       { label: "בינוני", min: 3, max: 3, color: "#fbbf24" },
+//       { label: "גבוה", min: 4, max: 5, color: "#10b981" }
+//     ]
+//   };
 
-  return {
-    title: hebrewQuestionnaireData.title,
-    description: hebrewQuestionnaireData.description,
-    structure,
-    graphSettings
-  };
-};
+//   return {
+//     title: "Hebrew Questionnaire",
+//     description: "Hebrew questionnaire for assessment",
+//     structure,
+//     graphSettings
+//   };
+// };
 
 // Function to save the questionnaire
-export const saveHebrewQuestionnaire = async (): Promise<void> => {
+export const saveHebrewQuestionnaire = async (): Promise<string> => {
   try {
     console.log('🚀 Starting to save Hebrew questionnaire...');
     
@@ -98,19 +99,19 @@ export const saveHebrewQuestionnaire = async (): Promise<void> => {
   }
 };
 
-// Helper function to count questions recursively
-const countQuestions = (nodes: FormNode[]): number => {
-  let count = 0;
-  for (const node of nodes) {
-    if (node.type === 'question') {
-      count++;
-    }
-    if (node.children) {
-      count += countQuestions(node.children);
-    }
-  }
-  return count;
-};
+// Remove duplicate function and use imported one
+// const countQuestions = (nodes: FormNode[]): number => {
+//   let count = 0;
+//   for (const node of nodes) {
+//     if (node.type === 'question') {
+//       count++;
+//     }
+//     if (node.children) {
+//       count += countQuestions(node.children);
+//     }
+//   }
+//   return count;
+// };
 
 // Function to validate the questionnaire structure before saving
 export const validateHebrewQuestionnaire = async (): Promise<boolean> => {
@@ -135,15 +136,18 @@ export const validateHebrewQuestionnaire = async (): Promise<boolean> => {
 };
 
 // Export the questionnaire data for external use
-export { createHebrewQuestionnaireRequest };
+// export { createHebrewQuestionnaireRequest }; // Already imported
 
 // If running directly (for testing)
-if (typeof window === 'undefined') {
+if (typeof window === 'undefined' && typeof globalThis !== 'undefined') {
   console.log('Running Hebrew questionnaire save script...');
   saveHebrewQuestionnaire().then(() => {
     console.log('Script completed successfully!');
   }).catch((error) => {
     console.error('Script failed:', error);
-    process.exit(1);
+    // Exit only if process is available
+    if (typeof process !== 'undefined') {
+      process.exit(1);
+    }
   });
 }

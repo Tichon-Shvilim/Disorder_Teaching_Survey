@@ -806,12 +806,12 @@ const FillForm: React.FC = () => {
           status: isDraft ? 'draft' as const : 'completed' as const
         };
 
-        const result = await FormAPIService.submitForm(submission);
+        const submissionResult = await FormAPIService.submitForm(submission);
         toast.success(`Form ${isDraft ? 'saved as draft' : 'submitted'} successfully!`);
         
         if (!isDraft) {
           // Navigate to results page for completed forms
-          navigate(`/layout/form-results/${result.submissionId}`, {
+          navigate(`/layout/form-results/${submissionResult.submissionId}`, {
             state: { 
               studentId, 
               studentName, 

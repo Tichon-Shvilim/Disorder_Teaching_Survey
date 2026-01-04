@@ -81,7 +81,7 @@ export const SimplePDFDocument: React.FC<SimplePDFProps> = ({
             submission.answers.map((answer, index) => (
               <View key={index} style={{ marginBottom: 15 }}>
                 <Text style={styles.question}>
-                  {index + 1}. {answer.questionText || 'Question not available'}
+                  {index + 1}. {answer.questionTitle || 'Question not available'}
                 </Text>
                 <Text style={styles.answer}>
                   {typeof answer.answer === 'string' 

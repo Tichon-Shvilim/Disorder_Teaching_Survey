@@ -1,4 +1,4 @@
-import { getAllItems, getItemById, addItem } from './genericRequests';
+import { getItemById, addItem } from './genericRequests';
 import type { AxiosResponse } from 'axios';
 
 // API Response interface
