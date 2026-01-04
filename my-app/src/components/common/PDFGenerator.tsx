@@ -106,9 +106,7 @@ export const FormPDFDocument: React.FC<FormPDFProps> = ({ submission, includeMet
         <View style={styles.header}>
           <Text style={styles.title}>Form Submission Report</Text>
           <Text style={styles.subtitle}>
-            {typeof submission.questionnaireId === 'object' 
-              ? submission.questionnaireId.title 
-              : submission.questionnaireTitle}
+            {submission.questionnaireTitle || 'Questionnaire'}
           </Text>
           {includeMetadata && (
             <View>
@@ -126,10 +124,10 @@ export const FormPDFDocument: React.FC<FormPDFProps> = ({ submission, includeMet
           {submission.answers?.map((answer, index) => (
             <View key={index} style={styles.section}>
               <Text style={styles.questionText}>
-                {index + 1}. {answer.questionText}
+                {index + 1}. {answer.questionTitle || 'Question not available'}
               </Text>
               
-              {answer.questionType === 'single-choice' || answer.questionType === 'multiple-choice' ? (
+              {answer.inputType === 'single-choice' || answer.inputType === 'multiple-choice' ? (
                 <View>
                   {answer.selectedOptions?.map((option, optIndex) => (
                     <Text key={optIndex} style={styles.answerText}>

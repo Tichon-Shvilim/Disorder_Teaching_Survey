@@ -15,8 +15,8 @@ declare global {
 }
 
 window.global = globalThis;
-window.Buffer = Buffer;
-window.process = {
+(window as any).Buffer = Buffer;
+(window as any).process = {
   env: {},
   browser: true,
   nextTick: (callback: () => void) => setTimeout(callback, 0)
