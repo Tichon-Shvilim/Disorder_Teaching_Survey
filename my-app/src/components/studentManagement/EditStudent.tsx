@@ -6,8 +6,11 @@ import type { UpdateStudentRequest } from './Api-Requests/StudentAPIService';
 import { getAllClasses } from './Api-Requests/ClassAPIService';
 import type { Class } from './Api-Requests/ClassAPIService';
 import { toast } from 'react-toastify';
+import { useTranslation } from 'react-i18next';
 
 const EditStudent: React.FC = () => {
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.dir() === 'rtl';
   const { id } = useParams<{ id: string }>();
   const [formData, setFormData] = useState<UpdateStudentRequest>({
     _id: id || '',
@@ -58,7 +61,7 @@ const EditStudent: React.FC = () => {
         setOriginalClassId(classId);
       } catch (error) {
         console.error('Error fetching student:', error);
-        toast.error('Failed to load student data');
+        toast.error(t('students.failedToLoadStudentData', 'Failed to load student data'));
         navigate('../students');
       } finally {
         setLoadingStudent(false);
@@ -68,27 +71,27 @@ const EditStudent: React.FC = () => {
     if (id) {
       fetchStudent();
     }
-  }, [id, navigate]);
+  }, [id, navigate, t]);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Student name is required';
+      newErrors.name = t('students.nameRequired', 'Student name is required');
     }
 
     if (!formData.DOB) {
-      newErrors.DOB = 'Date of birth is required';
+      newErrors.DOB = t('students.dobRequired', 'Date of birth is required');
     } else {
       const dob = new Date(formData.DOB);
       const today = new Date();
       if (dob > today) {
-        newErrors.DOB = 'Date of birth cannot be in the future';
+        newErrors.DOB = t('students.dobFuture', 'Date of birth cannot be in the future');
       }
     }
 
     if (!formData.classId) {
-      newErrors.classId = 'Class assignment is required';
+      newErrors.classId = t('students.classRequired', 'Class assignment is required');
     }
 
     setErrors(newErrors);
@@ -128,9 +131,12 @@ const EditStudent: React.FC = () => {
           const newClass = transferCheck.data.newClass!;
           
           const confirmTransfer = window.confirm(
-            `התלמיד ${transferCheck.data.studentName} כרגע בכיתה "${currentClass.classNumber}".\n\n` +
-            `האם ברצונך להעביר אותו לכיתה "${newClass.classNumber}"?\n` +
-            `פעולה זו תסיר אותו מהכיתה הקיימת ותוסיף אותו לכיתה החדשה.`
+            t('students.classTransferConfirm', {
+              studentName: transferCheck.data.studentName,
+              currentClass: currentClass.classNumber,
+              newClass: newClass.classNumber,
+              defaultValue: `Student ${transferCheck.data.studentName} is currently in class "${currentClass.classNumber}".\n\nDo you want to transfer them to class "${newClass.classNumber}"?\nThis action will remove them from the existing class and add them to the new class.`
+            })
           );
           
           if (!confirmTransfer) {
@@ -139,7 +145,7 @@ const EditStudent: React.FC = () => {
         }
       } catch (error: unknown) {
         console.error('Error checking class transfer:', error);
-        toast.error('שגיאה בבדיקת העברת כיתה');
+        toast.error(t('students.classTransferError', 'Error checking class transfer'));
         return;
       }
     }
@@ -148,11 +154,11 @@ const EditStudent: React.FC = () => {
     
     try {
       await updateStudent(id!, formData);
-      toast.success('הפרטי התלמיד עודכנו בהצלחה!');
+      toast.success(t('students.updateStudentSuccess', 'Student updated successfully!'));
       navigate('../students');
     } catch (error: unknown) {
       console.error('Error updating student:', error);
-      toast.error('שגיאה בעדכון פרטי התלמיד. אנא נסה שוב.');
+      toast.error(t('students.updateStudentError', 'Error updating student. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -184,7 +190,7 @@ const EditStudent: React.FC = () => {
   }
 
   return (
-    <div style={{ padding: '24px', background: 'linear-gradient(135deg, #f0f7ff 0%, #e6f2ff 100%)', minHeight: '100vh' }}>
+    <div style={{ padding: '24px', background: 'linear-gradient(135deg, #f0f7ff 0%, #e6f2ff 100%)', minHeight: '100vh', direction: isRTL ? 'rtl' : 'ltr' }}>
       <div style={{ maxWidth: '512px', margin: '0 auto' }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '32px' }}>
@@ -214,7 +220,7 @@ const EditStudent: React.FC = () => {
           </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <GraduationCap style={{ height: '32px', width: '32px', color: '#2563eb' }} />
-            <h1 style={{ fontSize: '30px', fontWeight: 'bold', color: '#111827', margin: 0 }}>Edit Student</h1>
+            <h1 style={{ fontSize: '30px', fontWeight: 'bold', color: '#111827', margin: 0 }}>{t('students.editStudent', 'Edit Student')}</h1>
           </div>
         </div>
 
@@ -225,7 +231,7 @@ const EditStudent: React.FC = () => {
             <div>
               <label htmlFor="name" style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
                 <User style={{ height: '16px', width: '16px', display: 'inline', marginRight: '4px' }} />
-                Student Name <span style={{ color: '#ef4444' }}>*</span>
+                {t('students.studentName', 'Student Name')} <span style={{ color: '#ef4444' }}>{t('students.required', '*')}</span>
               </label>
               <input
                 type="text"
@@ -233,7 +239,7 @@ const EditStudent: React.FC = () => {
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                placeholder="Enter student's full name"
+                placeholder={t('students.enterStudentName', "Enter student's full name")}
                 style={{
                   width: '100%',
                   padding: '12px 16px',
@@ -266,7 +272,7 @@ const EditStudent: React.FC = () => {
             <div>
               <label htmlFor="DOB" style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
                 <Calendar style={{ height: '16px', width: '16px', display: 'inline', marginRight: '4px' }} />
-                Date of Birth <span style={{ color: '#ef4444' }}>*</span>
+                {t('students.dateOfBirth', 'Date of Birth')} <span style={{ color: '#ef4444' }}>{t('students.required', '*')}</span>
               </label>
               <input
                 type="date"
@@ -306,7 +312,7 @@ const EditStudent: React.FC = () => {
             <div>
               <label htmlFor="classId" style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
                 <GraduationCap style={{ height: '16px', width: '16px', display: 'inline', marginRight: '4px' }} />
-                Class Assignment <span style={{ color: '#ef4444' }}>*</span>
+                {t('students.classAssignment', 'Class Assignment')} <span style={{ color: '#ef4444' }}>{t('students.required', '*')}</span>
               </label>
               <select
                 id="classId"
@@ -338,7 +344,7 @@ const EditStudent: React.FC = () => {
                   }
                 }}
               >
-                <option value="">Select a class</option>
+                <option value="">{t('students.selectClass', 'Select a class')}</option>
                 {classes.map((classItem) => (
                   <option key={classItem._id} value={classItem._id}>
                     {classItem.classNumber}
@@ -397,7 +403,7 @@ const EditStudent: React.FC = () => {
                 ) : (
                   <>
                     <Save style={{ height: '20px', width: '20px' }} />
-                    <span>Update Student</span>
+                    <span>{t('students.updateStudent', 'Update Student')}</span>
                   </>
                 )}
               </button>
@@ -429,7 +435,7 @@ const EditStudent: React.FC = () => {
                   }
                 }}
               >
-                Cancel
+                {t('common.cancel', 'Cancel')}
               </button>
             </div>
           </form>
@@ -438,7 +444,7 @@ const EditStudent: React.FC = () => {
         {/* Preview Card */}
         {(formData.name || formData.DOB || formData.classId) && (
           <div style={{ marginTop: '32px', backgroundColor: 'white', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', padding: '24px' }}>
-            <h3 style={{ fontSize: '18px', fontWeight: '500', color: '#111827', marginBottom: '16px' }}>Preview</h3>
+            <h3 style={{ fontSize: '18px', fontWeight: '500', color: '#111827', marginBottom: '16px' }}>{t('students.preview', 'Preview')}</h3>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
               <div style={{
                 width: '64px',
@@ -457,20 +463,20 @@ const EditStudent: React.FC = () => {
               </div>
               <div style={{ flex: 1 }}>
                 <h4 style={{ fontSize: '18px', fontWeight: '600', color: '#111827', margin: '0 0 4px 0' }}>
-                  {formData.name || 'Student Name'}
+                  {formData.name || t('students.studentName', 'Student Name')}
                 </h4>
                 {formData.classId && (
                   <p style={{ color: '#10b981', fontWeight: '500', margin: '0 0 4px 0' }}>
-                    Class {classes.find(c => c._id === formData.classId)?.classNumber || 'Selected'}
+                    {t('students.class', 'Class')} {classes.find(c => c._id === formData.classId)?.classNumber || t('students.selectClass', 'Selected')}
                   </p>
                 )}
                 {formData.DOB && (
                   <p style={{ color: '#2563eb', fontWeight: '500', margin: '0 0 4px 0' }}>
-                    Age {Math.floor((new Date().getTime() - new Date(formData.DOB).getTime()) / (1000 * 60 * 60 * 24 * 365))}
+                    {t('students.age', 'Age')} {Math.floor((new Date().getTime() - new Date(formData.DOB).getTime()) / (1000 * 60 * 60 * 24 * 365))}
                   </p>
                 )}
                 <p style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>
-                  DOB: {formData.DOB ? new Date(formData.DOB).toLocaleDateString() : 'Not set'}
+                  {t('students.dateOfBirth', 'DOB')}: {formData.DOB ? new Date(formData.DOB).toLocaleDateString() : t('students.notSet', 'Not set')}
                 </p>
               </div>
             </div>

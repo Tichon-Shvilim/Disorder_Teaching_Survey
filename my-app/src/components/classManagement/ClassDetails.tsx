@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft,
   Users,
@@ -16,6 +17,7 @@ import type { Student } from '../studentManagement/Api-Requests/StudentAPIServic
 import { toast } from 'react-toastify';
 
 const ClassDetails: React.FC = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const [classData, setClassData] = useState<Class | null>(null);
   const [availableStudents, setAvailableStudents] = useState<Student[]>([]);
@@ -35,12 +37,12 @@ const ClassDetails: React.FC = () => {
       setSelectedStudents(response.data.students.map(s => s._id));
     } catch (err: unknown) {
       console.error('Error fetching class data:', err);
-      setError('Failed to load class data');
-      toast.error('Failed to load class data');
+      setError(t('classes.failedToLoadClassData', 'Failed to load class data'));
+      toast.error(t('classes.failedToLoadClassData', 'Failed to load class data'));
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, t]);
 
   const fetchAllStudents = useCallback(async () => {
     try {
@@ -65,9 +67,9 @@ const ClassDetails: React.FC = () => {
       console.log('Total students:', students.length, 'All available for selection (transfers will be confirmed)');
     } catch (err: unknown) {
       console.error('Error fetching students:', err);
-      toast.error('Failed to load students');
+      toast.error(t('classes.failedToLoadStudents', 'Failed to load students'));
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     if (id) {
@@ -105,7 +107,7 @@ const ClassDetails: React.FC = () => {
       await fetchClassData();
       
       setEditingStudents(false);
-      toast.success('התלמידים עודכנו בהצלחה!');
+      toast.success(t('classes.studentsUpdatedSuccessfully', 'התלמידים עודכנו בהצלחה!'));
     } catch (err: unknown) {
       console.error('Error updating students:', err);
       
@@ -127,12 +129,12 @@ const ClassDetails: React.FC = () => {
           // Show server error message (includes Hebrew text for multi-class conflicts)
           toast.error(errorMessage);
         } else if (status === 400) {
-          toast.error('שגיאת קלט: אחד התלמידים כבר משוייך לכיתה אחרת');
+          toast.error(t('classes.studentAlreadyInAnotherClass', 'שגיאת קלט: אחד התלמידים כבר משוייך לכיתה אחרת'));
         } else {
-          toast.error('שגיאה בעדכון התלמידים');
+          toast.error(t('classes.errorUpdatingStudents', 'שגיאה בעדכון התלמידים'));
         }
       } else {
-        toast.error('שגיאה בעדכון התלמידים');
+        toast.error(t('classes.errorUpdatingStudents', 'שגיאה בעדכון התלמידים'));
       }
     } finally {
       setSaving(false);
@@ -173,11 +175,11 @@ const ClassDetails: React.FC = () => {
           // User confirmed transfer, add student to selection
           console.log('User confirmed transfer, adding student to selection');
           setSelectedStudents(prev => [...prev, studentId]);
-          toast.info(`${studentName} יועבר לכיתה ${newClass?.classNumber}`);
+          toast.info(`${studentName} ${t('classes.willTransferToClass', 'יועבר לכיתה')} ${newClass?.classNumber}`);
         } else {
           // User declined transfer, don't add student
           console.log('User declined transfer');
-          toast.info(`העברת ${studentName} לכיתה בוטלה`);
+          toast.info(`${t('classes.transferCancelled', 'העברת')} ${studentName} ${t('classes.toClassCancelled', 'לכיתה בוטלה')}`);
         }
       } else {
         // No transfer needed, just add the student
@@ -188,7 +190,7 @@ const ClassDetails: React.FC = () => {
       console.error('Error checking class transfer:', error);
       // If check fails, still allow selection but show warning
       setSelectedStudents(prev => [...prev, studentId]);
-      toast.warning('לא ניתן לבדוק אם התלמיד משוייך לכיתה אחרת. ההוספה תתבצע בכל מקרה.');
+      toast.warning(t('classes.cannotCheckClassTransfer', 'לא ניתן לבדוק אם התלמיד משוייך לכיתה אחרת. ההוספה תתבצע בכל מקרה.'));
     }
   };
 
@@ -246,7 +248,7 @@ const ClassDetails: React.FC = () => {
           boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
         }}>
           <p style={{ fontWeight: '500', margin: '0 0 12px 0' }}>
-            {error || 'Class not found'}
+            {error || t('classes.classNotFound', 'Class not found')}
           </p>
           <button 
             onClick={handleBack}
@@ -261,7 +263,7 @@ const ClassDetails: React.FC = () => {
               fontWeight: '500'
             }}
           >
-            Back to Classes
+            {t('classes.backToClasses', 'Back to Classes')}
           </button>
         </div>
       </div>
@@ -319,8 +321,8 @@ const ClassDetails: React.FC = () => {
                 fontWeight: 'bold', 
                 color: '#111827', 
                 margin: '0 0 4px 0' 
-              }}>
-                Class {classData.classNumber}
+              }}>  
+                {t('classes.class', 'Class')} {classData.classNumber}
               </h1>
               <div style={{ 
                 display: 'flex', 
@@ -342,7 +344,7 @@ const ClassDetails: React.FC = () => {
                     color: '#059669', 
                     fontWeight: '500' 
                   }}>
-                    {classData.teachers.length} Teacher{classData.teachers.length !== 1 ? 's' : ''}
+                    {classData.teachers.length} {classData.teachers.length === 1 ? t('classes.teacher', 'Teacher') : t('classes.teachers', 'Teachers')}
                   </span>
                 </div>
                 <div style={{ 
@@ -360,7 +362,7 @@ const ClassDetails: React.FC = () => {
                     color: '#2563eb', 
                     fontWeight: '500' 
                   }}>
-                    {classData.students.length} Student{classData.students.length !== 1 ? 's' : ''}
+                    {classData.students.length} {classData.students.length === 1 ? t('classes.student', 'Student') : t('classes.students', 'Students')}
                   </span>
                 </div>
               </div>
@@ -418,7 +420,7 @@ const ClassDetails: React.FC = () => {
                 gap: '8px'
               }}>
                 <UserCheck style={{ height: '20px', width: '20px', color: '#059669' }} />
-                Teachers
+                {t('classes.teachers', 'Teachers')}
               </h2>
               <button
                 style={{
@@ -476,14 +478,14 @@ const ClassDetails: React.FC = () => {
                         color: '#111827', 
                         margin: '0 0 2px 0' 
                       }}>
-                        Teacher {index + 1}
+                        {t('classes.teacher', 'Teacher')} {index + 1}
                       </h4>
                       <p style={{ 
                         fontSize: '12px', 
                         color: '#6b7280', 
                         margin: 0 
                       }}>
-                        ID: {teacherId}
+                        {t('classes.id', 'ID')}: {teacherId}
                       </p>
                     </div>
                   </div>
@@ -500,7 +502,7 @@ const ClassDetails: React.FC = () => {
                   width: '48px', 
                   margin: '0 auto 12px' 
                 }} />
-                <p style={{ margin: 0 }}>No teachers assigned yet</p>
+                <p style={{ margin: 0 }}>{t('classes.noTeachersAssigned', 'No teachers assigned yet')}</p>
               </div>
             )}
           </div>
@@ -529,7 +531,7 @@ const ClassDetails: React.FC = () => {
                 gap: '8px'
               }}>
                 <Users style={{ height: '20px', width: '20px', color: '#2563eb' }} />
-                Students
+                {t('classes.students', 'Students')}
               </h2>
               <div style={{ display: 'flex', gap: '8px' }}>
                 {editingStudents ? (
@@ -545,13 +547,13 @@ const ClassDetails: React.FC = () => {
                         cursor: 'pointer',
                         fontSize: '12px',
                         fontWeight: '500',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
                     >
                       <X style={{ height: '14px', width: '14px' }} />
-                      Cancel
+                      {t('classes.cancel', 'Cancel')}
                     </button>
                     <button
                       onClick={handleSaveStudents}
@@ -565,13 +567,13 @@ const ClassDetails: React.FC = () => {
                         cursor: saving ? 'not-allowed' : 'pointer',
                         fontSize: '12px',
                         fontWeight: '500',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
                     >
                       <Save style={{ height: '14px', width: '14px' }} />
-                      {saving ? 'Saving...' : 'Save'}
+                      {saving ? t('classes.saving', 'Saving...') : t('classes.save', 'Save')}
                     </button>
                   </>
                 ) : (
@@ -592,7 +594,7 @@ const ClassDetails: React.FC = () => {
                     }}
                   >
                     <Edit style={{ height: '14px', width: '14px' }} />
-                    Manage
+                    {t('classes.manage', 'Manage')}
                   </button>
                 )}
               </div>
@@ -611,7 +613,7 @@ const ClassDetails: React.FC = () => {
                       width: '48px', 
                       margin: '0 auto 12px' 
                     }} />
-                    <p style={{ margin: 0 }}>No students found in the system</p>
+                    <p style={{ margin: 0 }}>{t('classes.noStudentsFoundInSystem', 'No students found in the system')}</p>
                   </div>
                 ) : (
                   availableStudents.map((student) => {
@@ -627,21 +629,21 @@ const ClassDetails: React.FC = () => {
                         isInCurrentClass = student.classId._id === classData?._id;
                         if (!isInCurrentClass) {
                           isInOtherClass = true;
-                          classStatus = ` (in class ${student.classId.classNumber})`;
+                          classStatus = ` (${t('classes.inClass', 'in class')} ${student.classId.classNumber})`;
                         } else {
-                          classStatus = ' (in this class)';
+                          classStatus = ` (${t('classes.inThisClass', 'in this class')})`;
                         }
                       } else if (typeof student.classId === 'string') {
                         isInCurrentClass = student.classId === classData?._id;
                         if (!isInCurrentClass) {
                           isInOtherClass = true;
-                          classStatus = ' (in another class)';
+                          classStatus = ` (${t('classes.inAnotherClass', 'in another class')})`;
                         } else {
-                          classStatus = ' (in this class)';
+                          classStatus = ` (${t('classes.inThisClass', 'in this class')})`;
                         }
                       }
                     } else {
-                      classStatus = ' (no class)';
+                      classStatus = ` (${t('classes.noClass', 'no class')})`;
                     }
                     
                     return (
@@ -704,14 +706,14 @@ const ClassDetails: React.FC = () => {
                             color: '#6b7280', 
                             margin: 0 
                           }}>
-                            Age: {student.age || 'N/A'}
+                            {t('classes.age', 'Age')}: {student.age || 'N/A'}
                             {isInOtherClass && (
                               <span style={{ 
                                 marginLeft: '8px',
                                 color: '#f59e0b',
                                 fontWeight: '500'
                               }}>
-                                • Will request transfer
+                                • {t('classes.willRequestTransfer', 'Will request transfer')}
                               </span>
                             )}
                           </p>
@@ -766,7 +768,7 @@ const ClassDetails: React.FC = () => {
                             color: '#6b7280', 
                             margin: 0 
                           }}>
-                            DOB: {new Date(student.DOB).toLocaleDateString()}
+                            {t('classes.dob', 'DOB')}: {new Date(student.DOB).toLocaleDateString()}
                           </p>
                         </div>
                       </div>
@@ -783,7 +785,7 @@ const ClassDetails: React.FC = () => {
                       width: '48px', 
                       margin: '0 auto 12px' 
                     }} />
-                    <p style={{ margin: 0 }}>No students assigned yet</p>
+                    <p style={{ margin: 0 }}>{t('classes.noStudentsInClass', 'No students assigned yet')}</p>
                   </div>
                 )}
               </>

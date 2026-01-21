@@ -24,6 +24,7 @@ export { usePDFGeneration } from './usePDFGeneration';
 
 // Language components
 export { default as LanguageSwitcher } from './LanguageSwitcher';
+export { default as DynamicToastContainer } from './DynamicToastContainer';
 
 // Theme components
 export { default as RTLThemeProvider } from './RTLThemeProvider';
