@@ -18,8 +18,7 @@ export { usePermissionClasses } from '../../hooks/usePermissionClasses';
 
 // PDF components
 export { default as PDFDownloadButton } from './PDFDownloadButton';
-export { default as PDFGenerator } from './PDFGenerator';
-export { SimplePDFDocument } from './SimplePDFGenerator';
+export { PDFDocument } from './PDFGenerator';
 export { usePDFGeneration } from './usePDFGeneration';
 
 // Language components
