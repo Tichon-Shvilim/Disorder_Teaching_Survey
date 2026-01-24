@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import AnalyticsWrapper from './AnalyticsWrapper';
 import DateRangePicker from './DateRangePicker';
 import QuestionnaireSelector from './QuestionnaireSelector';
@@ -24,6 +25,8 @@ interface Class {
 }
 
 const AnalyticsPage: React.FC = () => {
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.dir() === 'rtl';
   const [searchParams, setSearchParams] = useSearchParams();
   const [students, setStudents] = useState<Student[]>([]);
   const [classes, setClasses] = useState<Class[]>([]);
@@ -94,7 +97,7 @@ const AnalyticsPage: React.FC = () => {
   if (loading) {
     return (
       <div className="analytics-page">
-        <div className="loading">Loading analytics options...</div>
+        <div className="loading">{t('analytics.loadingAnalyticsOptions', 'Loading analytics options...')}</div>
       </div>
     );
   }
@@ -102,11 +105,11 @@ const AnalyticsPage: React.FC = () => {
   return (
     <div className="analytics-page">
       <div className="analytics-controls">
-        <h1>Analytics Dashboard</h1>
+        <h1>{t('analytics.analyticsDashboard', 'Analytics Dashboard')}</h1>
         
         <div className="controls-section">
           <div className="control-group">
-            <label>View Type:</label>
+            <label>{t('analytics.viewType', 'View Type')}:</label>
             <div className="radio-group">
               <label className="radio-label">
                 <input
@@ -115,7 +118,7 @@ const AnalyticsPage: React.FC = () => {
                   checked={selectedType === 'student'}
                   onChange={(e) => handleTypeChange(e.target.value as 'student')}
                 />
-                Student Analytics
+                {t('analytics.studentAnalytics', 'Student Analytics')}
               </label>
               <label className="radio-label">
                 <input
@@ -124,20 +127,20 @@ const AnalyticsPage: React.FC = () => {
                   checked={selectedType === 'class'}
                   onChange={(e) => handleTypeChange(e.target.value as 'class')}
                 />
-                Class Analytics
+                {t('analytics.classAnalytics', 'Class Analytics')}
               </label>
             </div>
           </div>
 
           {selectedType === 'student' && (
             <div className="control-group">
-              <label htmlFor="student-select">Select Student:</label>
+              <label htmlFor="student-select">{t('analytics.selectStudent', 'Select Student')}:</label>
               <select
                 id="student-select"
                 value={selectedStudentId}
                 onChange={(e) => updateSearchParam('studentId', e.target.value)}
               >
-                <option value="">-- Select a Student --</option>
+                <option value="">{t('analytics.selectAStudent', '-- Select a Student --')}</option>
                 {students.map((student) => (
                   <option key={student._id} value={student._id}>
                     {student.name} ({student.studentId})
@@ -149,13 +152,13 @@ const AnalyticsPage: React.FC = () => {
 
           {selectedType === 'class' && (
             <div className="control-group">
-              <label htmlFor="class-select">Select Class:</label>
+              <label htmlFor="class-select">{t('analytics.selectClass', 'Select Class')}:</label>
               <select
                 id="class-select"
                 value={selectedClassId}
                 onChange={(e) => updateSearchParam('classId', e.target.value)}
               >
-                <option value="">-- Select a Class --</option>
+                <option value="">{t('analytics.selectAClass', '-- Select a Class --')}</option>
                 {classes.map((cls) => (
                   <option key={cls._id} value={cls._id}>
                     {cls.name} {cls.classNumber ? `(${cls.classNumber})` : ''}
@@ -170,7 +173,7 @@ const AnalyticsPage: React.FC = () => {
             studentId={selectedType === 'student' ? selectedStudentId : undefined}
             selectedQuestionnaireId={selectedQuestionnaireId}
             onQuestionnaireChange={(questionnaireId) => updateSearchParam('questionnaireId', questionnaireId)}
-            label="Select Questionnaire"
+            label={t('analytics.selectQuestionnaire', 'Select Questionnaire')}
           />
 
           <DateRangePicker
@@ -178,7 +181,7 @@ const AnalyticsPage: React.FC = () => {
             endDate={endDate}
             onStartDateChange={(date) => updateSearchParam('startDate', date)}
             onEndDateChange={(date) => updateSearchParam('endDate', date)}
-            label="Date Range Filter"
+            label={t('analytics.dateRangeFilter', 'Date Range Filter')}
           />
         </div>
       </div>
@@ -195,7 +198,7 @@ const AnalyticsPage: React.FC = () => {
         ) : (
           <div className="no-selection">
             <p>
-              Please select a {selectedType}, questionnaire, and date range to view analytics.
+              {t('analytics.pleaseSelectToViewAnalytics', 'Please select a student/class, questionnaire, and date range to view analytics.')}
             </p>
           </div>
         )}
