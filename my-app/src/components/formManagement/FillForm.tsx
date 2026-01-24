@@ -99,7 +99,7 @@ const FillForm: React.FC = () => {
                 nodePath: currentPath,
                 inputType: node.inputType!,
                 answer: node.inputType === 'multiple-choice' ? [] : '',
-                selectedOptions: [],
+                selectedOptions: node.inputType === 'multiple-choice' ? [] : undefined,
                 questionTitle: node.title,
                 weight: node.weight || 1,
                 graphable: node.graphable || false
@@ -415,23 +415,12 @@ const FillForm: React.FC = () => {
         {node.inputType === 'multiple-choice' && node.options && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {node.options.map((option) => {
-              const currentAnswerArray = Array.isArray(currentAnswer?.answer) ? currentAnswer.answer : [];
-              const isChecked = currentAnswerArray.includes(option.value);
+              const currentAnswerArray = Array.isArray(currentAnswer?.selectedOptions) 
+                ? currentAnswer.selectedOptions.map(opt => opt.id) 
+                : [];
+              const isChecked = currentAnswerArray.includes(option.id);
               const hasSubQuestions = !!(option.children && option.children.length > 0);
               
-              // Debug logging for checked options only
-              if (isChecked) {
-                console.log(`Checked Option "${option.label}":`, {
-                  hasSubQuestions,
-                  childrenCount: option.children?.length || 0
-                });
-              }
-              
-              // Debug logging for multiple-choice
-              if (isChecked) {
-                console.log('Multiple-choice selected option:', option.label, 'Has sub-questions:', hasSubQuestions, 'Children:', option.children);
-              }
-
               return (
                 <div key={option.id} style={{ width: '100%' }}>
                   {/* Main Option */}
@@ -454,18 +443,18 @@ const FillForm: React.FC = () => {
                       checked={isChecked}
                       onChange={() => {
                         const currentSelectedOptions = currentAnswer?.selectedOptions || [];
-                        let newAnswer: (string | number)[];
                         let newSelectedOptions: Option[];
 
                         if (isChecked) {
                           // Remove option
-                          newAnswer = currentAnswerArray.filter(val => val !== option.value);
                           newSelectedOptions = currentSelectedOptions.filter(opt => opt.id !== option.id);
                         } else {
                           // Add option
-                          newAnswer = [...currentAnswerArray, option.value];
                           newSelectedOptions = [...currentSelectedOptions, option];
                         }
+                        
+                        // Update answer array with values from selected options
+                        const newAnswer = newSelectedOptions.map(opt => opt.value);
 
                         handleAnswerChange(node.id, newAnswer, newSelectedOptions);
                       }}
@@ -542,9 +531,6 @@ const FillForm: React.FC = () => {
                 </div>
               );
             })}
-            
-
-
           </div>
         )}
 
