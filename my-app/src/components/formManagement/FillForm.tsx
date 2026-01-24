@@ -774,12 +774,13 @@ const FillForm: React.FC = () => {
         });
         toast.success('Form submitted successfully!');
         
-        // Navigate to results page
-        navigate(`/layout/form-results/${currentSubmissionId}`, {
+        // Navigate to completion page instead of directly to results
+        navigate(`/layout/form-submission-complete/${currentSubmissionId}`, {
           state: { 
             studentId, 
             studentName, 
-            questionnaireTitle: questionnaire.title 
+            questionnaireTitle: questionnaire.title,
+            canEdit: true
           }
         });
         return;
@@ -796,12 +797,13 @@ const FillForm: React.FC = () => {
         toast.success(`Form ${isDraft ? 'saved as draft' : 'submitted'} successfully!`);
         
         if (!isDraft) {
-          // Navigate to results page for completed forms
-          navigate(`/layout/form-results/${submissionResult.submissionId}`, {
+          // Navigate to completion page for completed forms
+          navigate(`/layout/form-submission-complete/${submissionResult.submissionId}`, {
             state: { 
               studentId, 
               studentName, 
-              questionnaireTitle: questionnaire.title 
+              questionnaireTitle: questionnaire.title,
+              canEdit: true
             }
           });
           return;

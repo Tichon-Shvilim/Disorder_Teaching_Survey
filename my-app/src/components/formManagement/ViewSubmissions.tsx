@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, Calendar, FileText, Eye, Plus, Edit, Trash2, X, Filter } from 'lucide-react';
+import { ArrowLeft, Calendar, FileText, Eye, Plus, Edit, Trash2, X, Filter, BarChart3 } from 'lucide-react';
 import { FormAPIService } from './Api-Requests/FormAPIService';
 import type { FormSubmission, QuestionnaireTemplate } from './models/FormModels';
 import { toast } from 'react-toastify';
@@ -464,6 +464,28 @@ const ViewSubmissions: React.FC = () => {
                       <Eye style={{ height: '14px', width: '14px' }} />
                       View
                     </button>
+
+                    {submission.status === 'completed' && (
+                      <button
+                        onClick={() => navigate(`/layout/form-results/${submission._id}`)}
+                        style={{
+                          padding: '8px 12px',
+                          backgroundColor: '#dbeafe',
+                          border: 'none',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          fontSize: '14px',
+                          color: '#1d4ed8'
+                        }}
+                        title="View Analytics"
+                      >
+                        <BarChart3 style={{ height: '14px', width: '14px' }} />
+                        Analytics
+                      </button>
+                    )}
 
                     <PDFDownloadButton 
                       submission={submission}
