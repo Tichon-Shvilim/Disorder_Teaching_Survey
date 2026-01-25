@@ -72,9 +72,9 @@ const EditUser: React.FC = () => {
   });
 
   const roleOptions = [
-    { value: 'Admin', label: 'Administrator', icon: AdminPanelSettings, color: '#f44336' },
-    { value: 'Teacher', label: 'Teacher', icon: School, color: '#2196f3' },
-    { value: 'Therapist', label: 'Therapist', icon: Psychology, color: '#4caf50' }
+    { value: 'Admin', label: t('users.administrator'), icon: AdminPanelSettings, color: '#f44336' },
+    { value: 'Teacher', label: t('users.teacher'), icon: School, color: '#2196f3' },
+    { value: 'Therapist', label: t('users.therapist'), icon: Psychology, color: '#4caf50' }
   ];
 
   useEffect(() => {
@@ -94,7 +94,7 @@ const EditUser: React.FC = () => {
         })
         .catch((error) => {
           console.error("Error fetching user:", error);
-          toast.error("Failed to load user data");
+          toast.error(t("users.failedToLoadUserData"));
           navigate('/layout/user-management');
         })
         .finally(() => setFetchLoading(false));
@@ -105,23 +105,23 @@ const EditUser: React.FC = () => {
     const newErrors: ValidationErrors = {};
     
     if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
+      newErrors.name = t('users.nameRequired');
     } else if (formData.name.trim().length < 2) {
-      newErrors.name = 'Name must be at least 2 characters';
+      newErrors.name = t('users.nameTooShort');
     }
     
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = t('users.emailRequired');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
+      newErrors.email = t('users.validEmailRequired');
     }
     
     if (formData.password && formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = t('users.passwordMinLength');
     }
     
     if (!formData.role) {
-      newErrors.role = 'Please select a role';
+      newErrors.role = t('users.roleRequired');
     }
     
     setErrors(newErrors);
@@ -165,11 +165,11 @@ const EditUser: React.FC = () => {
 
     try {
       await updateItem("api/users", id, updateData);
-      toast.success("User updated successfully!");
+      toast.success(t("users.userUpdatedSuccessfully"));
       navigate('/layout/user-management');
     } catch (error) {
       console.error("Error updating user:", error);
-      toast.error("Failed to update user");
+      toast.error(t("users.failedToUpdateUser"));
     } finally {
       setLoading(false);
     }
@@ -194,7 +194,7 @@ const EditUser: React.FC = () => {
     return (
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Paper elevation={3} sx={{ p: 4, textAlign: 'center' }}>
-          <Typography>Loading user data...</Typography>
+          <Typography>{t('users.loadingUserData')}</Typography>
         </Paper>
       </Container>
     );
@@ -238,7 +238,7 @@ const EditUser: React.FC = () => {
             </Avatar>
             <Box>
               <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>
-                Edit User
+                {t('users.editUser')}
               </Typography>
               <Typography variant="h6" sx={{ opacity: 0.9 }}>
                 {originalUser.name}
@@ -261,12 +261,12 @@ const EditUser: React.FC = () => {
           <form onSubmit={handleSubmit}>
             <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
               <Edit color="primary" />
-              User Information
+              {t('users.userInformation')}
             </Typography>
             
             <Box sx={{ display: 'grid', gap: 3 }}>
               <TextField
-                label="Full Name"
+                label={t('users.fullName')}
                 value={formData.name}
                 onChange={handleInputChange('name')}
                 fullWidth
@@ -278,7 +278,7 @@ const EditUser: React.FC = () => {
               />
               
               <TextField
-                label="Email Address"
+                label={t('users.emailAddress')}
                 type="email"
                 value={formData.email}
                 onChange={handleInputChange('email')}
@@ -291,11 +291,11 @@ const EditUser: React.FC = () => {
               />
 
               <FormControl fullWidth error={!!errors.role}>
-                <InputLabel>Role</InputLabel>
+                <InputLabel>{t('users.role')}</InputLabel>
                 <Select 
                   value={formData.role} 
                   onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
-                  label="Role"
+                  label={t('users.role')}
                 >
                   {roleOptions.map((option) => {
                     const IconComponent = option.icon;
@@ -317,22 +317,22 @@ const EditUser: React.FC = () => {
               </FormControl>
 
               <FormControl fullWidth>
-                <InputLabel>Status</InputLabel>
+                <InputLabel>{t('users.status')}</InputLabel>
                 <Select
                   value={formData.status}
                   onChange={(e) => setFormData(prev => ({ 
                     ...prev, 
                     status: e.target.value as 'active' | 'inactive' 
                   }))}
-                  label="Status"
+                  label={t('users.status')}
                 >
                   <MenuItem value="active">
-                    <Chip label="Active" color="success" size="small" sx={{ mr: 1 }} />
-                    Active
+                    <Chip label={t('users.active')} color="success" size="small" sx={{ mr: 1 }} />
+                    {t('users.active')}
                   </MenuItem>
                   <MenuItem value="inactive">
-                    <Chip label="Inactive" color="error" size="small" sx={{ mr: 1 }} />
-                    Inactive
+                    <Chip label={t('users.inactive')} color="error" size="small" sx={{ mr: 1 }} />
+                    {t('users.inactive')}
                   </MenuItem>
                 </Select>
               </FormControl>
@@ -340,17 +340,17 @@ const EditUser: React.FC = () => {
               <Divider sx={{ my: 2 }} />
               
               <Alert severity="info" sx={{ mb: 2 }}>
-                Leave password blank to keep current password, or enter a new one to change it.
+                {t('users.passwordLeaveBlankHint')}
               </Alert>
               
               <TextField
-                label="New Password (Optional)"
+                label={t('users.newPasswordOptional')}
                 type={showPassword ? "text" : "password"}
                 value={formData.password}
                 onChange={handleInputChange('password')}
                 fullWidth
                 error={!!errors.password}
-                helperText={errors.password || "Minimum 6 characters if changing"}
+                helperText={errors.password || t('users.passwordHint')}
                 InputProps={{
                   endAdornment: (
                     <IconButton
@@ -372,7 +372,7 @@ const EditUser: React.FC = () => {
                 startIcon={<Cancel />}
                 disabled={loading}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button
                 type="submit"
@@ -381,7 +381,7 @@ const EditUser: React.FC = () => {
                 disabled={loading}
                 size="large"
               >
-                {loading ? 'Updating...' : 'Update User'}
+                {loading ? t('users.updating') : t('users.updateUser')}
               </Button>
             </Box>
           </form>
