@@ -18,12 +18,12 @@ export { usePermissionClasses } from '../../hooks/usePermissionClasses';
 
 // PDF components
 export { default as PDFDownloadButton } from './PDFDownloadButton';
-export { default as PDFGenerator } from './PDFGenerator';
-export { SimplePDFDocument } from './SimplePDFGenerator';
+export { PDFDocument } from './PDFGenerator';
 export { usePDFGeneration } from './usePDFGeneration';
 
 // Language components
 export { default as LanguageSwitcher } from './LanguageSwitcher';
+export { default as DynamicToastContainer } from './DynamicToastContainer';
 
 // Theme components
 export { default as RTLThemeProvider } from './RTLThemeProvider';

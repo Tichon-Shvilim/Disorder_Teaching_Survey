@@ -140,7 +140,7 @@ const Sidebar: React.FC = () => {
             <SchoolOutlined sx={{ color: "white" }} />
           </Box>
           <Typography variant="h5" fontWeight="bold" color="inherit">
-            SNPT
+            {t('common.appShortName', 'SNPT')}
           </Typography>
         </Box>
       </Toolbar>

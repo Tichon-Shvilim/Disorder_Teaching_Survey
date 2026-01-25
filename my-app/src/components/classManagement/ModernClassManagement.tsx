@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft,
   Users,
@@ -19,6 +20,7 @@ import type UserModel from '../user/UserModel';
 import { toast } from 'react-toastify';
 
 const ModernClassManagement: React.FC = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   
@@ -70,12 +72,12 @@ const ModernClassManagement: React.FC = () => {
       
     } catch (err) {
       console.error('Error fetching data:', err);
-      setError('Failed to load class details');
-      toast.error('Failed to load class details');
+      setError(t('classes.failedToLoadClassDetails', 'Failed to load class details'));
+      toast.error(t('classes.failedToLoadClassDetails', 'Failed to load class details'));
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     fetchData();
@@ -96,7 +98,7 @@ const ModernClassManagement: React.FC = () => {
   // Get teacher names for display
   const getTeacherName = (teacherId: string) => {
     const teacher = allTeachers.find(t => t.id?.toString() === teacherId);
-    return teacher ? teacher.name : 'Unknown Teacher';
+    return teacher ? teacher.name : t('classes.unknownTeacher', 'Unknown Teacher');
   };
 
   // Handle student selection with immediate class transfer checking
@@ -120,8 +122,8 @@ const ModernClassManagement: React.FC = () => {
         setConfirmationDialog({
           isOpen: true,
           studentId,
-          studentName: studentName || 'Unknown Student',
-          currentClass: currentClass?.classNumber || 'Unknown Class',
+          studentName: studentName || t('classes.unknownStudent', 'Unknown Student'),
+          currentClass: currentClass?.classNumber || t('classes.unknownClass', 'Unknown Class'),
           newClass: newClass?.classNumber || classData.classNumber
         });
       } else {
@@ -204,14 +206,14 @@ const ModernClassManagement: React.FC = () => {
       
       setSelectedStudents([]);
       setStudentDialogOpen(false);
-      toast.success(`Successfully added ${selectedStudents.length} student(s) to class`);
+      toast.success(t('classes.successfullyAddedXStudents', `Successfully added ${selectedStudents.length} student(s) to class`).replace('{{count}}', selectedStudents.length.toString()));
       
       // Refresh data to ensure consistency
       fetchData();
       
     } catch (err) {
       console.error('Error adding students:', err);
-      let errorMessage = 'Failed to add students to class';
+      let errorMessage = t('classes.failedToAddStudentsToClass', 'Failed to add students to class');
       if (err instanceof Error) {
         errorMessage = err.message;
       } else if (typeof err === 'object' && err !== null && 'response' in err) {
@@ -277,10 +279,10 @@ const ModernClassManagement: React.FC = () => {
       
       setSelectedTeachers([]);
       setTeacherDialogOpen(false);
-      toast.success(`Added ${selectedTeachers.length} teacher(s) to class and updated their assignments`);
+      toast.success(t('classes.addedXTeachersToClass', `Added ${selectedTeachers.length} teacher(s) to class and updated their assignments`).replace('{{count}}', selectedTeachers.length.toString()));
     } catch (err) {
       console.error('Error adding teachers:', err);
-      toast.error('Failed to add teachers to class');
+      toast.error(t('classes.failedToAddTeachersToClass', 'Failed to add teachers to class'));
     }
   };
 
@@ -304,10 +306,10 @@ const ModernClassManagement: React.FC = () => {
         students: updatedStudents
       });
       
-      toast.success('Student removed from class');
+      toast.success(t('classes.studentRemovedFromClass', 'Student removed from class'));
     } catch (err) {
       console.error('Error removing student:', err);
-      toast.error('Failed to remove student from class');
+      toast.error(t('classes.failedToRemoveStudentFromClass', 'Failed to remove student from class'));
     }
   };
 
@@ -350,10 +352,10 @@ const ModernClassManagement: React.FC = () => {
         teachers: updatedTeachers
       });
       
-      toast.success('Teacher removed from class and their assignments updated');
+      toast.success(t('classes.teacherRemovedFromClass', 'Teacher removed from class and their assignments updated'));
     } catch (err) {
       console.error('Error removing teacher:', err);
-      toast.error('Failed to remove teacher from class');
+      toast.error(t('classes.failedToRemoveTeacherFromClass', 'Failed to remove teacher from class'));
     }
   };
 
@@ -415,7 +417,7 @@ const ModernClassManagement: React.FC = () => {
               fontWeight: '500'
             }}
           >
-            Retry
+            {t('classes.retry', 'Retry')}
           </button>
         </div>
       </div>
@@ -454,7 +456,7 @@ const ModernClassManagement: React.FC = () => {
             }}
           >
             <ArrowLeft size={20} />
-            Back to Classes
+            {t('classes.backToClasses', 'Back to Classes')}
           </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <BookOpen size={32} color="#2563eb" />
@@ -464,7 +466,7 @@ const ModernClassManagement: React.FC = () => {
               color: '#1f2937',
               margin: 0
             }}>
-              Class {classData?.classNumber}
+              {t('classes.class', 'Class')} {classData?.classNumber}
             </h1>
           </div>
         </div>
@@ -500,7 +502,7 @@ const ModernClassManagement: React.FC = () => {
                 color: '#1f2937',
                 margin: 0
               }}>
-                Students ({classData?.students.length || 0})
+                {t('classes.students', 'Students')} ({classData?.students.length || 0})
               </h2>
             </div>
             <button
@@ -521,7 +523,7 @@ const ModernClassManagement: React.FC = () => {
               }}
             >
               <Plus size={16} />
-              Add Students
+              {t('classes.addStudents', 'Add Students')}
             </button>
           </div>
 
@@ -534,7 +536,7 @@ const ModernClassManagement: React.FC = () => {
               }}>
                 <Users size={48} color="#d1d5db" />
                 <p style={{ margin: '16px 0 0 0', fontSize: '16px' }}>
-                  No students in this class yet
+                  {t('classes.noStudentsInClass', 'No students in this class yet')}
                 </p>
               </div>
             ) : (
@@ -578,7 +580,7 @@ const ModernClassManagement: React.FC = () => {
                           margin: 0,
                           fontSize: '12px'
                         }}>
-                          DOB: {new Date(student.DOB).toLocaleDateString()}
+                          {t('classes.dob', 'DOB')}: {new Date(student.DOB).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
@@ -593,7 +595,7 @@ const ModernClassManagement: React.FC = () => {
                         cursor: 'pointer',
                         transition: 'all 0.2s'
                       }}
-                      title="Remove student"
+                      title={t('classes.removeStudent', 'Remove student')}
                     >
                       <UserMinus size={16} />
                     </button>
@@ -626,7 +628,7 @@ const ModernClassManagement: React.FC = () => {
                 color: '#1f2937',
                 margin: 0
               }}>
-                Teachers ({classData?.teachers.length || 0})
+                {t('classes.teachers', 'Teachers')} ({classData?.teachers.length || 0})
               </h2>
             </div>
             <button
@@ -647,7 +649,7 @@ const ModernClassManagement: React.FC = () => {
               }}
             >
               <Plus size={16} />
-              Add Teachers
+              {t('classes.addTeachers', 'Add Teachers')}
             </button>
           </div>
 
@@ -660,7 +662,7 @@ const ModernClassManagement: React.FC = () => {
               }}>
                 <GraduationCap size={48} color="#d1d5db" />
                 <p style={{ margin: '16px 0 0 0', fontSize: '16px' }}>
-                  No teachers assigned to this class yet
+                  {t('classes.noTeachersAssigned', 'No teachers assigned to this class yet')}
                 </p>
               </div>
             ) : (
@@ -710,7 +712,7 @@ const ModernClassManagement: React.FC = () => {
                         cursor: 'pointer',
                         transition: 'all 0.2s'
                       }}
-                      title="Remove teacher"
+                      title={t('classes.removeTeacher', 'Remove teacher')}
                     >
                       <UserMinus size={16} />
                     </button>
@@ -758,7 +760,7 @@ const ModernClassManagement: React.FC = () => {
                 color: '#1f2937',
                 margin: 0
               }}>
-                Add Students to Class
+                {t('classes.addStudentsToClass', 'Add Students to Class')}
               </h3>
               <button
                 onClick={() => {
@@ -792,7 +794,7 @@ const ModernClassManagement: React.FC = () => {
               />
               <input
                 type="text"
-                placeholder="Search students..."
+                placeholder={t('classes.searchStudents', 'Search students...')}
                 value={studentSearch}
                 onChange={(e) => setStudentSearch(e.target.value)}
                 style={{
@@ -821,7 +823,7 @@ const ModernClassManagement: React.FC = () => {
                 }}>
                   <Users size={48} color="#d1d5db" />
                   <p style={{ margin: '16px 0 0 0' }}>
-                    No available students found
+                    {t('classes.noAvailableStudentsFound', 'No available students found')}
                   </p>
                 </div>
               ) : (
@@ -872,7 +874,7 @@ const ModernClassManagement: React.FC = () => {
                           margin: 0,
                           fontSize: '12px'
                         }}>
-                          DOB: {new Date(student.DOB).toLocaleDateString()}
+                          {t('classes.dob', 'DOB')}: {new Date(student.DOB).toLocaleDateString()}
                         </p>
                       </div>
                     </label>
@@ -904,7 +906,7 @@ const ModernClassManagement: React.FC = () => {
                   fontWeight: '500'
                 }}
               >
-                Cancel
+                {t('classes.cancel', 'Cancel')}
               </button>
               <button
                 onClick={handleAddStudents}
@@ -920,7 +922,10 @@ const ModernClassManagement: React.FC = () => {
                   fontWeight: '500'
                 }}
               >
-                Add {selectedStudents.length} Student{selectedStudents.length !== 1 ? 's' : ''}
+                {selectedStudents.length === 1 
+                  ? t('classes.addXStudent', 'Add 1 Student')
+                  : t('classes.addXStudents', 'Add {{count}} Students').replace('{{count}}', selectedStudents.length.toString())
+                }
               </button>
             </div>
           </div>
@@ -963,7 +968,7 @@ const ModernClassManagement: React.FC = () => {
                 color: '#1f2937',
                 margin: 0
               }}>
-                Add Teachers to Class
+                {t('classes.addTeachersToClass', 'Add Teachers to Class')}
               </h3>
               <button
                 onClick={() => {
@@ -997,7 +1002,7 @@ const ModernClassManagement: React.FC = () => {
               />
               <input
                 type="text"
-                placeholder="Search teachers..."
+                placeholder={t('classes.searchTeachers', 'Search teachers...')}
                 value={teacherSearch}
                 onChange={(e) => setTeacherSearch(e.target.value)}
                 style={{
@@ -1026,7 +1031,7 @@ const ModernClassManagement: React.FC = () => {
                 }}>
                   <GraduationCap size={48} color="#d1d5db" />
                   <p style={{ margin: '16px 0 0 0' }}>
-                    No available teachers found
+                    {t('classes.noAvailableTeachersFound', 'No available teachers found')}
                   </p>
                 </div>
               ) : (
@@ -1116,7 +1121,7 @@ const ModernClassManagement: React.FC = () => {
                   fontWeight: '500'
                 }}
               >
-                Cancel
+                {t('classes.cancel', 'Cancel')}
               </button>
               <button
                 onClick={handleAddTeachers}
@@ -1132,7 +1137,10 @@ const ModernClassManagement: React.FC = () => {
                   fontWeight: '500'
                 }}
               >
-                Add {selectedTeachers.length} Teacher{selectedTeachers.length !== 1 ? 's' : ''}
+                {selectedTeachers.length === 1
+                  ? t('classes.addXTeacher', 'Add 1 Teacher')
+                  : t('classes.addXTeachers', 'Add {{count}} Teachers').replace('{{count}}', selectedTeachers.length.toString())
+                }
               </button>
             </div>
           </div>

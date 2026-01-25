@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Save, BookOpen } from 'lucide-react';
 import { createClass } from '../studentManagement/Api-Requests/ClassAPIService';
 import type { CreateClassRequest } from '../studentManagement/Api-Requests/ClassAPIService';
 import { toast } from 'react-toastify';
 
 const AddClass: React.FC = () => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<CreateClassRequest>({
     classNumber: '',
     teachers: [],
@@ -19,9 +21,9 @@ const AddClass: React.FC = () => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.classNumber.trim()) {
-      newErrors.classNumber = 'Class number is required';
+      newErrors.classNumber = t('classes.classNumberRequired', 'Class number is required');
     } else if (formData.classNumber.length < 2) {
-      newErrors.classNumber = 'Class number must be at least 2 characters';
+      newErrors.classNumber = t('classes.classNumberTooShort', 'Class number must be at least 2 characters');
     }
 
     setErrors(newErrors);
@@ -59,7 +61,7 @@ const AddClass: React.FC = () => {
       navigate('../classes');
     } catch (error: unknown) {
       console.error('Error creating class:', error);
-      toast.error('Failed to create class. Please try again.');
+      toast.error(t('classes.failedToCreate', 'Failed to create class. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -114,7 +116,7 @@ const AddClass: React.FC = () => {
               color: '#111827', 
               margin: 0 
             }}>
-              Add New Class
+              {t('classes.addNewClass', 'Add New Class')}
             </h1>
           </div>
         </div>
@@ -149,7 +151,7 @@ const AddClass: React.FC = () => {
                   display: 'inline', 
                   marginRight: '4px' 
                 }} />
-                Class Number
+                {t('classes.classNumber', 'Class Number')}
               </label>
               <input
                 type="text"
@@ -157,7 +159,7 @@ const AddClass: React.FC = () => {
                 name="classNumber"
                 value={formData.classNumber}
                 onChange={handleInputChange}
-                placeholder="Enter class number (e.g., א1, ב2, ג3)"
+                placeholder={t('classes.enterClassNumber', 'Enter class number (e.g., א1, ב2, ג3)')}
                 style={{
                   width: '100%',
                   padding: '12px 16px',
@@ -201,7 +203,7 @@ const AddClass: React.FC = () => {
               color: '#0369a1'
             }}>
               <p style={{ margin: 0, fontSize: '14px' }}>
-                <strong>Note:</strong> You can assign teachers and students to this class after creating it.
+                <strong>{t('classes.note', 'Note:')}</strong> {t('classes.assignAfterCreating', 'You can assign teachers and students to this class after creating it.')}
               </p>
             </div>
 
@@ -256,7 +258,7 @@ const AddClass: React.FC = () => {
                 ) : (
                   <>
                     <Save style={{ height: '20px', width: '20px' }} />
-                    <span>Create Class</span>
+                    <span>{t('classes.createClass', 'Create Class')}</span>
                   </>
                 )}
               </button>
@@ -288,7 +290,7 @@ const AddClass: React.FC = () => {
                   }
                 }}
               >
-                Cancel
+                {t('common.cancel', 'Cancel')}
               </button>
             </div>
           </form>
@@ -309,7 +311,7 @@ const AddClass: React.FC = () => {
               color: '#111827', 
               marginBottom: '16px' 
             }}>
-              Preview
+              {t('classes.preview', 'Preview')}
             </h3>
             <div style={{ 
               display: 'flex', 
@@ -338,14 +340,14 @@ const AddClass: React.FC = () => {
                   color: '#111827', 
                   margin: '0 0 4px 0' 
                 }}>
-                  Class {formData.classNumber}
+                  {t('classes.class', 'Class')} {formData.classNumber}
                 </h4>
                 <p style={{ 
                   color: '#6b7280', 
                   fontSize: '14px', 
                   margin: 0 
                 }}>
-                  Ready to assign teachers and students
+                  {t('classes.readyToAssign', 'Ready to assign teachers and students')}
                 </p>
               </div>
             </div>
