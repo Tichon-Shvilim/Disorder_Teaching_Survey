@@ -298,16 +298,16 @@ const UsersList: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow sx={{ backgroundColor: '#f7fafc' }}>
-              <TableCell sx={{ fontWeight: 600, color: '#4a5568', fontSize: '14px', padding: '16px 24px', textAlign: isRTL ? 'right' : 'left' }}>
+              <TableCell align={isRTL ? 'left' : 'right'} sx={{ fontWeight: 600, color: '#4a5568', fontSize: '14px', padding: '16px 24px' }}>
                 {t('users.user')}
               </TableCell>
-              <TableCell sx={{ fontWeight: 600, color: '#4a5568', fontSize: '14px', padding: '16px 24px', textAlign: isRTL ? 'right' : 'left' }}>
+              <TableCell align={isRTL ? 'left' : 'right'} sx={{ fontWeight: 600, color: '#4a5568', fontSize: '14px', padding: '16px 24px' }}>
                 {t('users.role')}
               </TableCell>
-              <TableCell sx={{ fontWeight: 600, color: '#4a5568', fontSize: '14px', padding: '16px 24px', textAlign: isRTL ? 'right' : 'left' }}>
+              <TableCell align={isRTL ? 'left' : 'right'} sx={{ fontWeight: 600, color: '#4a5568', fontSize: '14px', padding: '16px 24px' }}>
                 {t('users.status')}
               </TableCell>
-              <TableCell sx={{ fontWeight: 600, color: '#4a5568', fontSize: '14px', padding: '16px 24px', width: '280px', textAlign: isRTL ? 'right' : 'left' }}>
+              <TableCell align={isRTL ? 'left' : 'right'} sx={{ fontWeight: 600, color: '#4a5568', fontSize: '14px', padding: '16px 24px', width: '280px' }}>
                 {t('users.assignments')}
               </TableCell>
               <TableCell align={isRTL ? 'left' : 'right'} sx={{ fontWeight: 600, color: '#4a5568', fontSize: '14px', padding: '16px 24px' }}>
@@ -326,9 +326,9 @@ const UsersList: React.FC = () => {
                   borderBottom: '1px solid #e2e8f0'
                 }}
               >
-                <TableCell sx={{ padding: '16px 24px', textAlign: isRTL ? 'right' : 'left' }}>
+                <TableCell align={isRTL ? 'left' : 'right'} sx={{ padding: '16px 24px' }}>
                   <Box sx={{ 
-                    display: 'flex', 
+                    display: 'flex',
                     alignItems: 'center', 
                     gap: 2,
                     flexDirection: isRTL ? 'row-reverse' : 'row',
@@ -337,7 +337,7 @@ const UsersList: React.FC = () => {
                   }}>
                     {isRTL ? (
                       <>
-                        <Box sx={{ textAlign: 'right', flex: 1 }}>
+                        <Box sx={{ textAlign: isRTL ? 'left' : 'right', flex: 1 }}>
                           <Typography sx={{ fontWeight: 500, color: '#1a202c', fontSize: '14px' }}>
                             {user.name}
                           </Typography>
@@ -386,7 +386,7 @@ const UsersList: React.FC = () => {
                     )}
                   </Box>
                 </TableCell>
-                <TableCell sx={{ padding: '16px 24px', textAlign: isRTL ? 'right' : 'left' }}>
+                <TableCell align={isRTL ? 'right' : 'left'} sx={{ padding: '16px 24px' }}>
                   <Chip
                     label={t(`users.${user.role.toLowerCase()}`)}
                     size="small"
@@ -399,7 +399,7 @@ const UsersList: React.FC = () => {
                     }}
                   />
                 </TableCell>
-                <TableCell sx={{ padding: '16px 24px', textAlign: isRTL ? 'right' : 'left' }}>
+                <TableCell align={isRTL ? 'right' : 'left'} sx={{ padding: '16px 24px' }}>
                   <Chip
                     label={user.status === 'inactive' ? t('users.inactive') : t('users.active')}
                     size="small"
@@ -412,7 +412,7 @@ const UsersList: React.FC = () => {
                     }}
                   />
                 </TableCell>
-                <TableCell sx={{ padding: '16px 24px', maxWidth: '300px', textAlign: isRTL ? 'right' : 'left' }}>
+                <TableCell align={isRTL ? 'right' : 'left'} sx={{ padding: '16px 24px', maxWidth: '300px' }}>
                   {user.role.toLowerCase() === 'teacher' && user.classes && user.classes.length > 0 ? (
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                       {user.classes.slice(0, 3).map((classItem) => (
@@ -434,7 +434,7 @@ const UsersList: React.FC = () => {
                         >
                           <SchoolIcon sx={{ fontSize: 14, color: '#3182ce' }} />
                           <Typography sx={{ fontSize: '12px', fontWeight: 500, color: '#2c5aa0' }}>
-                            Class {classItem.classNumber}
+                            {t('classes.class', 'Class')} {classItem.classNumber}
                           </Typography>
                         </Box>
                       ))}
@@ -500,12 +500,12 @@ const UsersList: React.FC = () => {
                       )}
                     </Box>
                   ) : (
-                    <Typography sx={{ color: '#a0aec0', fontSize: '12px', fontStyle: 'italic' }}>
+                    <Typography align={isRTL ? 'right' : 'left'} sx={{ color: '#a0aec0', fontSize: '12px', fontStyle: 'italic' }}>
                       {t('users.noAssignments')}
                     </Typography>
                   )}
                 </TableCell>
-                <TableCell align={isRTL ? 'left' : 'right'} sx={{ padding: '16px 24px' }}>
+                <TableCell align={isRTL ? 'right' : 'left'} sx={{ padding: '16px 24px' }}>
                   <IconButton
                     onClick={() => user.id !== undefined && onEdit(user.id)}
                     disabled={user.id === undefined}
@@ -624,7 +624,7 @@ const UsersList: React.FC = () => {
               <SchoolIcon sx={{ fontSize: 18, color: '#3182ce' }} />
             </ListItemIcon>
             <ListItemText
-              primary={`Class ${classItem.classNumber}`}
+              primary={`${t('classes.class', 'Class')} ${classItem.classNumber}`}
               primaryTypographyProps={{
                 fontSize: '14px',
                 fontWeight: 500,

@@ -1,6 +1,7 @@
 import React from 'react';
 import { FileText, Download } from 'lucide-react';
 import { usePDFGeneration } from './usePDFGeneration';
+import { FormAPIService } from '../formManagement/Api-Requests/FormAPIService';
 import type { FormSubmission } from '../formManagement/models/FormModels';
 
 interface PDFDownloadButtonProps {
@@ -28,7 +29,15 @@ const PDFDownloadButton: React.FC<PDFDownloadButtonProps> = ({
 
   const handleDownload = async () => {
     try {
-      await generateFormPDF(submission, {
+      // If submission doesn't have answers or has empty answers, fetch the full submission
+      let fullSubmission = submission;
+      if (!submission.answers || submission.answers.length === 0) {
+        console.log('Fetching full submission data for PDF generation...');
+        fullSubmission = await FormAPIService.getSubmission(submission._id);
+        console.log('Full submission loaded:', fullSubmission);
+      }
+      
+      await generateFormPDF(fullSubmission, {
         fileName: fileName || `form_submission_${submission._id}`,
         includeMetadata
       });

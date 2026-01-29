@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 import {
   Paper,
   Typography,
@@ -45,6 +46,7 @@ interface Student {
 }
 
 const StudentDetails: React.FC = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [student, setStudent] = useState<Student | null>(null);
@@ -62,7 +64,7 @@ const StudentDetails: React.FC = () => {
         })
         .catch((error) => {
           console.error("Error fetching student:", error);
-          toast.error("Failed to load student details");
+          toast.error(t('students.failedToLoadStudentDetails', 'Failed to load student details'));
         })
         .finally(() => setLoading(false));
     }
@@ -76,7 +78,7 @@ const StudentDetails: React.FC = () => {
     return (
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Paper elevation={3} sx={{ p: 4, textAlign: 'center' }}>
-          <Typography>Loading student details...</Typography>
+          <Typography>{t('students.loadingStudentDetails', 'Loading student details...')}</Typography>
         </Paper>
       </Container>
     );
@@ -86,9 +88,9 @@ const StudentDetails: React.FC = () => {
     return (
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Paper elevation={3} sx={{ p: 4, textAlign: 'center' }}>
-          <Typography color="error">Student not found</Typography>
+          <Typography color="error">{t('students.studentNotFound', 'Student not found')}</Typography>
           <Button onClick={handleBack} sx={{ mt: 2 }}>
-            Back to Students
+            {t('students.backToStudents', 'Back to Students')}
           </Button>
         </Paper>
       </Container>
@@ -114,7 +116,7 @@ const StudentDetails: React.FC = () => {
               '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' }
             }}
           >
-            Back to Students
+            {t('students.backToStudents', 'Back to Students')}
           </Button>
           
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
@@ -133,7 +135,7 @@ const StudentDetails: React.FC = () => {
                 {student.name}
               </Typography>
               <Chip
-                label="Student"
+                label={t('students.student', 'Student')}
                 sx={{ 
                   bgcolor: 'rgba(255,255,255,0.2)',
                   color: 'white',
@@ -148,14 +150,14 @@ const StudentDetails: React.FC = () => {
         <CardContent sx={{ p: 4 }}>
           <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
             <Person color="primary" />
-            Student Information
+            {t('students.studentInformation', 'Student Information')}
           </Typography>
           
           <Box sx={{ display: 'grid', gap: 3 }}>
             <Card variant="outlined">
               <CardContent>
                 <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                  Full Name
+                  {t('students.fullName', 'Full Name')}
                 </Typography>
                 <Typography variant="h6">
                   {student.name}
@@ -168,7 +170,7 @@ const StudentDetails: React.FC = () => {
                 <CardContent>
                   <Typography variant="subtitle2" color="text.secondary" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Email fontSize="small" />
-                    Email Address
+                    {t('students.emailAddress', 'Email Address')}
                   </Typography>
                   <Typography variant="body1">
                     {student.email}
@@ -182,7 +184,7 @@ const StudentDetails: React.FC = () => {
                 <CardContent>
                   <Typography variant="subtitle2" color="text.secondary" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Phone fontSize="small" />
-                    Phone Number
+                    {t('students.phoneNumber', 'Phone Number')}
                   </Typography>
                   <Typography variant="body1">
                     {student.phone}
@@ -196,7 +198,7 @@ const StudentDetails: React.FC = () => {
                 <CardContent>
                   <Typography variant="subtitle2" color="text.secondary" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <School fontSize="small" />
-                    Class
+                    {t('students.class', 'Class')}
                   </Typography>
                   <Chip
                     label={student.class.classNumber}
@@ -213,7 +215,7 @@ const StudentDetails: React.FC = () => {
                 <CardContent>
                   <Typography variant="subtitle2" color="text.secondary" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <CalendarToday fontSize="small" />
-                    Date of Birth
+                    {t('students.dateOfBirth', 'Date of Birth')}
                   </Typography>
                   <Typography variant="body1">
                     {new Date(student.dateOfBirth).toLocaleDateString()}
@@ -238,7 +240,7 @@ const StudentDetails: React.FC = () => {
           {/* Form Actions */}
           <Box sx={{ mb: 3 }}>
             <Typography variant="h6" gutterBottom sx={{ color: 'text.secondary', fontSize: '1rem' }}>
-              Form Assessment
+              {t('students.formAssessment', 'Form Assessment')}
             </Typography>
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
               <Button
@@ -254,7 +256,7 @@ const StudentDetails: React.FC = () => {
                   }
                 }}
               >
-                Fill Form (V1)
+                {t('students.fillFormV1', 'Fill Form (V1)')}
               </Button>
               <Button
                 variant="outlined"
@@ -269,7 +271,7 @@ const StudentDetails: React.FC = () => {
                   }
                 }}
               >
-                View Submissions (V1)
+                {t('students.viewSubmissionsV1', 'View Submissions (V1)')}
               </Button>
               <Button
                 variant="outlined"
@@ -284,7 +286,7 @@ const StudentDetails: React.FC = () => {
                   }
                 }}
               >
-                Fill Form
+                {t('students.fillForm', 'Fill Form')}
               </Button>
               <Button
                 variant="outlined"
@@ -299,7 +301,7 @@ const StudentDetails: React.FC = () => {
                   }
                 }}
               >
-                View Submissions
+                {t('students.viewSubmissions', 'View Submissions')}
               </Button>
             </Box>
           </Box>
@@ -313,14 +315,14 @@ const StudentDetails: React.FC = () => {
                 variant="outlined"
                 onClick={() => navigate(`/layout/students/${id}/edit`)}
               >
-                Edit Student
+                {t('students.editStudent', 'Edit Student')}
               </Button>
             </PermissionGate>
             <Button
               variant="contained"
               onClick={handleBack}
             >
-              Back to Students
+              {t('students.backToStudents', 'Back to Students')}
             </Button>
           </Box>
         </CardContent>
