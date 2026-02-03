@@ -102,7 +102,7 @@ router.post('/calculate/:submissionId', async (req, res) => {
     
     if (analytics) {
       // Update existing analytics
-      analytics.overallScore = overallScoreData.totalScore;
+      analytics.overallScore = overallScoreData.overallScore;
       analytics.domainScores = domainScores;
       analytics.calculatedAt = new Date();
       analytics.isValid = true;
@@ -116,7 +116,7 @@ router.post('/calculate/:submissionId', async (req, res) => {
         studentName: submission.studentName,
         questionnaireTitle: submission.questionnaireTitle,
         submittedAt: submission.submittedAt,
-        overallScore: overallScoreData.totalScore,
+        overallScore: overallScoreData.overallScore,
         domainScores: domainScores
       });
     }
@@ -128,7 +128,7 @@ router.post('/calculate/:submissionId', async (req, res) => {
       message: 'Analytics calculated successfully',
       data: {
         submissionId,
-        overallScore: overallScoreData.totalScore,
+        overallScore: overallScoreData.overallScore,
         domainScores: domainScores,
         calculatedAt: analytics.calculatedAt
       }

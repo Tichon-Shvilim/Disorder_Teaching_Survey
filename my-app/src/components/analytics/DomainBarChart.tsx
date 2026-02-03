@@ -16,13 +16,15 @@ interface DomainBarChartProps {
 
 const DomainBarChart: React.FC<DomainBarChartProps> = ({ data }) => {
   const getBarWidth = (score: number) => {
-    return `${Math.max(2, score * 100)}%`; // Minimum 2% for visibility
+    // Score is already 0-100, so use directly
+    return `${Math.max(2, score)}%`; // Minimum 2% for visibility
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 0.8) return '#4CAF50'; // Green
-    if (score >= 0.6) return '#FF9800'; // Orange  
-    if (score >= 0.4) return '#FFC107'; // Yellow
+    // Score is already 0-100, so use directly
+    if (score >= 80) return '#4CAF50'; // Green
+    if (score >= 60) return '#FF9800'; // Orange  
+    if (score >= 40) return '#FFC107'; // Yellow
     return '#F44336'; // Red
   };
 
@@ -54,7 +56,7 @@ const DomainBarChart: React.FC<DomainBarChartProps> = ({ data }) => {
               </div>
               
               <div className="bar-value">
-                {Math.round(domain.averageScore * 100)}%
+                {Math.round(domain.averageScore)}%
               </div>
             </div>
           </div>

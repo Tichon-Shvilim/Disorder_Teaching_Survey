@@ -8,9 +8,10 @@
  * @param {*} answer - The raw answer value
  * @param {string} inputType - Type of input (single-choice, scale, etc.)
  * @param {Array} options - Available options (for choice-based questions)
+ * @param {Object} questionNode - The question node with scale properties
  * @returns {number} Normalized score (0-100)
  */
-function normalizeAnswer(answer, inputType, options = []) {
+function normalizeAnswer(answer, inputType, options = [], questionNode = null) {
   switch (inputType) {
     case 'single-choice':
       if (options.length === 0) return 0;
@@ -42,30 +43,27 @@ function normalizeAnswer(answer, inputType, options = []) {
       return ((avgSelected - minVal) / (maxVal - minVal)) * 100;
 
     case 'scale':
-      if (options.length === 0) return 0;
-      
-      const scaleMin = Math.min(...options.map(opt => opt.value));
-      const scaleMax = Math.max(...options.map(opt => opt.value));
+      // Use scaleMin/scaleMax from question node, not options
+      const scaleMin = questionNode?.scaleMin || 1;
+      const scaleMax = questionNode?.scaleMax || 5;
       
       if (scaleMin === scaleMax) return 100;
       return ((answer - scaleMin) / (scaleMax - scaleMin)) * 100;
 
     case 'number':
-      // For number inputs, we need context (min/max) which should be in options
-      // For now, assume 0-100 range if no context available
+      // For number inputs, use question node properties or options
       if (typeof answer !== 'number') return 0;
       
-      const numMin = options.length > 0 ? Math.min(...options.map(opt => opt.value)) : 0;
-      const numMax = options.length > 0 ? Math.max(...options.map(opt => opt.value)) : 100;
+      const numMin = questionNode?.scaleMin || (options.length > 0 ? Math.min(...options.map(opt => opt.value)) : 0);
+      const numMax = questionNode?.scaleMax || (options.length > 0 ? Math.max(...options.map(opt => opt.value)) : 100);
       
       if (numMin === numMax) return 100;
       const clampedAnswer = Math.max(numMin, Math.min(numMax, answer));
       return ((clampedAnswer - numMin) / (numMax - numMin)) * 100;
 
     case 'text':
-      // Text answers can't be easily normalized to numeric scores
-      // Return 50% as neutral, or implement custom logic based on requirements
-      return 50;
+      // Text answers excluded from analytics
+      return 0;
 
     default:
       return 0;
@@ -73,7 +71,7 @@ function normalizeAnswer(answer, inputType, options = []) {
 }
 
 /**
- * Calculate domain score from answers
+ * Calculate domain score from answers with validation
  * @param {Array} answers - Array of FormAnswerV2 objects for this domain
  * @param {Array} questionNodes - Question nodes from questionnaire template
  * @returns {Object} Domain score calculation result
@@ -94,16 +92,17 @@ function calculateDomainScore(answers, questionNodes) {
   const details = [];
 
   answers.forEach(answer => {
-    if (!answer.graphable) return; // Skip non-graphable questions
+    // Include all questions except text in calculation (remove graphable filter)
+    if (answer.inputType === 'text') return; // Skip text questions only
     
-    // Find corresponding question node for options
+    // Find corresponding question node for options and scale properties
     const questionNode = questionNodes?.find(q => q.id === answer.questionId);
     const options = questionNode?.options || [];
     
-    // Normalize the answer
-    const normalizedScore = normalizeAnswer(answer.answer, answer.inputType, options);
+    // Normalize the answer with question node context
+    const normalizedScore = normalizeAnswer(answer.answer, answer.inputType, options, questionNode);
     
-    // Apply weight
+    // Apply weight (default to 1 if missing)
     const weight = answer.weight || 1;
     const weightedScore = normalizedScore * weight;
     
@@ -125,7 +124,7 @@ function calculateDomainScore(answers, questionNodes) {
       score: 0,
       maxScore: 100,
       answeredQuestions: 0,
-      totalQuestions: questionNodes ? questionNodes.length : 0,
+      totalQuestions: questionNodes ? questionNodes.filter(q => q.type === 'question' && q.inputType !== 'text').length : 0,
       details: []
     };
   }
@@ -135,54 +134,49 @@ function calculateDomainScore(answers, questionNodes) {
   return {
     score: Math.round(finalScore * 100) / 100,
     maxScore: 100,
-    answeredQuestions: answers.filter(a => a.graphable).length,
-    totalQuestions: questionNodes ? questionNodes.filter(q => q.graphable).length : 0,
+    answeredQuestions: answers.filter(a => a.inputType !== 'text').length,
+    totalQuestions: questionNodes ? questionNodes.filter(q => q.type === 'question' && q.inputType !== 'text').length : 0,
     totalWeight: totalWeight,
     details: details
   };
 }
 
 /**
- * Extract domain scores from form submission
+ * Extract domain scores from form submission with proper hierarchy support
  * @param {Object} submission - FormSubmissionV2 object
  * @param {Array} questionnaireStructure - The questionnaire structure (FormNodeV2[])
  * @returns {Array} Array of domain scores
  */
 function extractDomainScores(submission, questionnaireStructure) {
-  if (!submission?.answers || !questionnaireStructure) {
+  if (!submission?.answers || !Array.isArray(questionnaireStructure)) {
     return [];
   }
 
-  // Group answers by root domain (first level in nodePath)
-  const answersByDomain = {};
-  submission.answers.forEach(answer => {
-    if (!answer.nodePath || answer.nodePath.length === 0) return;
-    
-    const rootDomain = answer.nodePath[0];
-    if (!answersByDomain[rootDomain]) {
-      answersByDomain[rootDomain] = [];
-    }
-    answersByDomain[rootDomain].push(answer);
-  });
-
-  // Calculate scores for each domain
   const domainScores = [];
   
-  Object.keys(answersByDomain).forEach(domainId => {
-    // Find the domain node in structure
-    const domainNode = questionnaireStructure.find(node => node.id === domainId);
-    if (!domainNode) return;
-
+  // Process each top-level domain
+  questionnaireStructure.forEach(domainNode => {
+    if (domainNode.type !== 'group') return;
+    
+    // Get all answers that belong to this domain (any level of nesting)
+    const domainAnswers = submission.answers.filter(answer => {
+      return Array.isArray(answer.nodePath) && 
+             answer.nodePath.length > 0 && 
+             answer.nodePath[0] === domainNode.id;
+    });
+    
+    if (domainAnswers.length === 0) return;
+    
     // Get all question nodes for this domain (recursively)
     const questionNodes = extractQuestionsFromNode(domainNode);
     
     // Calculate domain score
-    const scoreData = calculateDomainScore(answersByDomain[domainId], questionNodes);
+    const scoreData = calculateDomainScore(domainAnswers, questionNodes);
     
     domainScores.push({
-      nodeId: domainId,
-      nodePath: [domainId],
-      title: domainNode.title || domainId,
+      nodeId: domainNode.id,
+      nodePath: [domainNode.id],
+      title: domainNode.title || domainNode.id,
       score: scoreData.score,
       maxScore: scoreData.maxScore,
       answeredQuestions: scoreData.answeredQuestions,
@@ -201,6 +195,8 @@ function extractDomainScores(submission, questionnaireStructure) {
  * @returns {Array} Array of question nodes
  */
 function extractQuestionsFromNode(node) {
+  if (!node) return [];
+  
   const questions = [];
   
   if (node.type === 'question') {
@@ -210,6 +206,17 @@ function extractQuestionsFromNode(node) {
   if (node.children && node.children.length > 0) {
     node.children.forEach(child => {
       questions.push(...extractQuestionsFromNode(child));
+    });
+  }
+  
+  // Also check option-specific children for choice questions
+  if (node.options && Array.isArray(node.options)) {
+    node.options.forEach(option => {
+      if (option.children && option.children.length > 0) {
+        option.children.forEach(child => {
+          questions.push(...extractQuestionsFromNode(child));
+        });
+      }
     });
   }
   
@@ -243,7 +250,7 @@ function calculateOverallScore(domainScores) {
   const averageScore = totalWeight > 0 ? totalWeightedScore / totalWeight : 0;
 
   return {
-    totalScore: Math.round(averageScore * 100) / 100,
+    overallScore: Math.round(averageScore * 100) / 100,
     maxScore: 100,
     averageScore: Math.round(averageScore * 100) / 100,
     domainCount: domainScores.length,

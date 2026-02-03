@@ -352,7 +352,7 @@ const FormResults: React.FC = () => {
               data={analytics.domainScores.map(domain => ({
                 nodeId: domain.nodeId,
                 title: domain.title,
-                averageScore: domain.score / 100, // Convert to 0-1 scale for chart
+                averageScore: domain.score, // Score is already 0-100
                 totalQuestions: domain.totalQuestions
               }))}
               type="student"
