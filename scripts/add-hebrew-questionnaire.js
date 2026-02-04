@@ -1,0 +1,428 @@
+const mongoose = require('mongoose');
+require('dotenv').config();
+
+// Connect to MongoDB
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/disorder_teaching_survey');
+
+const QuestionnaireTemplate = require('../microservices/form-service/models/QuestionnaireTemplate');
+
+const hebrewQuestionnaire = {
+  title: "הערכת התפתחות ולמידה - תלמידים עם צרכים מיוחדים",
+  description: "שאלון מקיף להערכת התקדמות תלמידים בתחומי התפתחות, למידה והתנהגות",
+  createdBy: "system",
+  structure: [
+    {
+      id: "communication_domain",
+      type: "group",
+      title: "תחום התקשורת והשפה",
+      description: "הערכת יכולות תקשורת, הבנה והבעה",
+      weight: 2,
+      graphable: true,
+      children: [
+        {
+          id: "verbal_communication",
+          type: "question",
+          title: "איך התלמיד מתקשר בעל פה?",
+          description: "בחר את הרמה המתאימה ביותר לתלמיד",
+          inputType: "single-choice",
+          required: true,
+          weight: 2,
+          graphable: true,
+          options: [
+            { id: "verbal_1", label: "לא מתקשר בעל פה כלל", value: 1 },
+            { id: "verbal_2", label: "משתמש במילים בודדות", value: 2 },
+            { id: "verbal_3", label: "משתמש במשפטים קצרים (2-3 מילים)", value: 3 },
+            { id: "verbal_4", label: "משתמש במשפטים מלאים", value: 4 },
+            { id: "verbal_5", label: "מתקשר בצורה שוטפת ומובנת", value: 5 }
+          ],
+          children: [
+            {
+              id: "communication_support",
+              type: "question",
+              title: "איזה סוג תמיכה בתקשורת הכי עוזר לתלמיד?",
+              inputType: "multiple-choice",
+              required: true,
+              options: [
+                { id: "support_1", label: "תמיכה חזותית (תמונות, סמלים)", value: 1 },
+                { id: "support_2", label: "שפת סימנים", value: 2 },
+                { id: "support_3", label: "מכשירי תקשורת דיגיטליים", value: 3 },
+                { id: "support_4", label: "תנועות גוף וחיקוי", value: 4 },
+                { id: "support_5", label: "אין צורך בתמיכה נוספת", value: 5 }
+              ]
+            }
+          ]
+        },
+        {
+          id: "language_comprehension",
+          type: "question",
+          title: "רמת הבנת השפה של התלמיד",
+          inputType: "scale",
+          scaleMin: 1,
+          scaleMax: 5,
+          required: true,
+          weight: 1.5,
+          graphable: true
+        },
+        {
+          id: "social_communication",
+          type: "question",
+          title: "איך התלמיד מתקשר חברתית?",
+          inputType: "single-choice",
+          required: true,
+          options: [
+            { id: "social_1", label: "נמנע מאינטראקציה חברתית", value: 1 },
+            { id: "social_2", label: "מגיב רק כשפונים אליו", value: 2 },
+            { id: "social_3", label: "יוזם תקשורת לפעמים", value: 3 },
+            { id: "social_4", label: "מתקשר באופן פעיל עם אחרים", value: 4 },
+            { id: "social_5", label: "מוביל שיחות ואינטראקציות", value: 5 }
+          ]
+        }
+      ]
+    },
+    {
+      id: "academic_domain",
+      type: "group",
+      title: "תחום הלמידה האקדמית",
+      description: "הערכת יכולות למידה בתחומי הליבה",
+      weight: 2,
+      graphable: true,
+      children: [
+        {
+          id: "reading_skills",
+          type: "question",
+          title: "רמת כישורי הקריאה",
+          inputType: "single-choice",
+          required: true,
+          weight: 2,
+          graphable: true,
+          options: [
+            { id: "read_1", label: "לא מזהה אותיות", value: 1 },
+            { id: "read_2", label: "מזהה אותיות בודדות", value: 2 },
+            { id: "read_3", label: "קורא מילים פשוטות", value: 3 },
+            { id: "read_4", label: "קורא משפטים קצרים", value: 4 },
+            { id: "read_5", label: "קורא טקסטים מורכבים", value: 5 }
+          ],
+          children: [
+            {
+              id: "reading_support_needed",
+              type: "question",
+              title: "איזה סוג תמיכה נדרש בקריאה?",
+              inputType: "multiple-choice",
+              options: [
+                { id: "read_support_1", label: "תמיכה חזותית (תמונות)", value: 1 },
+                { id: "read_support_2", label: "קריאה בקול רם", value: 2 },
+                { id: "read_support_3", label: "טקסטים מקוצרים", value: 3 },
+                { id: "read_support_4", label: "טכנולוגיה מסייעת", value: 4 },
+                { id: "read_support_5", label: "אין צורך בתמיכה", value: 5 }
+              ]
+            }
+          ]
+        },
+        {
+          id: "math_skills",
+          type: "question",
+          title: "רמת כישורי המתמטיקה",
+          inputType: "single-choice",
+          required: true,
+          weight: 2,
+          graphable: true,
+          options: [
+            { id: "math_1", label: "לא מזהה מספרים", value: 1 },
+            { id: "math_2", label: "מזהה מספרים 1-10", value: 2 },
+            { id: "math_3", label: "מבצע חיבור וחיסור פשוט", value: 3 },
+            { id: "math_4", label: "מבצע פעולות מתמטיות בסיסיות", value: 4 },
+            { id: "math_5", label: "פותר בעיות מתמטיות מורכבות", value: 5 }
+          ]
+        },
+        {
+          id: "writing_skills",
+          type: "question",
+          title: "רמת כישורי הכתיבה",
+          inputType: "scale",
+          scaleMin: 1,
+          scaleMax: 5,
+          required: true,
+          weight: 1.5,
+          graphable: true
+        },
+        {
+          id: "learning_pace",
+          type: "question",
+          title: "קצב הלמידה של התלמיד",
+          inputType: "single-choice",
+          required: true,
+          options: [
+            { id: "pace_1", label: "איטי מאוד - זקוק לחזרות רבות", value: 1 },
+            { id: "pace_2", label: "איטי - זקוק לזמן נוסף", value: 2 },
+            { id: "pace_3", label: "בינוני - לומד בקצב הכיתה", value: 3 },
+            { id: "pace_4", label: "מהיר - קולט במהירות", value: 4 },
+            { id: "pace_5", label: "מהיר מאוד - זקוק לאתגרים נוספים", value: 5 }
+          ]
+        }
+      ]
+    },
+    {
+      id: "behavior_domain",
+      type: "group",
+      title: "תחום ההתנהגות והרגולציה",
+      description: "הערכת התנהגות, ויסות עצמי ויכולות חברתיות",
+      weight: 1.5,
+      graphable: true,
+      children: [
+        {
+          id: "attention_focus",
+          type: "question",
+          title: "יכולת קשב וריכוז",
+          inputType: "scale",
+          scaleMin: 1,
+          scaleMax: 5,
+          required: true,
+          weight: 2,
+          graphable: true
+        },
+        {
+          id: "behavioral_challenges",
+          type: "question",
+          title: "האם יש אתגרים התנהגותיים?",
+          inputType: "single-choice",
+          required: true,
+          options: [
+            { id: "behavior_1", label: "כן, אתגרים משמעותיים יומיומיים", value: 1 },
+            { id: "behavior_2", label: "כן, אתגרים מדי פעם", value: 2 },
+            { id: "behavior_3", label: "אתגרים קלים לפעמים", value: 3 },
+            { id: "behavior_4", label: "כמעט ללא אתגרים", value: 4 },
+            { id: "behavior_5", label: "התנהגות מצוינת תמיד", value: 5 }
+          ],
+          children: [
+            {
+              id: "behavior_types",
+              type: "question",
+              title: "איזה סוגי התנהגויות מאתגרות?",
+              inputType: "multiple-choice",
+              options: [
+                { id: "beh_type_1", label: "התפרצויות כעס", value: 1 },
+                { id: "beh_type_2", label: "קושי בהתמדה במשימות", value: 2 },
+                { id: "beh_type_3", label: "התנהגות אגרסיבית", value: 3 },
+                { id: "beh_type_4", label: "נסיגה חברתית", value: 4 },
+                { id: "beh_type_5", label: "התנהגויות חזרתיות", value: 5 },
+                { id: "beh_type_6", label: "קושי בקבלת שינויים", value: 6 }
+              ]
+            },
+            {
+              id: "behavior_interventions",
+              type: "question",
+              title: "איזה התערבויות עוזרות?",
+              inputType: "text",
+              description: "תאר בקצרה איזה אסטרטגיות או התערבויות עוזרות לתלמיד"
+            }
+          ]
+        },
+        {
+          id: "social_skills",
+          type: "question",
+          title: "כישורים חברתיים",
+          inputType: "single-choice",
+          required: true,
+          weight: 1.5,
+          graphable: true,
+          options: [
+            { id: "social_skill_1", label: "מתקשה מאוד ביחסים חברתיים", value: 1 },
+            { id: "social_skill_2", label: "יוצר קשר עם מבוגרים בלבד", value: 2 },
+            { id: "social_skill_3", label: "יוצר קשר עם ילד אחד או שניים", value: 3 },
+            { id: "social_skill_4", label: "משתלב היטב בקבוצה קטנה", value: 4 },
+            { id: "social_skill_5", label: "מוביל חברתית ויוצר חברויות", value: 5 }
+          ]
+        }
+      ]
+    },
+    {
+      id: "independence_domain",
+      type: "group",
+      title: "תחום העצמאות וכישורי חיים",
+      description: "הערכת רמת העצמאות בפעילויות יומיומיות",
+      weight: 1,
+      graphable: true,
+      children: [
+        {
+          id: "daily_activities",
+          type: "question",
+          title: "רמת העצמאות בפעילויות יומיומיות",
+          inputType: "single-choice",
+          required: true,
+          weight: 2,
+          graphable: true,
+          options: [
+            { id: "daily_1", label: "זקוק לעזרה מלאה בכל הפעילויות", value: 1 },
+            { id: "daily_2", label: "זקוק לעזרה ברוב הפעילויות", value: 2 },
+            { id: "daily_3", label: "עצמאי בפעילויות בסיסיות", value: 3 },
+            { id: "daily_4", label: "עצמאי ברוב הפעילויות", value: 4 },
+            { id: "daily_5", label: "עצמאי לחלוטין", value: 5 }
+          ]
+        },
+        {
+          id: "task_completion",
+          type: "question",
+          title: "יכולת השלמת משימות",
+          inputType: "scale",
+          scaleMin: 1,
+          scaleMax: 5,
+          required: true,
+          weight: 1.5,
+          graphable: true
+        },
+        {
+          id: "help_seeking",
+          type: "question",
+          title: "האם התלמיד יודע לבקש עזרה כשצריך?",
+          inputType: "single-choice",
+          required: true,
+          options: [
+            { id: "help_1", label: "אף פעם לא מבקש עזרה", value: 1 },
+            { id: "help_2", label: "מבקש עזרה רק במצבי קיצון", value: 2 },
+            { id: "help_3", label: "מבקש עזרה לפעמים", value: 3 },
+            { id: "help_4", label: "מבקש עזרה כשצריך", value: 4 },
+            { id: "help_5", label: "יודע בדיוק מתי ואיך לבקש עזרה", value: 5 }
+          ]
+        }
+      ]
+    },
+    {
+      id: "motor_skills_domain",
+      type: "group",
+      title: "תחום המוטוריקה",
+      description: "הערכת כישורים מוטוריים גסים ועדינים",
+      weight: 1,
+      graphable: true,
+      children: [
+        {
+          id: "gross_motor",
+          type: "question",
+          title: "מוטוריקה גסה (תנועות גדולות)",
+          inputType: "scale",
+          scaleMin: 1,
+          scaleMax: 5,
+          required: true,
+          weight: 1,
+          graphable: true
+        },
+        {
+          id: "fine_motor",
+          type: "question",
+          title: "מוטוריקה עדינה (כתיבה, ציור, מניפולציה)",
+          inputType: "scale",
+          scaleMin: 1,
+          scaleMax: 5,
+          required: true,
+          weight: 1,
+          graphable: true
+        },
+        {
+          id: "motor_planning",
+          type: "question",
+          title: "תכנון מוטורי ותיאום תנועות",
+          inputType: "single-choice",
+          required: true,
+          options: [
+            { id: "planning_1", label: "קושי משמעותי בתכנון תנועות", value: 1 },
+            { id: "planning_2", label: "זקוק להדרכה בתנועות מורכבות", value: 2 },
+            { id: "planning_3", label: "מבצע תנועות בסיסיות בעצמאות", value: 3 },
+            { id: "planning_4", label: "תיאום טוב ברוב התנועות", value: 4 },
+            { id: "planning_5", label: "תיאום מצוין בכל התנועות", value: 5 }
+          ]
+        }
+      ]
+    },
+    {
+      id: "general_assessment",
+      type: "group",
+      title: "הערכה כללית והמלצות",
+      description: "סיכום כללי והמלצות לטיפול",
+      children: [
+        {
+          id: "overall_progress",
+          type: "question",
+          title: "הערכה כללית של התקדמות התלמיד",
+          inputType: "single-choice",
+          required: true,
+          weight: 3,
+          graphable: true,
+          options: [
+            { id: "progress_1", label: "אין התקדמות ניכרת", value: 1 },
+            { id: "progress_2", label: "התקדמות איטית", value: 2 },
+            { id: "progress_3", label: "התקדמות בינונית", value: 3 },
+            { id: "progress_4", label: "התקדמות טובה", value: 4 },
+            { id: "progress_5", label: "התקדמות מצוינת", value: 5 }
+          ]
+        },
+        {
+          id: "priority_areas",
+          type: "question",
+          title: "תחומים עיקריים לטיפול והתערבות",
+          inputType: "multiple-choice",
+          required: true,
+          options: [
+            { id: "priority_1", label: "תקשורת ושפה", value: 1 },
+            { id: "priority_2", label: "כישורים אקדמיים", value: 2 },
+            { id: "priority_3", label: "התנהגות ורגולציה", value: 3 },
+            { id: "priority_4", label: "כישורים חברתיים", value: 4 },
+            { id: "priority_5", label: "עצמאות וכישורי חיים", value: 5 },
+            { id: "priority_6", label: "מוטוריקה", value: 6 }
+          ]
+        },
+        {
+          id: "additional_notes",
+          type: "question",
+          title: "הערות נוספות והמלצות",
+          inputType: "text",
+          description: "תאר כל מידע נוסף חשוב על התלמיד, הישגים מיוחדים, או המלצות לטיפול"
+        },
+        {
+          id: "family_involvement",
+          type: "question",
+          title: "מידת מעורבות המשפחה",
+          inputType: "single-choice",
+          required: true,
+          options: [
+            { id: "family_1", label: "מעורבות מינימלית", value: 1 },
+            { id: "family_2", label: "מעורבות חלקית", value: 2 },
+            { id: "family_3", label: "מעורבות טובה", value: 3 },
+            { id: "family_4", label: "מעורבות גבוהה", value: 4 },
+            { id: "family_5", label: "מעורבות מצוינת ושיתוף פעולה מלא", value: 5 }
+          ]
+        }
+      ]
+    }
+  ],
+  graphSettings: {
+    colorRanges: [
+      { label: "זקוק לתמיכה נרחבת", min: 1, max: 2, color: "#ef4444" },
+      { label: "זקוק לתמיכה", min: 2.1, max: 3, color: "#f59e0b" },
+      { label: "מתפתח כצפוי", min: 3.1, max: 4, color: "#10b981" },
+      { label: "מתקדם מעל הצפוי", min: 4.1, max: 5, color: "#3b82f6" }
+    ]
+  }
+};
+
+async function addQuestionnaire() {
+  try {
+    // Check if questionnaire already exists
+    const existing = await QuestionnaireTemplate.findOne({ title: hebrewQuestionnaire.title });
+    if (existing) {
+      console.log('Hebrew questionnaire already exists, updating...');
+      await QuestionnaireTemplate.findByIdAndUpdate(existing._id, hebrewQuestionnaire);
+      console.log('Hebrew questionnaire updated successfully!');
+    } else {
+      const questionnaire = new QuestionnaireTemplate(hebrewQuestionnaire);
+      await questionnaire.save();
+      console.log('Hebrew questionnaire added successfully!');
+    }
+    
+    console.log('Questionnaire ID:', (await QuestionnaireTemplate.findOne({ title: hebrewQuestionnaire.title }))._id);
+  } catch (error) {
+    console.error('Error adding questionnaire:', error);
+  } finally {
+    mongoose.connection.close();
+  }
+}
+
+addQuestionnaire();

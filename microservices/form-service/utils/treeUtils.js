@@ -95,6 +95,20 @@ function validateTreeStructure(nodes, seenIds = new Set(), parentPath = []) {
       if (['single-choice', 'multiple-choice', 'scale'].includes(node.inputType)) {
         if (!node.options || node.options.length === 0) {
           errors.push(`Question node ${node.id} with inputType '${node.inputType}' must have options`);
+        } else {
+          // Validate all options have required fields
+          for (let i = 0; i < node.options.length; i++) {
+            const option = node.options[i];
+            if (!option.id) {
+              errors.push(`Question node ${node.id} option at index ${i} missing required 'id' field`);
+            }
+            if (!option.label) {
+              errors.push(`Question node ${node.id} option at index ${i} missing required 'label' field`);
+            }
+            if (option.value === undefined || option.value === null) {
+              errors.push(`Question node ${node.id} option at index ${i} missing required 'value' field`);
+            }
+          }
         }
       }
     }

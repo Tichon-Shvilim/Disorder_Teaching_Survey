@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, Calendar, FileText, Eye, Plus, Edit, Trash2, X, Filter } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { ArrowLeft, Calendar, FileText, Eye, Plus, Edit, Trash2, X, Filter, BarChart3 } from 'lucide-react';
 import { FormAPIService } from './Api-Requests/FormAPIService';
 import type { FormSubmission, QuestionnaireTemplate } from './models/FormModels';
 import { toast } from 'react-toastify';
@@ -9,6 +10,8 @@ import type { RootState } from '../../store';
 import { PDFDownloadButton } from '../common';
 
 const ViewSubmissions: React.FC = () => {
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.dir() === 'rtl';
   const location = useLocation();
   const navigate = useNavigate();
   const currentUser = useSelector((state: RootState) => state.auth.user);
@@ -45,7 +48,7 @@ const ViewSubmissions: React.FC = () => {
         setQuestionnaires(Array.isArray(questionnairesData) ? questionnairesData : []);
       } catch (error) {
         console.error('Error fetching data:', error);
-        toast.error('Failed to load submissions');
+        toast.error(t('formSubmissions.failedToLoadSubmissions', 'Failed to load submissions'));
         setSubmissions([]);
         setQuestionnaires([]);
       } finally {
@@ -77,7 +80,7 @@ const ViewSubmissions: React.FC = () => {
       setSelectedSubmission(fullSubmission);
     } catch (error) {
       console.error('Error fetching submission details:', error);
-      toast.error('Failed to load submission details');
+      toast.error(t('formSubmissions.failedToLoadSubmissionDetails', 'Failed to load submission details'));
       // Fallback to the partial submission from the list
       console.log('Using fallback submission:', submission);
       setSelectedSubmission(submission);
@@ -86,7 +89,7 @@ const ViewSubmissions: React.FC = () => {
 
   const handleEditSubmission = (submission: FormSubmission) => {
     if (submission.status === 'completed') {
-      toast.warning('Completed submissions cannot be edited. You can only edit draft submissions.');
+      toast.warning(t('formSubmissions.completedSubmissionsCannotBeEdited', 'Completed submissions cannot be edited. You can only edit draft submissions.'));
       return;
     }
 
@@ -111,12 +114,12 @@ const ViewSubmissions: React.FC = () => {
     try {
       await FormAPIService.deleteSubmission(submissionToDelete._id);
       setSubmissions(prev => prev.filter(sub => sub._id !== submissionToDelete._id));
-      toast.success('Submission deleted successfully');
+      toast.success(t('formSubmissions.submissionDeletedSuccessfully', 'Submission deleted successfully'));
       setShowDeleteDialog(false);
       setSubmissionToDelete(null);
     } catch (error) {
       console.error('Error deleting submission:', error);
-      toast.error('Failed to delete submission. You may not have permission.');
+      toast.error(t('formSubmissions.failedToDeleteSubmission', 'Failed to delete submission. You may not have permission.'));
     } finally {
       setDeleting(false);
     }
@@ -179,7 +182,7 @@ const ViewSubmissions: React.FC = () => {
           borderRadius: '50%',
           animation: 'spin 1s linear infinite'
         }}></div>
-        <p style={{ fontSize: '16px', color: '#6b7280' }}>Loading submissions...</p>
+        <p style={{ fontSize: '16px', color: '#6b7280' }}>{t('formSubmissions.loadingSubmissions', 'Loading submissions...')}</p>
       </div>
     );
   }
@@ -206,7 +209,7 @@ const ViewSubmissions: React.FC = () => {
             }}
           >
             <ArrowLeft style={{ height: '16px', width: '16px' }} />
-            Back
+            {t('common.back', 'Back')}
           </button>
 
           <div style={{
@@ -221,10 +224,10 @@ const ViewSubmissions: React.FC = () => {
               color: '#1f2937', 
               margin: '0 0 8px 0' 
             }}>
-              Form Submissions
+              {t('formSubmissions.formSubmissions', 'Form Submissions')}
             </h1>
             <p style={{ fontSize: '16px', color: '#6b7280', margin: 0 }}>
-              Student: <strong>{studentName}</strong>
+              {t('students.student', 'Student')}: <strong>{studentName}</strong>
             </p>
           </div>
         </div>
@@ -257,7 +260,7 @@ const ViewSubmissions: React.FC = () => {
               }}
             >
               <Plus style={{ height: '16px', width: '16px' }} />
-              Fill New Form
+              {t('formSubmissions.fillNewForm', 'Fill New Form')}
             </button>
             
             <div className="dropdown-content" style={{
@@ -317,7 +320,7 @@ const ViewSubmissions: React.FC = () => {
             }}
           >
             <Filter style={{ height: '16px', width: '16px' }} />
-            Filters
+            {t('formSubmissions.filters', 'Filters')}
           </button>
         </div>
 
@@ -464,6 +467,28 @@ const ViewSubmissions: React.FC = () => {
                       <Eye style={{ height: '14px', width: '14px' }} />
                       View
                     </button>
+
+                    {submission.status === 'completed' && (
+                      <button
+                        onClick={() => navigate(`/layout/form-results/${submission._id}`)}
+                        style={{
+                          padding: '8px 12px',
+                          backgroundColor: '#dbeafe',
+                          border: 'none',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          fontSize: '14px',
+                          color: '#1d4ed8'
+                        }}
+                        title="View Analytics"
+                      >
+                        <BarChart3 style={{ height: '14px', width: '14px' }} />
+                        Analytics
+                      </button>
+                    )}
 
                     <PDFDownloadButton 
                       submission={submission}

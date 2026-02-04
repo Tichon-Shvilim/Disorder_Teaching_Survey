@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Send, AlertCircle, FileText, Save } from 'lucide-react';
 import { FormAPIService } from './Api-Requests/FormAPIService';
 import type { QuestionnaireTemplate, FormAnswer, FormNode, Option, VisibilityCondition } from './models/FormModels';
@@ -8,6 +9,8 @@ import { toast } from 'react-toastify';
 import type { RootState } from '../../store';
 
 const FillForm: React.FC = () => {
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.dir() === 'rtl';
   const location = useLocation();
   const navigate = useNavigate();
   const { questionnaireId } = useParams<{ questionnaireId?: string }>();
@@ -60,12 +63,12 @@ const FillForm: React.FC = () => {
             setQuestionnaires(data);
           } else {
             console.error('No questionnaires found');
-            toast.error('No questionnaires available');
+            toast.error(t('formFilling.noQuestionnairesAvailable', 'No questionnaires available'));
           }
         }
       } catch (error) {
         console.error('Error loading data:', error);
-        toast.error('Failed to load form data');
+        toast.error(t('formFilling.failedToLoadFormData', 'Failed to load form data'));
       } finally {
         setLoading(false);
       }
@@ -99,7 +102,7 @@ const FillForm: React.FC = () => {
                 nodePath: currentPath,
                 inputType: node.inputType!,
                 answer: node.inputType === 'multiple-choice' ? [] : '',
-                selectedOptions: [],
+                selectedOptions: node.inputType === 'multiple-choice' ? [] : undefined,
                 questionTitle: node.title,
                 weight: node.weight || 1,
                 graphable: node.graphable || false
@@ -131,7 +134,7 @@ const FillForm: React.FC = () => {
         setAnswers(initialAnswers);
       } catch (error) {
         console.error('Error fetching questionnaire:', error);
-        toast.error('Failed to load questionnaire');
+        toast.error(t('formFilling.failedToLoadQuestionnaire', 'Failed to load questionnaire'));
         setShowQuestionnaireList(true);
       } finally {
         setLoading(false);
@@ -198,7 +201,7 @@ const FillForm: React.FC = () => {
             margin: '0 0 8px 0'
           }}>
             {node.title}
-            {node.required && <span style={{ color: '#ef4444', marginLeft: '4px' }}>*</span>}
+            {node.required && <span style={{ color: '#ef4444', [isRTL ? 'marginRight' : 'marginLeft']: '4px' }}>*</span>}
           </h3>
           {node.description && (
             <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
@@ -216,7 +219,7 @@ const FillForm: React.FC = () => {
                 fontSize: '12px',
                 fontWeight: '500'
               }}>
-                Weight: {node.weight}
+                {t('formFilling.weight', 'Weight')}: {node.weight}
               </span>
             )}
             {node.graphable && (
@@ -228,7 +231,7 @@ const FillForm: React.FC = () => {
                 fontSize: '12px',
                 fontWeight: '500'
               }}>
-                📊 Analytics
+                📊 {t('formFilling.analytics', 'Analytics')}
               </span>
             )}
             {/* Show indicator for option-specific sub-questions */}
@@ -242,7 +245,7 @@ const FillForm: React.FC = () => {
                 fontWeight: '500',
                 border: '1px solid #f59e0b'
               }}>
-                💫 Interactive Options
+                💫 {t('formFilling.interactiveOptions', 'Interactive Options')}
               </span>
             )}
           </div>
@@ -253,7 +256,7 @@ const FillForm: React.FC = () => {
           <textarea
             value={currentAnswer?.answer as string || ''}
             onChange={(e) => handleAnswerChange(node.id, e.target.value)}
-            placeholder="Enter your response..."
+            placeholder={t('formFilling.enterYourResponse', 'Enter your response...')}
             style={{
               width: '100%',
               minHeight: '100px',
@@ -261,7 +264,9 @@ const FillForm: React.FC = () => {
               border: '1px solid #d1d5db',
               borderRadius: '8px',
               fontSize: '14px',
-              resize: 'vertical'
+              resize: 'vertical',
+              textAlign: isRTL ? 'right' : 'left',
+              direction: isRTL ? 'rtl' : 'ltr'
             }}
           />
         )}
@@ -276,7 +281,9 @@ const FillForm: React.FC = () => {
               padding: '12px',
               border: '1px solid #d1d5db',
               borderRadius: '8px',
-              fontSize: '14px'
+              fontSize: '14px',
+              textAlign: isRTL ? 'right' : 'left',
+              direction: isRTL ? 'rtl' : 'ltr'
             }}
           />
         )}
@@ -360,7 +367,7 @@ const FillForm: React.FC = () => {
                           marginLeft: '8px',
                           fontWeight: '500'
                         }}>
-                          {isSelected ? '✨ Questions Active' : `+${option.children?.length || 0} questions`}
+                          {isSelected ? `✨ ${t('formFilling.questionsActive', 'Questions Active')}` : `+${option.children?.length || 0} ${t('formFilling.questions', 'questions')}`}
                         </span>
                       )}
                     </div>
@@ -388,7 +395,7 @@ const FillForm: React.FC = () => {
                           fontWeight: '600',
                           color: '#075985'
                         }}>
-                          Additional questions for "{option.label}":
+                          {t('formFilling.additionalQuestionsFor', 'Additional questions for')} "{option.label}":
                         </span>
                       </div>
                       <div style={{
@@ -415,23 +422,12 @@ const FillForm: React.FC = () => {
         {node.inputType === 'multiple-choice' && node.options && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {node.options.map((option) => {
-              const currentAnswerArray = Array.isArray(currentAnswer?.answer) ? currentAnswer.answer : [];
-              const isChecked = currentAnswerArray.includes(option.value);
+              const currentAnswerArray = Array.isArray(currentAnswer?.selectedOptions) 
+                ? currentAnswer.selectedOptions.map(opt => opt.id) 
+                : [];
+              const isChecked = currentAnswerArray.includes(option.id);
               const hasSubQuestions = !!(option.children && option.children.length > 0);
               
-              // Debug logging for checked options only
-              if (isChecked) {
-                console.log(`Checked Option "${option.label}":`, {
-                  hasSubQuestions,
-                  childrenCount: option.children?.length || 0
-                });
-              }
-              
-              // Debug logging for multiple-choice
-              if (isChecked) {
-                console.log('Multiple-choice selected option:', option.label, 'Has sub-questions:', hasSubQuestions, 'Children:', option.children);
-              }
-
               return (
                 <div key={option.id} style={{ width: '100%' }}>
                   {/* Main Option */}
@@ -454,18 +450,18 @@ const FillForm: React.FC = () => {
                       checked={isChecked}
                       onChange={() => {
                         const currentSelectedOptions = currentAnswer?.selectedOptions || [];
-                        let newAnswer: (string | number)[];
                         let newSelectedOptions: Option[];
 
                         if (isChecked) {
                           // Remove option
-                          newAnswer = currentAnswerArray.filter(val => val !== option.value);
                           newSelectedOptions = currentSelectedOptions.filter(opt => opt.id !== option.id);
                         } else {
                           // Add option
-                          newAnswer = [...currentAnswerArray, option.value];
                           newSelectedOptions = [...currentSelectedOptions, option];
                         }
+                        
+                        // Update answer array with values from selected options
+                        const newAnswer = newSelectedOptions.map(opt => opt.value);
 
                         handleAnswerChange(node.id, newAnswer, newSelectedOptions);
                       }}
@@ -495,7 +491,7 @@ const FillForm: React.FC = () => {
                           marginLeft: '8px',
                           fontWeight: '500'
                         }}>
-                          {isChecked ? '✨ Questions Active' : `+${option.children?.length || 0} questions`}
+                          {isChecked ? `✨ ${t('formFilling.questionsActive', 'Questions Active')}` : `+${option.children?.length || 0} ${t('formFilling.questions', 'questions')}`}
                         </span>
                       )}
                     </div>
@@ -523,7 +519,7 @@ const FillForm: React.FC = () => {
                           fontWeight: '600',
                           color: '#166534'
                         }}>
-                          Additional questions for "{option.label}":
+                          {t('formFilling.additionalQuestionsFor', 'Additional questions for')} "{option.label}":
                         </span>
                       </div>
                       <div style={{
@@ -542,9 +538,6 @@ const FillForm: React.FC = () => {
                 </div>
               );
             })}
-            
-
-
           </div>
         )}
 
@@ -688,7 +681,7 @@ const FillForm: React.FC = () => {
             const answer = answers[node.id];
             if (!answer || !answer.answer || 
                 (Array.isArray(answer.answer) && answer.answer.length === 0)) {
-              newErrors[node.id] = 'This question is required';
+              newErrors[node.id] = t('formFilling.thisQuestionIsRequired', 'This question is required');
             }
           }
         }
@@ -744,7 +737,7 @@ const FillForm: React.FC = () => {
           answers: answersArray,
           status: 'draft'
         });
-        toast.success('Draft updated successfully!');
+        toast.success(t('formFilling.draftUpdatedSuccessfully', 'Draft updated successfully!'));
       } else {
         // Create new draft submission
         const submission = {
@@ -756,11 +749,11 @@ const FillForm: React.FC = () => {
 
         const draftResult = await FormAPIService.submitForm(submission);
         setCurrentSubmissionId(draftResult.submissionId);
-        toast.success('Draft saved successfully!');
+        toast.success(t('formFilling.draftSavedSuccessfully', 'Draft saved successfully!'));
       }
     } catch (error) {
       console.error('Error saving draft:', error);
-      toast.error('Failed to save draft');
+      toast.error(t('formFilling.failedToSaveDraft', 'Failed to save draft'));
     } finally {
       setSavingDraft(false);
     }
@@ -786,14 +779,15 @@ const FillForm: React.FC = () => {
           answers: answersArray,
           status: 'completed'
         });
-        toast.success('Form submitted successfully!');
+        toast.success(t('formFilling.formSubmittedSuccessfully', 'Form submitted successfully!'));
         
-        // Navigate to results page
-        navigate(`/layout/form-results/${currentSubmissionId}`, {
+        // Navigate to completion page instead of directly to results
+        navigate(`/layout/form-submission-complete/${currentSubmissionId}`, {
           state: { 
             studentId, 
             studentName, 
-            questionnaireTitle: questionnaire.title 
+            questionnaireTitle: questionnaire.title,
+            canEdit: true
           }
         });
         return;
@@ -807,15 +801,16 @@ const FillForm: React.FC = () => {
         };
 
         const submissionResult = await FormAPIService.submitForm(submission);
-        toast.success(`Form ${isDraft ? 'saved as draft' : 'submitted'} successfully!`);
+        toast.success(`${t('common.form', 'Form')} ${isDraft ? t('formFilling.formSavedAsDraft', 'saved as draft') : t('formFilling.formSubmittedSuccessfully', 'submitted successfully')}!`);
         
         if (!isDraft) {
-          // Navigate to results page for completed forms
-          navigate(`/layout/form-results/${submissionResult.submissionId}`, {
+          // Navigate to completion page for completed forms
+          navigate(`/layout/form-submission-complete/${submissionResult.submissionId}`, {
             state: { 
               studentId, 
               studentName, 
-              questionnaireTitle: questionnaire.title 
+              questionnaireTitle: questionnaire.title,
+              canEdit: true
             }
           });
           return;
@@ -825,7 +820,7 @@ const FillForm: React.FC = () => {
       navigate(-1);
     } catch (error) {
       console.error('Error submitting form:', error);
-      toast.error('Failed to submit form');
+      toast.error(t('formFilling.failedToSubmitForm', 'Failed to submit form'));
     } finally {
       setSubmitting(false);
     }
@@ -852,13 +847,13 @@ const FillForm: React.FC = () => {
           borderRadius: '50%',
           animation: 'spin 1s linear infinite'
         }}></div>
-        <p style={{ fontSize: '16px', color: '#6b7280' }}>Loading form...</p>
+        <p style={{ fontSize: '16px', color: '#6b7280' }}>{t('formFilling.loadingForm', 'Loading form...')}</p>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb', padding: '24px' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb', padding: '24px', direction: isRTL ? 'rtl' : 'ltr' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* Header */}
         <div style={{ marginBottom: '32px' }}>
@@ -878,15 +873,16 @@ const FillForm: React.FC = () => {
               marginBottom: '24px'
             }}
           >
-            <ArrowLeft style={{ height: '16px', width: '16px' }} />
-            Back
+            <ArrowLeft style={{ height: '16px', width: '16px', transform: isRTL ? 'scaleX(-1)' : 'none' }} />
+            {t('common.back', 'Back')}
           </button>
 
           <div style={{
             padding: '24px',
             backgroundColor: 'white',
             borderRadius: '12px',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+            textAlign: isRTL ? 'right' : 'left'
           }}>
             <h1 style={{ 
               fontSize: '28px', 
@@ -894,14 +890,14 @@ const FillForm: React.FC = () => {
               color: '#1f2937', 
               margin: '0 0 8px 0' 
             }}>
-              {editSubmissionId ? 'Edit Form Submission' : 'Fill Form'}
+              {editSubmissionId ? t('formFilling.editFormSubmission', 'Edit Form Submission') : t('formFilling.fillForm', 'Fill Form')}
             </h1>
-            <p style={{ fontSize: '16px', color: '#6b7280', margin: 0 }}>
-              Student: <strong>{studentName}</strong>
+            <p style={{ fontSize: '16px', color: '#6b7280', margin: 0, textAlign: isRTL ? 'right' : 'left' }}>
+              {t('formFilling.student', 'Student')}: <strong>{studentName}</strong>
             </p>
             {questionnaire && (
-              <p style={{ fontSize: '14px', color: '#6b7280', margin: '8px 0 0 0' }}>
-                Form: <strong>{questionnaire.title}</strong>
+              <p style={{ fontSize: '14px', color: '#6b7280', margin: '8px 0 0 0', textAlign: isRTL ? 'right' : 'left' }}>
+                {t('common.form', 'Form')}: <strong>{questionnaire.title}</strong>
               </p>
             )}
           </div>
@@ -913,10 +909,11 @@ const FillForm: React.FC = () => {
             backgroundColor: 'white',
             borderRadius: '12px',
             padding: '32px',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+            textAlign: isRTL ? 'right' : 'left'
           }}>
             <h2 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '24px', color: '#1f2937' }}>
-              Select a Questionnaire
+              {t('formFilling.selectQuestionnaire', 'Select a Questionnaire')}
             </h2>
             <div style={{ display: 'grid', gap: '16px' }}>
               {questionnaires.map((q) => (
@@ -965,7 +962,8 @@ const FillForm: React.FC = () => {
             backgroundColor: 'white',
             borderRadius: '12px',
             padding: '32px',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+            textAlign: isRTL ? 'right' : 'left'
           }}>
             <div style={{ marginBottom: '32px' }}>
               <h2 style={{ fontSize: '24px', fontWeight: '600', color: '#1f2937', margin: '0 0 8px 0' }}>
@@ -985,7 +983,7 @@ const FillForm: React.FC = () => {
               ) : (
                 <div style={{ textAlign: 'center', padding: '48px' }}>
                   <AlertCircle style={{ height: '48px', width: '48px', color: '#ef4444', margin: '0 auto 16px' }} />
-                  <p style={{ color: '#6b7280', fontSize: '16px' }}>No questions found in this questionnaire.</p>
+                  <p style={{ color: '#6b7280', fontSize: '16px' }}>{t('formFilling.noQuestionsFound', 'No questions found in this questionnaire.')}</p>
                 </div>
               )}
             </div>
@@ -1022,7 +1020,7 @@ const FillForm: React.FC = () => {
                 ) : (
                   <>
                     <Save style={{ height: '20px', width: '20px' }} />
-                    <span>Save Draft</span>
+                    <span>{t('formFilling.saveDraft', 'Save Draft')}</span>
                   </>
                 )}
               </button>
@@ -1058,7 +1056,7 @@ const FillForm: React.FC = () => {
                 ) : (
                   <>
                     <Send style={{ height: '20px', width: '20px' }} />
-                    <span>Submit Form</span>
+                    <span>{t('formFilling.submitForm', 'Submit Form')}</span>
                   </>
                 )}
               </button>

@@ -4,8 +4,10 @@ import { ArrowLeft, Save, BookOpen } from 'lucide-react';
 import { getClassById, updateClass } from '../studentManagement/Api-Requests/ClassAPIService';
 import type { UpdateClassRequest } from '../studentManagement/Api-Requests/ClassAPIService';
 import { toast } from 'react-toastify';
+import { useTranslation } from 'react-i18next';
 
 const EditClass: React.FC = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const [formData, setFormData] = useState<UpdateClassRequest>({
     _id: id || '',
@@ -32,7 +34,7 @@ const EditClass: React.FC = () => {
         });
       } catch (error) {
         console.error('Error fetching class:', error);
-        toast.error('Failed to load class data');
+        toast.error(t('classes.failedToLoadClassData', 'Failed to load class data'));
         navigate('../classes');
       } finally {
         setLoadingClass(false);
@@ -48,9 +50,9 @@ const EditClass: React.FC = () => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.classNumber.trim()) {
-      newErrors.classNumber = 'Class number is required';
+      newErrors.classNumber = t('classes.classNumberRequired', 'Class number is required');
     } else if (formData.classNumber.length < 2) {
-      newErrors.classNumber = 'Class number must be at least 2 characters';
+      newErrors.classNumber = t('classes.classNumberTooShort', 'Class number must be at least 2 characters');
     }
 
     setErrors(newErrors);
@@ -84,11 +86,11 @@ const EditClass: React.FC = () => {
     
     try {
       await updateClass(id!, formData);
-      toast.success('Class updated successfully!');
+      toast.success(t('classes.classUpdatedSuccessfully', 'Class updated successfully!'));
       navigate('../classes');
     } catch (error: unknown) {
       console.error('Error updating class:', error);
-      toast.error('Failed to update class. Please try again.');
+      toast.error(t('classes.failedToUpdateClass', 'Failed to update class. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -171,7 +173,7 @@ const EditClass: React.FC = () => {
               color: '#111827', 
               margin: 0 
             }}>
-              Edit Class
+              {t('classes.editClass', 'Edit Class')}
             </h1>
           </div>
         </div>
@@ -206,7 +208,7 @@ const EditClass: React.FC = () => {
                   display: 'inline', 
                   marginRight: '4px' 
                 }} />
-                Class Number
+                {t('classes.classNumber', 'Class Number')}
               </label>
               <input
                 type="text"
@@ -214,7 +216,7 @@ const EditClass: React.FC = () => {
                 name="classNumber"
                 value={formData.classNumber}
                 onChange={handleInputChange}
-                placeholder="Enter class number (e.g., א1, ב2, ג3)"
+                placeholder={t('classes.enterClassNumber', 'Enter class number (e.g., א1, ב2, ג3)')}
                 style={{
                   width: '100%',
                   padding: '12px 16px',
@@ -258,8 +260,7 @@ const EditClass: React.FC = () => {
               color: '#0369a1'
             }}>
               <p style={{ margin: 0, fontSize: '14px' }}>
-                <strong>Note:</strong> To manage teachers and students for this class, 
-                use the class details page after saving.
+                <strong>{t('classes.note', 'Note:')}</strong> {t('classes.manageTeachersAndStudentsNote', 'To manage teachers and students for this class, use the class details page after saving.')}
               </p>
             </div>
 
@@ -314,7 +315,7 @@ const EditClass: React.FC = () => {
                 ) : (
                   <>
                     <Save style={{ height: '20px', width: '20px' }} />
-                    <span>Update Class</span>
+                    <span>{t('classes.updateClass', 'Update Class')}</span>
                   </>
                 )}
               </button>
@@ -346,7 +347,7 @@ const EditClass: React.FC = () => {
                   }
                 }}
               >
-                Cancel
+                {t('common.cancel', 'Cancel')}
               </button>
             </div>
           </form>
@@ -367,7 +368,7 @@ const EditClass: React.FC = () => {
               color: '#111827', 
               marginBottom: '16px' 
             }}>
-              Preview
+              {t('classes.preview', 'Preview')}
             </h3>
             <div style={{ 
               display: 'flex', 
@@ -396,14 +397,14 @@ const EditClass: React.FC = () => {
                   color: '#111827', 
                   margin: '0 0 4px 0' 
                 }}>
-                  Class {formData.classNumber}
+                  {t('classes.class', 'Class')} {formData.classNumber}
                 </h4>
                 <p style={{ 
                   color: '#6b7280', 
                   fontSize: '14px', 
                   margin: 0 
                 }}>
-                  Updated class information
+                  {t('classes.updatedClassInformation', 'Updated class information')}
                 </p>
               </div>
             </div>

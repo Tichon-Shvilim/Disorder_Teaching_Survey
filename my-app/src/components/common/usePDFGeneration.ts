@@ -34,10 +34,10 @@ export const usePDFGeneration = () => {
       const finalFileName = fileName.endsWith('.pdf') ? fileName : `${fileName}.pdf`;
       
       // Import the simple PDF document component to avoid issues
-      const { SimplePDFDocument } = await import('./SimplePDFGenerator');
+      const { PDFDocument } = await import('./PDFGenerator');
       
       // Create React element properly
-      const documentElement = React.createElement(SimplePDFDocument, { 
+      const documentElement = React.createElement(PDFDocument, { 
         submission, 
         includeMetadata: options.includeMetadata 
       });

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { 
   Plus, 
   Edit, 
@@ -17,6 +18,8 @@ import type UserModel from '../user/UserModel';
 import { toast } from 'react-toastify';
 
 const ClassList: React.FC = () => {
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.dir() === 'rtl';
   const [classes, setClasses] = useState<Class[]>([]);
   const [teachers, setTeachers] = useState<UserModel[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -43,12 +46,12 @@ const ClassList: React.FC = () => {
       setTeachers(teacherUsers);
     } catch (err: unknown) {
       console.error('Error fetching classes:', err);
-      setError('Failed to load classes');
-      toast.error('Failed to load classes');
+      setError(t('classes.failedToLoad', 'Failed to load classes'));
+      toast.error(t('classes.failedToLoad', 'Failed to load classes'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   // Helper function to get teacher name by ID
   const getTeacherName = (teacherId: string): string => {
@@ -61,14 +64,14 @@ const ClassList: React.FC = () => {
   }, [fetchClasses]);
 
   const handleDeleteClass = async (classId: string) => {
-    if (window.confirm('Are you sure you want to delete this class? This action cannot be undone.')) {
+    if (window.confirm(t('classes.confirmDelete', 'Are you sure you want to delete this class? This action cannot be undone.'))) {
       try {
         await deleteClass(classId);
         setClasses(classes.filter(cls => cls._id !== classId));
-        toast.success('Class deleted successfully');
+        toast.success(t('classes.dleteSuccess', 'Class deleted successfully'));
       } catch (err: unknown) {
         console.error('Error deleting class:', err);
-        toast.error('Failed to delete class');
+        toast.error(t('classes.deleteFailed', 'Failed to delete class'));
       }
     }
   };
@@ -154,7 +157,7 @@ const ClassList: React.FC = () => {
               e.currentTarget.style.backgroundColor = '#dc2626';
             }}
           >
-            Retry
+            {t('students.retry', 'Retry')}
           </button>
         </div>
       </div>
@@ -183,7 +186,7 @@ const ClassList: React.FC = () => {
               color: '#111827', 
               margin: 0 
             }}>
-              Class Management
+              {t('classes.title', 'Class Management')}
             </h1>
           </div>
           <button
@@ -213,7 +216,7 @@ const ClassList: React.FC = () => {
             }}
           >
             <Plus style={{ height: '20px', width: '20px' }} />
-            <span>Add Class</span>
+            <span>{t('classes.addClass', 'Add Class')}</span>
           </button>
         </div>
 
@@ -231,7 +234,7 @@ const ClassList: React.FC = () => {
             }} />
             <input
               type="text"
-              placeholder="Search classes..."
+              placeholder={t('classes.searchClasses', 'Search classes...')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               style={{
@@ -275,7 +278,8 @@ const ClassList: React.FC = () => {
                 boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
                 border: '1px solid #e5e7eb',
                 transition: 'all 0.3s ease',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                direction: isRTL ? 'rtl' : 'ltr'
               }}
               onMouseOver={(e) => {
                 e.currentTarget.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.15)';
@@ -314,19 +318,24 @@ const ClassList: React.FC = () => {
                     fontSize: '24px', 
                     fontWeight: '700', 
                     color: '#111827', 
-                    margin: '0 0 8px 0' 
+                    margin: '0 0 8px 0',
+                    direction: isRTL ? 'rtl' : 'ltr',
+                    textAlign: isRTL ? 'right' : 'left'
                   }}>
-                    Class {classItem.classNumber}
+                    {t('classes.class', 'Class')} {classItem.classNumber}
                   </h3>
                   <div style={{ 
                     display: 'flex', 
                     alignItems: 'center', 
-                    gap: '16px' 
+                    gap: '16px',
+                    flexDirection: isRTL ? 'row-reverse' : 'row',
+                    justifyContent: isRTL ? 'flex-end' : 'flex-start'
                   }}>
                     <div style={{ 
                       display: 'flex', 
                       alignItems: 'center', 
-                      gap: '4px' 
+                      gap: '4px',
+                      flexDirection: isRTL ? 'row-reverse' : 'row'
                     }}>
                       <UserCheck style={{ 
                         height: '16px', 
@@ -336,15 +345,19 @@ const ClassList: React.FC = () => {
                       <span style={{ 
                         fontSize: '14px', 
                         color: '#059669', 
-                        fontWeight: '500' 
+                        fontWeight: '500',
+                        direction: isRTL ? 'rtl' : 'ltr',
+                        display: 'inline-block',
+                        textAlign: isRTL ? 'right' : 'left'
                       }}>
-                        {classItem.teachers.length} Teacher{classItem.teachers.length !== 1 ? 's' : ''}
+                        {classItem.teachers.length} {classItem.teachers.length === 1 ? t('classes.teacher', 'Teacher') : t('classes.teachers', 'Teachers')}
                       </span>
                     </div>
                     <div style={{ 
                       display: 'flex', 
                       alignItems: 'center', 
-                      gap: '4px' 
+                      gap: '4px',
+                      flexDirection: isRTL ? 'row-reverse' : 'row'
                     }}>
                       <Users style={{ 
                         height: '16px', 
@@ -354,9 +367,12 @@ const ClassList: React.FC = () => {
                       <span style={{ 
                         fontSize: '14px', 
                         color: '#2563eb', 
-                        fontWeight: '500' 
+                        fontWeight: '500',
+                        direction: isRTL ? 'rtl' : 'ltr',
+                        display: 'inline-block',
+                        textAlign: isRTL ? 'right' : 'left'
                       }}>
-                        {classItem.students.length} Student{classItem.students.length !== 1 ? 's' : ''}
+                        {classItem.students.length} {classItem.students.length === 1 ? t('classes.student', 'Student') : t('classes.students', 'Students')}
                       </span>
                     </div>
                   </div>
@@ -384,7 +400,7 @@ const ClassList: React.FC = () => {
                       e.currentTarget.style.backgroundColor = '#f3f4f6';
                       e.currentTarget.style.color = '#4b5563';
                     }}
-                    title="Edit Class"
+                    title={t('classes.editClass', 'Edit Class')}
                   >
                     <Edit style={{ height: '16px', width: '16px' }} />
                   </button>
@@ -410,7 +426,7 @@ const ClassList: React.FC = () => {
                       e.currentTarget.style.backgroundColor = '#fef2f2';
                       e.currentTarget.style.borderColor = '#fca5a5';
                     }}
-                    title="Delete Class"
+                    title={t('classes.deleteClass', 'Delete Class')}
                   >
                     <Trash2 style={{ height: '16px', width: '16px' }} />
                   </button>
@@ -436,25 +452,26 @@ const ClassList: React.FC = () => {
                       color: '#6b7280', 
                       textTransform: 'uppercase',
                       letterSpacing: '0.5px',
-                      margin: '0 0 4px 0' 
+                      margin: '0 0 4px 0',
+                      textAlign: isRTL ? 'right' : 'left'
                     }}>
-                      Teachers
+                      {t('classes.teachersLabel', 'Teachers')}
                     </h4>
                     <div style={{ fontSize: '14px', color: '#1f2937' }}>
                       {classItem.teachers.length > 0 ? (
                         classItem.teachers.slice(0, 2).map((teacherId) => (
-                          <div key={teacherId} style={{ marginBottom: '2px' }}>
+                          <div key={teacherId} style={{ marginBottom: '2px', direction: isRTL ? 'rtl' : 'ltr' }}>
                             {getTeacherName(teacherId)}
                           </div>
                         ))
                       ) : (
-                        <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>
-                          No teachers assigned
+                        <span style={{ color: '#9ca3af', fontStyle: 'italic', display: 'block', textAlign: isRTL ? 'right' : 'left' }} dir={isRTL ? 'rtl' : 'ltr'}>
+                          {t('classes.noTeachersAssignedShort', 'No teachers assigned')}
                         </span>
                       )}
                       {classItem.teachers.length > 2 && (
                         <div style={{ color: '#6b7280', fontSize: '12px' }}>
-                          +{classItem.teachers.length - 2} more
+                          +{classItem.teachers.length - 2} {t('classes.more', 'more')}
                         </div>
                       )}
                     </div>
@@ -466,25 +483,26 @@ const ClassList: React.FC = () => {
                       color: '#6b7280', 
                       textTransform: 'uppercase',
                       letterSpacing: '0.5px',
-                      margin: '0 0 4px 0' 
+                      margin: '0 0 4px 0',
+                      textAlign: isRTL ? 'right' : 'left'
                     }}>
-                      Students
+                      {t('classes.studentsLabel', 'Students')}
                     </h4>
                     <div style={{ fontSize: '14px', color: '#1f2937' }}>
                       {classItem.students.length > 0 ? (
                         classItem.students.slice(0, 2).map((student) => (
-                          <div key={student._id} style={{ marginBottom: '2px' }}>
+                          <div key={student._id} style={{ marginBottom: '2px', direction: isRTL ? 'rtl' : 'ltr' }}>
                             {student.name}
                           </div>
                         ))
                       ) : (
-                        <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>
-                          No students assigned
+                        <span style={{ color: '#9ca3af', fontStyle: 'italic', display: 'block', textAlign: isRTL ? 'right' : 'left' }} dir={isRTL ? 'rtl' : 'ltr'}>
+                          {t('classes.noStudentsAssignedShort', 'No students assigned')}
                         </span>
                       )}
                       {classItem.students.length > 2 && (
                         <div style={{ color: '#6b7280', fontSize: '12px' }}>
-                          +{classItem.students.length - 2} more
+                          +{classItem.students.length - 2} {t('classes.more', 'more')}
                         </div>
                       )}
                     </div>
@@ -522,7 +540,7 @@ const ClassList: React.FC = () => {
                 }}
               >
                 <GraduationCap style={{ height: '16px', width: '16px' }} />
-                <span>Manage Class</span>
+                <span>{t('classes.manageClass', 'Manage Class')}</span>
               </button>
             </div>
           ))}
@@ -542,10 +560,10 @@ const ClassList: React.FC = () => {
               fontSize: '20px', 
               marginBottom: '8px' 
             }}>
-              No classes found
+              {t('classes.noClassesFound', 'No classes found')}
             </div>
             <p style={{ color: '#9ca3af', margin: 0 }}>
-              {searchTerm ? 'Try adjusting your search criteria' : 'Get started by adding your first class'}
+              {searchTerm ? t('classes.adjustSearch', 'Try adjusting your search criteria') : t('classes.getStarted', 'Get started by adding your first class')}
             </p>
           </div>
         )}

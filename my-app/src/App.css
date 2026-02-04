@@ -3,8 +3,17 @@
   min-height: 100vh;
   margin: 0;
   padding: 0;
-  text-align: left;
   background-color: #f8fafc;
+}
+
+#root[dir="rtl"] {
+  text-align: right;
+  direction: rtl;
+}
+
+#root[dir="ltr"] {
+  text-align: left;
+  direction: ltr;
 }
 
 .logo {

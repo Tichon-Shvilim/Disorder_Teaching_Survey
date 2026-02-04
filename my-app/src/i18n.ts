@@ -20,6 +20,17 @@ const updateDirection = (language: string) => {
   const isRTL = language === 'he';
   document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
   document.documentElement.lang = language;
+  document.body.dir = isRTL ? 'rtl' : 'ltr';
+  
+  // Update #root direction
+  const root = document.getElementById('root');
+  if (root) {
+    root.dir = isRTL ? 'rtl' : 'ltr';
+  }
+  
+  // Update CSS custom properties for direction-aware styling
+  document.documentElement.style.setProperty('--text-align', isRTL ? 'right' : 'left');
+  document.documentElement.style.setProperty('--text-align-reverse', isRTL ? 'left' : 'right');
 };
 
 i18n

@@ -129,16 +129,18 @@ const Analytics: React.FC<AnalyticsProps> = ({ type, id, questionnaireId, startD
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 0.8) return '#4CAF50'; // Green
-    if (score >= 0.6) return '#FF9800'; // Orange
-    if (score >= 0.4) return '#FFC107'; // Yellow
+    // Score is already 0-100, so use directly
+    if (score >= 80) return '#4CAF50'; // Green
+    if (score >= 60) return '#FF9800'; // Orange
+    if (score >= 40) return '#FFC107'; // Yellow
     return '#F44336'; // Red
   };
 
   const getScoreLabel = (score: number) => {
-    if (score >= 0.8) return 'Excellent';
-    if (score >= 0.6) return 'Good';
-    if (score >= 0.4) return 'Needs Improvement';
+    // Score is already 0-100, so use directly
+    if (score >= 80) return 'Excellent';
+    if (score >= 60) return 'Good';
+    if (score >= 40) return 'Needs Improvement';
     return 'Concerning';
   };
 
@@ -186,7 +188,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ type, id, questionnaireId, startD
         <div className="overall-score">
           <div className="score-display">
             <span className="score-value" style={{ color: getScoreColor(overallScore) }}>
-              {Math.round(overallScore * 100)}%
+              {Math.round(overallScore)}%
             </span>
             <span className="score-label">
               {getScoreLabel(overallScore)}
@@ -243,7 +245,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ type, id, questionnaireId, startD
                   className="domain-score"
                   style={{ color: getScoreColor(domain.averageScore) }}
                 >
-                  {Math.round(domain.averageScore * 100)}%
+                  {Math.round(domain.averageScore)}%
                 </div>
               </div>
               
@@ -266,7 +268,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ type, id, questionnaireId, startD
                         <span 
                           className={`stat-value ${domain.trend > 0 ? 'positive' : domain.trend < 0 ? 'negative' : 'neutral'}`}
                         >
-                          {domain.trend > 0 ? '+' : ''}{Math.round(domain.trend * 100)}%
+                          {domain.trend > 0 ? '+' : ''}{Math.round(domain.trend)}%
                         </span>
                       </div>
                     )}
@@ -284,7 +286,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ type, id, questionnaireId, startD
                       <div className="domain-stat">
                         <span className="stat-label">Range:</span>
                         <span className="stat-value">
-                          {Math.round(domain.minScore * 100)}% - {Math.round(domain.maxScore * 100)}%
+                          {Math.round(domain.minScore)}% - {Math.round(domain.maxScore)}%
                         </span>
                       </div>
                     )}
