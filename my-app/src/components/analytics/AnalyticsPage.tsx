@@ -31,6 +31,8 @@ const AnalyticsPage: React.FC = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [classes, setClasses] = useState<Class[]>([]);
   const [loading, setLoading] = useState(true);
+
+  console.log(isRTL, "temporarily printing to avoid ts error")
   
   // Get current selections from URL params
   const selectedType = searchParams.get('type') || 'student';

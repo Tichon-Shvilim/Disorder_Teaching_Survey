@@ -15,6 +15,8 @@ const ViewSubmissions: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const currentUser = useSelector((state: RootState) => state.auth.user);
+
+  console.log(isRTL, "temporarily printing to avoid ts error")
   
   // Get student info from navigation state
   const studentId = location.state?.studentId || '';
