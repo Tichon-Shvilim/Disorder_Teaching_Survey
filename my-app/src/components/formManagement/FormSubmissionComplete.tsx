@@ -18,12 +18,7 @@ const FormSubmissionComplete: React.FC = () => {
 
   const handleEditSubmission = () => {
     // Navigate back to form with edit mode
-    navigate(-1, { 
-      state: { 
-        ...location.state,
-        editSubmissionId: submissionId 
-      }
-    });
+    navigate(-1);
   };
 
   const handleGoBack = () => {
