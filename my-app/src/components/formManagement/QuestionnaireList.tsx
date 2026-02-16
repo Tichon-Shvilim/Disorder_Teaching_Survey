@@ -33,16 +33,16 @@ import {
   Schedule as ScheduleIcon,
 } from '@mui/icons-material';
 
-import type { QuestionnaireTemplateWithMetadata } from './models/FormModels';
-import { questionnaireApiService } from './Api-Requests/questionnaireApi';
+import type { QuestionnaireTemplateWithMetadata } from './models/FormModels';   
+import { questionnaireApiService } from './Api-Requests/questionnaireApi';      
+import { useTranslation } from 'react-i18next';
 
 const QuestionnaireList: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
-  const [questionnaires, setQuestionnaires] = useState<QuestionnaireTemplateWithMetadata[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [questionnaires, setQuestionnaires] = useState<QuestionnaireTemplateWithMetadata[]>([]);                                                                  const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedQuestionnaire, setSelectedQuestionnaire] = useState<QuestionnaireTemplateWithMetadata | null>(null);
-  const [snackbar, setSnackbar] = useState<{
+  const [selectedQuestionnaire, setSelectedQuestionnaire] = useState<QuestionnaireTemplateWithMetadata | null>(null);                                             const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
     severity: 'success' | 'error' | 'info' | 'warning';
@@ -55,7 +55,7 @@ const QuestionnaireList: React.FC = () => {
   const fetchQuestionnaires = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await questionnaireApiService.getQuestionnaires();
+      const response = await questionnaireApiService.getQuestionnaires();       
       if (response.success && response.data) {
         setQuestionnaires(response.data);
       } else {
@@ -77,10 +77,8 @@ const QuestionnaireList: React.FC = () => {
     if (!selectedQuestionnaire) return;
 
     try {
-      const response = await questionnaireApiService.deleteQuestionnaire(selectedQuestionnaire._id);
-      if (response.success) {
-        setQuestionnaires(questionnaires.filter(q => q._id !== selectedQuestionnaire._id));
-        showSnackbar('Questionnaire deleted successfully', 'success');
+      const response = await questionnaireApiService.deleteQuestionnaire(selectedQuestionnaire._id);                                                                  if (response.success) {
+        setQuestionnaires(questionnaires.filter(q => q._id !== selectedQuestionnaire._id));                                                                             showSnackbar('Questionnaire deleted successfully', 'success');
       } else {
         showSnackbar(response.message || 'Failed to delete questionnaire', 'error');
       }
@@ -93,15 +91,14 @@ const QuestionnaireList: React.FC = () => {
     }
   };
 
-  const showSnackbar = (message: string, severity: 'success' | 'error' | 'info' | 'warning') => {
-    setSnackbar({ open: true, message, severity });
+  const showSnackbar = (message: string, severity: 'success' | 'error' | 'info' | 'warning') => {                                                                   setSnackbar({ open: true, message, severity });
   };
 
-  const handleEdit = (questionnaire: QuestionnaireTemplateWithMetadata) => {
+  const handleEdit = (questionnaire: QuestionnaireTemplateWithMetadata) => {    
     navigate(`/layout/create-questionnaire/${questionnaire._id}`);
   };
 
-  const handleView = (questionnaire: QuestionnaireTemplateWithMetadata) => {
+  const handleView = (questionnaire: QuestionnaireTemplateWithMetadata) => {    
     navigate(`/layout/view-questionnaire/${questionnaire._id}`);
   };
 
@@ -115,8 +112,7 @@ const QuestionnaireList: React.FC = () => {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-        <CircularProgress size={60} />
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>                                                                 <CircularProgress size={60} />
       </Box>
     );
   }
@@ -125,16 +121,15 @@ const QuestionnaireList: React.FC = () => {
     <Box sx={{ maxWidth: 1400, mx: 'auto', p: 3 }}>
       {/* Header Section */}
       <Paper elevation={2} sx={{ p: 4, mb: 4, borderRadius: 2 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>                                                                             <Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}> 
               <TreeIcon sx={{ fontSize: 40, color: 'primary.main' }} />
-              <Typography variant="h4" color="primary" fontWeight="bold">
-                Enhanced Questionnaires
+              <Typography variant="h4" color="primary" fontWeight="bold">       
+                {t('questionnaireList.enhancedQuestionnaires')}
               </Typography>
             </Box>
             <Typography variant="subtitle1" color="text.secondary">
-              Manage hierarchical questionnaires with advanced analytics
+              {t('questionnaireList.manageDesc')}
             </Typography>
           </Box>
           <Button
@@ -144,71 +139,64 @@ const QuestionnaireList: React.FC = () => {
             size="large"
             sx={{ borderRadius: 2, px: 3, py: 1.5 }}
           >
-            Create Enhanced Questionnaire
+            {t('questionnaireList.createEnhanced')}
           </Button>
         </Box>
       </Paper>
 
       {/* Statistics Cards */}
-      <Box sx={{ 
-        display: 'grid', 
+      <Box sx={{
+        display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
         gap: 3,
-        mb: 4 
+        mb: 4
       }}>
-        <Card sx={{ borderRadius: 2, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-          <CardContent sx={{ color: 'white' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Card sx={{ borderRadius: 2, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>                                                                  <CardContent sx={{ color: 'white' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>        
               <QuizIcon />
-              <Typography variant="h6">Total Forms</Typography>
+              <Typography variant="h6">{t('questionnaireList.totalForms')}</Typography>
             </Box>
             <Typography variant="h3" fontWeight="bold">
               {questionnaires.length}
             </Typography>
           </CardContent>
         </Card>
-        <Card sx={{ borderRadius: 2, background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' }}>
-          <CardContent sx={{ color: 'white' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Card sx={{ borderRadius: 2, background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' }}>                                                                  <CardContent sx={{ color: 'white' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>        
               <QuestionIcon />
-              <Typography variant="h6">Total Questions</Typography>
+              <Typography variant="h6">{t('questionnaireList.totalQuestions')}</Typography>
             </Box>
             <Typography variant="h3" fontWeight="bold">
-              {questionnaires.reduce((total, q) => total + (q.metadata?.totalQuestions || 0), 0)}
-            </Typography>
+              {questionnaires.reduce((total, q) => total + (q.metadata?.totalQuestions || 0), 0)}                                                                           </Typography>
           </CardContent>
         </Card>
-        <Card sx={{ borderRadius: 2, background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' }}>
-          <CardContent sx={{ color: 'white' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Card sx={{ borderRadius: 2, background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' }}>                                                                  <CardContent sx={{ color: 'white' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>        
               <AnalyticsIcon />
-              <Typography variant="h6">Graphable Questions</Typography>
+              <Typography variant="h6">{t('questionnaireList.graphableQuestions')}</Typography>
             </Box>
             <Typography variant="h3" fontWeight="bold">
-              {questionnaires.reduce((total, q) => total + (q.metadata?.graphableQuestions || 0), 0)}
-            </Typography>
+              {questionnaires.reduce((total, q) => total + (q.metadata?.graphableQuestions || 0), 0)}                                                                       </Typography>
           </CardContent>
         </Card>
-        <Card sx={{ borderRadius: 2, background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)' }}>
-          <CardContent sx={{ color: 'white' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Card sx={{ borderRadius: 2, background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)' }}>                                                                  <CardContent sx={{ color: 'white' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>        
               <TreeIcon />
-              <Typography variant="h6">Total Nodes</Typography>
+              <Typography variant="h6">{t('questionnaireList.totalNodes')}</Typography>
             </Box>
             <Typography variant="h3" fontWeight="bold">
-              {questionnaires.reduce((total, q) => total + (q.metadata?.totalNodes || 0), 0)}
-            </Typography>
+              {questionnaires.reduce((total, q) => total + (q.metadata?.totalNodes || 0), 0)}                                                                               </Typography>
           </CardContent>
         </Card>
       </Box>
 
       {/* Questionnaires Grid */}
       {questionnaires.length === 0 ? (
-        <Paper 
-          elevation={1} 
-          sx={{ 
-            p: 8, 
-            textAlign: 'center', 
+        <Paper
+          elevation={1}
+          sx={{
+            p: 8,
+            textAlign: 'center',
             borderRadius: 2,
             border: '2px dashed',
             borderColor: 'divider',
@@ -217,10 +205,10 @@ const QuestionnaireList: React.FC = () => {
         >
           <TreeIcon sx={{ fontSize: 80, color: 'grey.400', mb: 2 }} />
           <Typography variant="h5" color="text.secondary" gutterBottom>
-            No enhanced questionnaires found
+            {t('questionnaireList.noEnhancedFound')}
           </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-            Create your first hierarchical questionnaire with advanced analytics
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>    
+            {t('questionnaireList.createFirstDesc')}
           </Typography>
           <Button
             variant="contained"
@@ -228,20 +216,20 @@ const QuestionnaireList: React.FC = () => {
             onClick={() => navigate('/layout/create-questionnaire')}
             size="large"
           >
-            Create Your First Enhanced Questionnaire
+            {t('questionnaireList.createFirstEnhanced')}
           </Button>
         </Paper>
       ) : (
-        <Box sx={{ 
-          display: 'grid', 
+        <Box sx={{
+          display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))',
           gap: 3
         }}>
           {questionnaires.map((questionnaire) => (
-            <Card 
+            <Card
               key={questionnaire._id}
-              sx={{ 
-                borderRadius: 2, 
+              sx={{
+                borderRadius: 2,
                 height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
@@ -253,19 +241,16 @@ const QuestionnaireList: React.FC = () => {
               }}
             >
               <CardContent sx={{ flexGrow: 1, p: 3 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                  <Box sx={{ flexGrow: 1 }}>
-                    <Typography variant="h6" gutterBottom fontWeight="bold" sx={{ mb: 1 }}>
-                      {questionnaire.title}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>                                                                  <Box sx={{ flexGrow: 1 }}>
+                    <Typography variant="h6" gutterBottom fontWeight="bold" sx={{ mb: 1 }}>                                                                                           {questionnaire.title}
                     </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                      <Chip
-                        label={questionnaire.isActive ? 'Active' : 'Inactive'}
-                        color={questionnaire.isActive ? 'success' : 'default'}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>                                                                                               <Chip
+                        label={questionnaire.isActive ? t('questionnaireList.active') : t('questionnaireList.inactive')}
+                        color={questionnaire.isActive ? 'success' : 'default'}  
                         size="small"
                       />
                       <Chip
-                        label={`v${questionnaire.version}`}
+                        label={t('questionnaireList.version', { version: questionnaire.version })}
                         variant="outlined"
                         size="small"
                       />
@@ -274,9 +259,8 @@ const QuestionnaireList: React.FC = () => {
                 </Box>
 
                 {questionnaire.description && (
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    {questionnaire.description.length > 100 
-                      ? `${questionnaire.description.substring(0, 100)}...` 
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>                                                                                                {questionnaire.description.length > 100
+                      ? `${questionnaire.description.substring(0, 100)}...`     
                       : questionnaire.description}
                   </Typography>
                 )}
@@ -285,40 +269,36 @@ const QuestionnaireList: React.FC = () => {
 
                 {/* Enhanced Statistics */}
                 <Stack spacing={1}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>                                                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <QuestionIcon color="primary" fontSize="small" />
-                      <Typography variant="body2">Questions</Typography>
+                      <Typography variant="body2">{t('questionnaireList.questions')}</Typography>
                     </Box>
                     <Typography variant="body2" fontWeight="bold">
                       {questionnaire.metadata?.totalQuestions || 0}
                     </Typography>
                   </Box>
-                  
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>                                                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <TreeIcon color="primary" fontSize="small" />
-                      <Typography variant="body2">Total Nodes</Typography>
+                      <Typography variant="body2">{t('questionnaireList.totalNodes')}</Typography>
                     </Box>
                     <Typography variant="body2" fontWeight="bold">
                       {questionnaire.metadata?.totalNodes || 0}
                     </Typography>
                   </Box>
 
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <AnalyticsIcon color="primary" fontSize="small" />
-                      <Typography variant="body2">Graphable</Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>                                                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <AnalyticsIcon color="primary" fontSize="small" />        
+                      <Typography variant="body2">{t('questionnaireList.graphable')}</Typography>
                     </Box>
                     <Typography variant="body2" fontWeight="bold">
                       {questionnaire.metadata?.graphableQuestions || 0}
                     </Typography>
                   </Box>
 
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>                                                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <ScheduleIcon color="primary" fontSize="small" />
-                      <Typography variant="body2">Created</Typography>
+                      <Typography variant="body2">{t('questionnaireList.created')}</Typography>
                     </Box>
                     <Typography variant="body2" fontWeight="bold">
                       {formatDate(questionnaire.createdAt)}
@@ -328,8 +308,8 @@ const QuestionnaireList: React.FC = () => {
               </CardContent>
 
               <CardActions sx={{ p: 2, pt: 0 }}>
-                <Stack direction="row" spacing={1} sx={{ width: '100%' }}>
-                  <Tooltip title="View Details">
+                <Stack direction="row" spacing={1} sx={{ width: '100%' }}>      
+                  <Tooltip title={t('questionnaireList.viewDetails')}>
                     <Button
                       variant="outlined"
                       size="small"
@@ -337,10 +317,10 @@ const QuestionnaireList: React.FC = () => {
                       onClick={() => handleView(questionnaire)}
                       sx={{ flex: 1 }}
                     >
-                      View
+                      {t('questionnaireList.view')}
                     </Button>
                   </Tooltip>
-                  <Tooltip title="Edit Questionnaire">
+                  <Tooltip title={t('questionnaireList.editQuestionnaire')}>
                     <Button
                       variant="contained"
                       size="small"
@@ -348,10 +328,10 @@ const QuestionnaireList: React.FC = () => {
                       onClick={() => handleEdit(questionnaire)}
                       sx={{ flex: 1 }}
                     >
-                      Edit
+                      {t('questionnaireList.edit')}
                     </Button>
                   </Tooltip>
-                  <Tooltip title="Delete">
+                  <Tooltip title={t('questionnaireList.delete')}>
                     <IconButton
                       color="error"
                       onClick={() => {
@@ -372,16 +352,18 @@ const QuestionnaireList: React.FC = () => {
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogTitle>{t('questionnaireList.confirmDelete')}</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to delete "{selectedQuestionnaire?.title}"? This action cannot be undone.
+            {t('questionnaireList.confirmDeleteMsg', {
+              title: selectedQuestionnaire?.title
+            })}
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button onClick={() => setDeleteDialogOpen(false)}>{t('questionnaireList.cancel')}</Button>
           <Button onClick={handleDelete} color="error" variant="contained">
-            Delete
+            {t('questionnaireList.delete')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -392,12 +374,13 @@ const QuestionnaireList: React.FC = () => {
         autoHideDuration={6000}
         onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
       >
-        <Alert severity={snackbar.severity} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}>
-          {snackbar.message}
+        <Alert severity={snackbar.severity} onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}>                                                              {snackbar.message}
         </Alert>
       </Snackbar>
     </Box>
+
   );
-};
+}
 
 export default QuestionnaireList;
+

@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import {
@@ -60,6 +61,7 @@ const QuestionnaireBuilder: React.FC<QuestionnaireBuilderProps> = ({
   
   // Form State
   const [activeStep, setActiveStep] = useState(0);
+  const { t } = useTranslation();
   const [visitedSteps, setVisitedSteps] = useState<Set<number>>(new Set([0])); // Track which steps have been visited
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -87,31 +89,31 @@ const QuestionnaireBuilder: React.FC<QuestionnaireBuilderProps> = ({
   const steps = useMemo((): BuilderStep[] => [
     {
       id: 0,
-      title: 'Basics',
-      description: 'Set title and description',
+      title: t('questionnaireBuilder.basics', 'Basics'),
+      description: t('questionnaireBuilder.basicsDesc', 'Set title and description'),
       completed: Boolean(title.trim())
     },
     {
       id: 1,
-      title: 'Structure',
-      description: 'Build groups and questions',
+      title: t('questionnaireBuilder.structure', 'Structure'),
+      description: t('questionnaireBuilder.structureDesc', 'Build groups and questions'),
       completed: structure.length > 0 && structure.some(node => 
         node.type === 'question' || hasQuestions(node)
       )
     },
     {
       id: 2,
-      title: 'Analytics',
-      description: 'Configure graph settings',
-      completed: visitedSteps.has(2) // Only completed if user has visited this step
+      title: t('questionnaireBuilder.analytics', 'Analytics'),
+      description: t('questionnaireBuilder.analyticsDesc', 'Configure graph settings'),
+      completed: visitedSteps.has(2)
     },
     {
       id: 3,
-      title: 'Review',
-      description: 'Preview and save',
-      completed: visitedSteps.has(3) // Only completed if user has visited this step
+      title: t('questionnaireBuilder.review', 'Review'),
+      description: t('questionnaireBuilder.reviewDesc', 'Preview and save'),
+      completed: visitedSteps.has(3)
     }
-  ], [title, structure, hasQuestions, visitedSteps]);
+  ], [title, structure, hasQuestions, visitedSteps, t]);
 
   // Load existing questionnaire if editing
   useEffect(() => {
@@ -142,8 +144,8 @@ const QuestionnaireBuilder: React.FC<QuestionnaireBuilderProps> = ({
     if (validationErrors.length > 0) {
       // Check if any validation errors might be resolved
       const hasBasicIssues = validationErrors.some(error => 
-        error.includes('Title is required') || 
-        error.includes('At least one group or question is required')
+        error.includes(t('questionnaireBuilder.titleRequired', 'Title is required')) || 
+        error.includes(t('questionnaireBuilder.groupOrQuestionRequired', 'At least one group or question is required'))
       );
       
       // Clear basic validation errors if they're now resolved
@@ -151,13 +153,13 @@ const QuestionnaireBuilder: React.FC<QuestionnaireBuilderProps> = ({
         const stillValidErrors: string[] = [];
         
         // Re-check title
-        if (!title.trim() && validationErrors.some(error => error.includes('Title is required'))) {
-          stillValidErrors.push('Title is required');
+        if (!title.trim() && validationErrors.some(error => error.includes(t('questionnaireBuilder.titleRequired', 'Title is required')))) {
+          stillValidErrors.push(t('questionnaireBuilder.titleRequired', 'Title is required'));
         }
         
         // Re-check structure
-        if (structure.length === 0 && validationErrors.some(error => error.includes('At least one group or question is required'))) {
-          stillValidErrors.push('At least one group or question is required');
+        if (structure.length === 0 && validationErrors.some(error => error.includes(t('questionnaireBuilder.groupOrQuestionRequired', 'At least one group or question is required')))) {
+          stillValidErrors.push(t('questionnaireBuilder.groupOrQuestionRequired', 'At least one group or question is required'));
         }
         
         // If we have fewer errors now, update the validation errors
@@ -194,12 +196,12 @@ const QuestionnaireBuilder: React.FC<QuestionnaireBuilderProps> = ({
     switch (activeStep) {
       case 0: // Basics
         if (!title.trim()) {
-          errors.push('Title is required');
+          errors.push(t('questionnaireBuilder.titleRequired', 'Title is required'));
         }
         break;
       case 1: // Structure
         if (structure.length === 0) {
-          errors.push('At least one group or question is required');
+          errors.push(t('questionnaireBuilder.groupOrQuestionRequired', 'At least one group or question is required'));
         } else {
           // Validate structure with API
           try {
@@ -208,7 +210,7 @@ const QuestionnaireBuilder: React.FC<QuestionnaireBuilderProps> = ({
               errors.push(...response.errors);
             }
           } catch {
-            errors.push('Failed to validate structure');
+            errors.push(t('questionnaireBuilder.failedValidateStructure', 'Failed to validate structure'));
           }
         }
         break;
@@ -252,7 +254,7 @@ const QuestionnaireBuilder: React.FC<QuestionnaireBuilderProps> = ({
         
         // Show success message
         if (editingQuestionnaire) {
-          toast.success('Questionnaire updated successfully!', {
+          toast.success(t('questionnaireBuilder.updatedSuccessfully', 'Questionnaire updated successfully!'), {
             position: "top-right",
             autoClose: 3000,
             hideProgressBar: false,
@@ -311,10 +313,10 @@ const QuestionnaireBuilder: React.FC<QuestionnaireBuilderProps> = ({
         return (
           <Box sx={{ p: 4 }}>
             <Typography variant="h6" gutterBottom>
-              Questionnaire Basics
+              {t('questionnaireBuilder.basics')}
             </Typography>
             <TextField
-              label="Title"
+              label={t('questionnaireBuilder.titleRequiredAsterisk')}
               value={title}
               onChange={(e) => { 
                 setTitle(e.target.value); 
@@ -329,7 +331,7 @@ const QuestionnaireBuilder: React.FC<QuestionnaireBuilderProps> = ({
               sx={{ mb: 3 }}
             />
             <TextField
-              label="Description"
+              label={t('questionnaireBuilder.description')}
               value={description}
               onChange={(e) => { 
                 setDescription(e.target.value); 
@@ -467,17 +469,17 @@ const QuestionnaireBuilder: React.FC<QuestionnaireBuilderProps> = ({
           <QuizIcon sx={{ fontSize: 40, color: 'primary.main' }} />
           <Box>
             <Typography variant="h4" color="primary" fontWeight="bold">
-              {editingQuestionnaire ? 'Edit Questionnaire' : 'Create Questionnaire'}
+              {editingQuestionnaire ? t('questionnaireBuilder.edit') : t('questionnaireBuilder.create')}
             </Typography>
             <Typography variant="subtitle1" color="text.secondary">
-              Build intelligent forms with hierarchical structure and analytics
+              {t('questionnaireBuilder.headerDesc')}
             </Typography>
           </Box>
         </Box>
 
         {hasUnsavedChanges && (
           <Alert severity="info" sx={{ mt: 2 }}>
-            You have unsaved changes. Remember to save your work!
+            {t('questionnaireBuilder.unsavedChanges')}
           </Alert>
         )}
       </Paper>
@@ -495,10 +497,14 @@ const QuestionnaireBuilder: React.FC<QuestionnaireBuilderProps> = ({
       >
         <Box sx={{ mb: 3 }}>
           <Typography variant="h5" fontWeight="bold" gutterBottom>
-            Form Creation Progress
+            {t('questionnaireBuilder.formCreationProgress')}
           </Typography>
           <Typography variant="body2" sx={{ opacity: 0.9 }}>
-            Step {activeStep + 1} of {steps.length} • {Math.round(((activeStep) / (steps.length - 1)) * 100)}% Complete
+            {t('questionnaireBuilder.stepProgressFull', {
+              current: activeStep + 1,
+              total: steps.length,
+              percent: Math.round(((activeStep) / (steps.length - 1)) * 100)
+            })}
           </Typography>
         </Box>
         
@@ -699,7 +705,7 @@ const QuestionnaireBuilder: React.FC<QuestionnaireBuilderProps> = ({
           <Box sx={{ mt: 3, p: 2, backgroundColor: '#f5f5f5', borderRadius: 2 }}>
             <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <SettingsIcon sx={{ fontSize: 16 }} />
-              Complete this step to continue to the next one
+              {t('questionnaireBuilder.completeStepHint')}
             </Typography>
           </Box>
         )}
@@ -727,7 +733,7 @@ const QuestionnaireBuilder: React.FC<QuestionnaireBuilderProps> = ({
           }}
         >
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-            Progress
+            {t('questionnaireBuilder.progressBoxTitle')}
           </Typography>
           <LinearProgress 
             variant="determinate" 
@@ -744,7 +750,7 @@ const QuestionnaireBuilder: React.FC<QuestionnaireBuilderProps> = ({
             }} 
           />
           <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
-            {Math.round(((activeStep) / (steps.length - 1)) * 100)}% Complete
+            {t('questionnaireBuilder.progressBoxComplete', { percent: Math.round(((activeStep) / (steps.length - 1)) * 100) })}
           </Typography>
         </Paper>
         

@@ -32,6 +32,7 @@ import {
 } from '@mui/icons-material';
 import type { FormNode } from './models/FormModels';
 
+
 interface FormPreviewProps {
   title?: string;
   description?: string;
@@ -44,6 +45,7 @@ interface FormData {
 }
 
 const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure, onClose }) => {
+
   const [formData, setFormData] = useState<FormData>({});
   const [viewMode, setViewMode] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
@@ -627,7 +629,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
                       mt: 2, 
                       backgroundColor: 'rgba(255,255,255,0.2)', 
                       color: 'white',
-                      '& .MuiChip-label': { fontWeight: 'bold' }
+                      fontWeight: 'bold'
                     }} 
                   />
                 )}

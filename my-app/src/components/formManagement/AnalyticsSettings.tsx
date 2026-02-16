@@ -18,6 +18,7 @@ import {
 } from '@mui/icons-material';
 import type { GraphSettings } from './models/FormModels';
 
+
 interface AnalyticsSettingsProps {
   graphSettings: GraphSettings;
   onChange: (settings: GraphSettings) => void;

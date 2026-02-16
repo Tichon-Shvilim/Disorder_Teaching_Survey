@@ -57,7 +57,7 @@ const AddClass: React.FC = () => {
     
     try {
       await createClass(formData);
-      toast.success('Class created successfully!');
+        toast.success(t('classes.classCreatedSuccessfully', 'Class created successfully!'));
       navigate('../classes');
     } catch (error: unknown) {
       console.error('Error creating class:', error);

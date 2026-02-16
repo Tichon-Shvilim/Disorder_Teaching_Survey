@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Typography,
@@ -39,6 +40,7 @@ import {
 import type { FormNode, Option } from './models/FormModels';
 import AddNodeDialog from './AddNodeDialog';
 
+
 interface StructureBuilderProps {
   structure: FormNode[];
   onChange: (structure: FormNode[]) => void;
@@ -61,6 +63,8 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
   onChange,
   onPreview
 }) => {
+  const { t } = useTranslation();
+
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
   const [isAddingNode, setIsAddingNode] = useState(false);
   const [addingToParentId, setAddingToParentId] = useState<string | null>(null);
@@ -82,11 +86,11 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
   } | null>(null);
 
   const inputTypes: { value: 'single-choice' | 'multiple-choice' | 'scale' | 'number' | 'text'; label: string }[] = [
-    { value: 'single-choice', label: 'Single Choice' },
-    { value: 'multiple-choice', label: 'Multiple Choice' },
-    { value: 'text', label: 'Text Input' },
-    { value: 'number', label: 'Number Input' },
-    { value: 'scale', label: 'Rating Scale' },
+    { value: 'single-choice', label: t('addNodeDialog.inputType.singleChoice.label') },
+    { value: 'multiple-choice', label: t('addNodeDialog.inputType.multipleChoice.label') },
+    { value: 'text', label: t('addNodeDialog.inputType.text.label') },
+    { value: 'number', label: t('addNodeDialog.inputType.number.label') },
+    { value: 'scale', label: t('addNodeDialog.inputType.scale.label') },
   ];
 
   const chartTypes: { value: 'bar' | 'line' | 'radar' | 'gauge' | 'pie'; label: string; icon: React.ReactNode; description: string }[] = [
@@ -477,7 +481,7 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
                   )}
                   <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap' }}>
                     <Chip
-                      label={node.type === 'group' ? 'Group' : 'Question'}
+                      label={node.type === 'group' ? t('addNodeDialog.group') : t('addNodeDialog.question')}
                       size="small"
                       color={node.type === 'group' ? 'secondary' : 'success'}
                     />
@@ -503,7 +507,7 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
                     )}
                     {node.type === 'question' && node.weight !== 1 && (
                       <Chip 
-                        label={`Weight: ${node.weight}`}
+                        label={t('addNodeDialog.weight', { count: node.weight }) + ': ' + node.weight}
                         size="small" 
                         color="warning" 
                         variant="outlined" 
@@ -552,8 +556,8 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
                   </IconButton>
                 </Tooltip>
                 <Tooltip title="Move Up">
-                  <IconButton 
-                    size="small" 
+                  <IconButton
+                    size="small"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleMoveNode(node.id, 'up');
@@ -563,8 +567,8 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
                   </IconButton>
                 </Tooltip>
                 <Tooltip title="Move Down">
-                  <IconButton 
-                    size="small" 
+                  <IconButton
+                    size="small"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleMoveNode(node.id, 'down');
@@ -617,7 +621,7 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
               {node.options && node.options.length > 0 && (
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="subtitle2" gutterBottom>
-                    Answer Options ({node.options.length}):
+                    {t('common.answerOptions', { count: node.options.length })} ({node.options.length}):
                   </Typography>
                   <Stack spacing={2}>
                     {node.options.map((option, index) => {
@@ -635,7 +639,7 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
                               onChange={(e) => handleEditOption(node, index, { label: e.target.value })}
                               size="small"
                               sx={{ flex: 1 }}
-                              placeholder="Option label..."
+                              placeholder={t('structureBuilder.optionLabel')}
                               variant="outlined"
                             />
                             <TextField
@@ -703,7 +707,7 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
                 <Box sx={{ mb: 2 }}>
                   <Paper variant="outlined" sx={{ p: 3, textAlign: 'center', bgcolor: 'grey.50', borderStyle: 'dashed' }}>
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                      This question needs answer options
+                      {t('structureBuilder.needsAnswerOptions')}
                     </Typography>
                     <Button
                       startIcon={<AddIcon />}
@@ -711,7 +715,7 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
                       variant="contained"
                       size="small"
                     >
-                      Add First Option
+                      {t('structureBuilder.addFirstOption')}
                     </Button>
                   </Paper>
                 </Box>
@@ -746,8 +750,11 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
       {/* Debug Info */}
       <Box sx={{ mb: 2, p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
         <Typography variant="caption">
-          Debug: Structure length: {structure.length}, Adding: {isAddingNode.toString()},
-          Graphable groups: {structure.filter(node => node.type === 'group' && node.graphable).length}
+          {t('structureBuilder.debugInfo', {
+            length: structure.length,
+            adding: isAddingNode.toString(),
+            graphable: structure.filter(node => node.type === 'group' && node.graphable).length
+          })}
         </Typography>
       </Box>
 
@@ -756,13 +763,13 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
         <Stack direction="row" justifyContent="space-between" alignItems="center">
           <Box>
             <Typography variant="h6" gutterBottom>
-              🏗️ Structure Builder
+              🏗️ {t('structureBuilder.header')}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Design your form hierarchy. Add groups and questions, then organize them visually.
+              {t('structureBuilder.helperText')}
             </Typography>
             <Typography variant="caption" color="primary" sx={{ display: 'block', mt: 0.5, fontStyle: 'italic' }}>
-              💡 Tip: Groups with analytics enabled (graphable) will appear in charts and reports with a blue accent.
+              {t('structureBuilder.tip')}
             </Typography>
           </Box>
           <Stack direction="row" spacing={2}>
@@ -772,7 +779,7 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
               onClick={() => onPreview(structure)}
               disabled={structure.length === 0}
             >
-              Preview Form
+              {t('structureBuilder.previewForm')}
             </Button>
             <Button
               variant="contained"
@@ -785,7 +792,7 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
                 }
               }}
             >
-              Add Root Item
+              {t('structureBuilder.addRootItem')}
             </Button>
           </Stack>
         </Stack>
@@ -796,10 +803,10 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
         <Card sx={{ p: 6, textAlign: 'center', borderRadius: 2 }}>
           <GroupIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom>
-            No structure yet
+            {t('structureBuilder.noStructure')}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Start building your form by adding groups and questions. Think of it like creating folders and files!
+            {t('structureBuilder.startBuilding')}
           </Typography>
           <Button
             variant="contained"
