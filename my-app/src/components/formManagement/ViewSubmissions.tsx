@@ -20,7 +20,7 @@ const ViewSubmissions: React.FC = () => {
   
   // Get student info from navigation state
   const studentId = location.state?.studentId || '';
-  const studentName = location.state?.studentName || 'Unknown Student';
+  const studentName = location.state?.studentName || t('formSubmissions.unknownStudent', 'Unknown Student');
 
   const [submissions, setSubmissions] = useState<FormSubmission[]>([]);
   const [questionnaires, setQuestionnaires] = useState<QuestionnaireTemplate[]>([]);
@@ -429,7 +429,7 @@ const ViewSubmissions: React.FC = () => {
                         gap: '4px'
                       }}>
                         {getStatusIcon(submission.status)}
-                        {submission.status.charAt(0).toUpperCase() + submission.status.slice(1)}
+                        {t(`formSubmissions.status.${submission.status}`, submission.status.charAt(0).toUpperCase() + submission.status.slice(1))}
                       </span>
                     </div>
                     
@@ -439,11 +439,11 @@ const ViewSubmissions: React.FC = () => {
                         {submission.submittedAt ? formatDate(submission.submittedAt) : 'Draft - ' + formatDate(submission.createdAt)}
                       </span>
                       <span>
-                        {submission.answers?.length || 0} answers
+                        {t('formSubmissions.answersCount', { count: submission.answers?.length || 0 })}
                       </span>
                       {submission.totalScore && (
                         <span>
-                          Score: {submission.totalScore}
+                          {t('formSubmissions.score', 'Score')}: {submission.totalScore}
                         </span>
                       )}
                     </div>
@@ -464,10 +464,10 @@ const ViewSubmissions: React.FC = () => {
                         fontSize: '14px',
                         color: '#374151'
                       }}
-                      title="View Details"
+                      title={t('formSubmissions.viewDetails', 'View Details')}
                     >
                       <Eye style={{ height: '14px', width: '14px' }} />
-                      View
+                      {t('formSubmissions.view', 'View')}
                     </button>
 
                     {submission.status === 'completed' && (
@@ -485,10 +485,10 @@ const ViewSubmissions: React.FC = () => {
                           fontSize: '14px',
                           color: '#1d4ed8'
                         }}
-                        title="View Analytics"
+                        title={t('formSubmissions.viewAnalytics', 'View Analytics')}
                       >
                         <BarChart3 style={{ height: '14px', width: '14px' }} />
-                        Analytics
+                        {t('formSubmissions.analytics', 'Analytics')}
                       </button>
                     )}
 
@@ -514,10 +514,10 @@ const ViewSubmissions: React.FC = () => {
                           fontSize: '14px',
                           color: '#1d4ed8'
                         }}
-                        title="Edit Submission"
+                        title={t('formSubmissions.editSubmission', 'Edit Submission')}
                       >
                         <Edit style={{ height: '14px', width: '14px' }} />
-                        Edit
+                        {t('formSubmissions.edit', 'Edit')}
                       </button>
                     )}
 
@@ -536,10 +536,10 @@ const ViewSubmissions: React.FC = () => {
                           fontSize: '14px',
                           color: '#dc2626'
                         }}
-                        title="Delete Submission"
+                        title={t('formSubmissions.deleteSubmission', 'Delete Submission')}
                       >
                         <Trash2 style={{ height: '14px', width: '14px' }} />
-                        Delete
+                        {t('formSubmissions.delete', 'Delete')}
                       </button>
                     )}
                   </div>
@@ -550,12 +550,12 @@ const ViewSubmissions: React.FC = () => {
             <div style={{ padding: '48px', textAlign: 'center' }}>
               <FileText style={{ height: '48px', width: '48px', color: '#d1d5db', margin: '0 auto 16px' }} />
               <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', margin: '0 0 8px 0' }}>
-                No submissions found
+                {t('formSubmissions.noSubmissionsFound', 'No submissions found')}
               </h3>
               <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 24px 0' }}>
                 {submissions.length === 0 
-                  ? 'This student has no form submissions yet.'
-                  : 'No submissions match your current filters.'
+                  ? t('formSubmissions.noSubmissionsYet', 'This student has no form submissions yet.')
+                  : t('formSubmissions.noSubmissionsMatchFilters', 'No submissions match your current filters.')
                 }
               </p>
               {questionnaires.length > 0 && (
@@ -572,7 +572,7 @@ const ViewSubmissions: React.FC = () => {
                     fontWeight: '500'
                   }}
                 >
-                  Fill First Form
+                  {t('formSubmissions.fillFirstForm', 'Fill First Form')}
                 </button>
               )}
             </div>
@@ -613,7 +613,7 @@ const ViewSubmissions: React.FC = () => {
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <h2 style={{ fontSize: '24px', fontWeight: '600', color: '#1f2937', margin: 0 }}>
-                    Submission Details
+                    {t('formSubmissions.submissionDetails', 'Submission Details')}
                   </h2>
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                     <PDFDownloadButton 
@@ -644,12 +644,12 @@ const ViewSubmissions: React.FC = () => {
                     {selectedSubmission.questionnaireTitle}
                   </h3>
                   <div style={{ display: 'flex', gap: '16px', fontSize: '14px', color: '#6b7280' }}>
-                    <span>Student: {selectedSubmission.studentName}</span>
-                    <span>Status: {selectedSubmission.status}</span>
+                    <span>{t('students.student', 'Student')}: {selectedSubmission.studentName}</span>
+                    <span>{t('formSubmissions.statusLabel', 'Status')}: {t(`formSubmissions.status.${selectedSubmission.status}`, selectedSubmission.status)}</span>
                     <span>
                       {selectedSubmission.submittedAt 
-                        ? `Submitted: ${formatDate(selectedSubmission.submittedAt)}`
-                        : `Created: ${formatDate(selectedSubmission.createdAt)}`
+                        ? `${t('formSubmissions.submitted', 'Submitted')}: ${formatDate(selectedSubmission.submittedAt)}`
+                        : `${t('formSubmissions.created', 'Created')}: ${formatDate(selectedSubmission.createdAt)}`
                       }
                     </span>
                   </div>
@@ -658,7 +658,7 @@ const ViewSubmissions: React.FC = () => {
                 {selectedSubmission.notes && (
                   <div style={{ marginBottom: '24px' }}>
                     <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: '0 0 8px 0' }}>
-                      Notes
+                      {t('formSubmissions.notes', 'Notes')}
                     </h4>
                     <p style={{ fontSize: '14px', color: '#6b7280', margin: 0, padding: '12px', backgroundColor: '#f9fafb', borderRadius: '6px' }}>
                       {selectedSubmission.notes}
@@ -668,7 +668,7 @@ const ViewSubmissions: React.FC = () => {
 
                 <div>
                   <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: '0 0 24px 0' }}>
-                    Form Responses
+                    {t('formSubmissions.formResponses', 'Form Responses')}
                   </h4>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                     {(selectedSubmission.answers || []).map((answer, index) => {
@@ -696,7 +696,7 @@ const ViewSubmissions: React.FC = () => {
                                 margin: 0,
                                 lineHeight: '1.5'
                               }}>
-                                {answer.questionTitle || `Question ${index + 1}`}
+                                {answer.questionTitle || t('formSubmissions.question', { number: index + 1 })}
                               </h5>
                             </div>
                             
@@ -711,7 +711,7 @@ const ViewSubmissions: React.FC = () => {
                                   fontSize: '11px',
                                   fontWeight: '500'
                                 }}>
-                                  Weight: {answer.weight}
+                                  {t('formSubmissions.weight', 'Weight')}: {answer.weight}
                                 </span>
                               )}
                               {answer.graphable && (
@@ -723,7 +723,7 @@ const ViewSubmissions: React.FC = () => {
                                   fontSize: '11px',
                                   fontWeight: '500'
                                 }}>
-                                  📊 Analytics
+                                  {t('formSubmissions.analytics', 'Analytics')}
                                 </span>
                               )}
                               {isSubQuestion && (
@@ -735,7 +735,7 @@ const ViewSubmissions: React.FC = () => {
                                   fontSize: '11px',
                                   fontWeight: '500'
                                 }}>
-                                  Follow-up
+                                  {t('formSubmissions.followUp', 'Follow-up')}
                                 </span>
                               )}
                             </div>
@@ -797,7 +797,7 @@ const ViewSubmissions: React.FC = () => {
                                 border: '1px solid #bae6fd'
                               }}>
                                 <div style={{ fontSize: '12px', color: '#0369a1', fontWeight: '600', marginBottom: '6px' }}>
-                                  Selected Options:
+                                  {t('formSubmissions.selectedOptions', 'Selected Options:')}
                                 </div>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                                   {answer.selectedOptions.map((opt, i) => (
@@ -825,7 +825,7 @@ const ViewSubmissions: React.FC = () => {
                 {selectedSubmission.domainScores && selectedSubmission.domainScores.length > 0 && (
                   <div style={{ marginTop: '24px' }}>
                     <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: '0 0 16px 0' }}>
-                      Domain Scores
+                      {t('formSubmissions.domainScores', 'Domain Scores')}
                     </h4>
                     <div style={{ display: 'grid', gap: '12px' }}>
                       {selectedSubmission.domainScores.map((domain, index) => (
@@ -852,7 +852,7 @@ const ViewSubmissions: React.FC = () => {
                 {selectedSubmission.totalScore && (
                   <div style={{ marginTop: '16px', padding: '16px', backgroundColor: '#f0fdf4', borderRadius: '8px', textAlign: 'center' }}>
                     <span style={{ fontSize: '18px', fontWeight: '600', color: '#166534' }}>
-                      Total Score: {selectedSubmission.totalScore}
+                      {t('formSubmissions.totalScore', 'Total Score')}: {selectedSubmission.totalScore}
                     </span>
                   </div>
                 )}
@@ -884,11 +884,10 @@ const ViewSubmissions: React.FC = () => {
               textAlign: 'center'
             }}>
               <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', margin: '0 0 16px 0' }}>
-                Delete Submission?
+                {t('formSubmissions.deleteSubmissionTitle', 'Delete Submission?')}
               </h3>
               <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 24px 0' }}>
-                Are you sure you want to delete the submission for "{submissionToDelete.questionnaireTitle}"? 
-                This action cannot be undone.
+                {t('formSubmissions.deleteSubmissionConfirm', { title: submissionToDelete.questionnaireTitle })}
               </p>
               <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
                 <button
@@ -907,7 +906,7 @@ const ViewSubmissions: React.FC = () => {
                     color: '#374151'
                   }}
                 >
-                  Cancel
+                  {t('common.cancel', 'Cancel')}
                 </button>
                 <button
                   onClick={confirmDelete}
@@ -935,10 +934,10 @@ const ViewSubmissions: React.FC = () => {
                         borderRadius: '50%',
                         animation: 'spin 1s linear infinite'
                       }}></div>
-                      Deleting...
+                      {t('formSubmissions.deleting', 'Deleting...')}
                     </>
                   ) : (
-                    'Delete'
+                    t('formSubmissions.delete', 'Delete')
                   )}
                 </button>
               </div>

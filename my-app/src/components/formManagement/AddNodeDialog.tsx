@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React from 'react';
 import {
   Box,
@@ -63,57 +64,58 @@ const AddNodeDialog: React.FC<AddNodeDialogProps> = ({
   conditionalContext,
   addingToParentId
 }) => {
+  const { t } = useTranslation();
   const inputTypes: { value: 'single-choice' | 'multiple-choice' | 'scale' | 'number' | 'text'; label: string; description: string; example: string; icon: string }[] = [
     { 
       value: 'single-choice', 
-      label: 'Single Choice', 
-      description: 'User picks ONE option from a list', 
-      example: '○ Option A  ○ Option B  ○ Option C',
+      label: t('addNodeDialog.inputType.singleChoice.label'), 
+      description: t('addNodeDialog.inputType.singleChoice.description'), 
+      example: t('addNodeDialog.inputType.singleChoice.example'),
       icon: '◉'
     },
     { 
       value: 'multiple-choice', 
-      label: 'Multiple Choice', 
-      description: 'User can select MULTIPLE options from a list', 
-      example: '☑ Option A  ☑ Option B  ☐ Option C',
+      label: t('addNodeDialog.inputType.multipleChoice.label'), 
+      description: t('addNodeDialog.inputType.multipleChoice.description'), 
+      example: t('addNodeDialog.inputType.multipleChoice.example'),
       icon: '☑'
     },
     { 
       value: 'text', 
-      label: 'Text Input', 
-      description: 'User types a short text response', 
-      example: '[Text box for user to type their answer...]',
+      label: t('addNodeDialog.inputType.text.label'), 
+      description: t('addNodeDialog.inputType.text.description'), 
+      example: t('addNodeDialog.inputType.text.example'),
       icon: '📝'
     },
     { 
       value: 'number', 
-      label: 'Number Input', 
-      description: 'User enters a numeric value', 
-      example: '[___] (numbers only)',
+      label: t('addNodeDialog.inputType.number.label'), 
+      description: t('addNodeDialog.inputType.number.description'), 
+      example: t('addNodeDialog.inputType.number.example'),
       icon: '🔢'
     },
     { 
       value: 'scale', 
-      label: 'Rating Scale', 
-      description: 'User rates on a scale from 1-10', 
-      example: '1 ——————————— 10 (slider or buttons)',
+      label: t('addNodeDialog.inputType.scale.label'), 
+      description: t('addNodeDialog.inputType.scale.description'), 
+      example: t('addNodeDialog.inputType.scale.example'),
       icon: '📊'
     },
   ];
 
   const chartTypes: { value: 'bar' | 'line' | 'radar' | 'gauge' | 'pie'; label: string; icon: React.ReactNode; description: string }[] = [
-    { value: 'bar', label: 'Bar Chart', icon: <BarChartIcon />, description: 'Compare values across categories' },
-    { value: 'line', label: 'Line Chart', icon: <LineChartIcon />, description: 'Show trends over time' },
-    { value: 'pie', label: 'Pie Chart', icon: <PieChartIcon />, description: 'Show proportions of a whole' },
-    { value: 'gauge', label: 'Gauge', icon: <GaugeIcon />, description: 'Display single value with target range' },
-    { value: 'radar', label: 'Radar Chart', icon: <RadarIcon />, description: 'Multi-dimensional comparison' },
+    { value: 'bar', label: t('addNodeDialog.chartType.bar.label'), icon: <BarChartIcon />, description: t('addNodeDialog.chartType.bar.description') },
+    { value: 'line', label: t('addNodeDialog.chartType.line.label'), icon: <LineChartIcon />, description: t('addNodeDialog.chartType.line.description') },
+    { value: 'pie', label: t('addNodeDialog.chartType.pie.label'), icon: <PieChartIcon />, description: t('addNodeDialog.chartType.pie.description') },
+    { value: 'gauge', label: t('addNodeDialog.chartType.gauge.label'), icon: <GaugeIcon />, description: t('addNodeDialog.chartType.gauge.description') },
+    { value: 'radar', label: t('addNodeDialog.chartType.radar.label'), icon: <RadarIcon />, description: t('addNodeDialog.chartType.radar.description') },
   ];
 
   const getDialogTitle = () => {
-    if (editingNode) return 'Edit Item';
-    if (conditionalContext) return 'Add Conditional Question';
-    if (addingToParentId) return 'Add Child Item';
-    return 'Create New Item';
+    if (editingNode) return t('addNodeDialog.editItem');
+    if (conditionalContext) return t('addNodeDialog.addConditional');
+    if (addingToParentId) return t('addNodeDialog.addChild');
+    return t('addNodeDialog.createNew');
   };
 
   const getDialogIcon = () => {
@@ -165,26 +167,27 @@ const AddNodeDialog: React.FC<AddNodeDialogProps> = ({
           )}
 
           <TextField
-            label="Title"
+            label={t('addNodeDialog.title')}
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             fullWidth
             required
-            placeholder="Enter a clear, descriptive title..."
+            placeholder={t('addNodeDialog.titlePlaceholder')}
           />
 
           <TextField
-            label="Description"
+            label={t('addNodeDialog.description')}
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             fullWidth
             multiline
             rows={2}
-            placeholder="Optional: Provide additional context..."
+            placeholder={t('addNodeDialog.descriptionPlaceholder')}
           />
 
           <FormControl fullWidth>
             <InputLabel>Type</InputLabel>
+                        <InputLabel>{t('addNodeDialog.type')}</InputLabel>
             <Select
               value={formData.type}
               onChange={(e) => {
@@ -196,10 +199,10 @@ const AddNodeDialog: React.FC<AddNodeDialogProps> = ({
                   graphable: newType === 'group'
                 });
               }}
-              label="Type"
+              label={t('addNodeDialog.type')}
             >
-              <MenuItem value="group">📁 Group (Container)</MenuItem>
-              <MenuItem value="question">❓ Question</MenuItem>
+              <MenuItem value="group">📁 {t('addNodeDialog.group')}</MenuItem>
+              <MenuItem value="question">❓ {t('addNodeDialog.question')}</MenuItem>
             </Select>
           </FormControl>
 
@@ -207,10 +210,11 @@ const AddNodeDialog: React.FC<AddNodeDialogProps> = ({
             <Box>
               <FormControl fullWidth>
                 <InputLabel>Input Type *</InputLabel>
+                                <InputLabel>{t('addNodeDialog.inputTypeLabel')}</InputLabel>
                 <Select
                   value={formData.inputType || ''}
                   onChange={(e) => setFormData({ ...formData, inputType: e.target.value as any })} // eslint-disable-line @typescript-eslint/no-explicit-any
-                  label="Input Type *"
+                  label={t('addNodeDialog.inputTypeLabel')}
                   required
                 >
                   {inputTypes.map(type => (
@@ -243,8 +247,7 @@ const AddNodeDialog: React.FC<AddNodeDialogProps> = ({
               {!formData.inputType && (
                 <Paper variant="outlined" sx={{ p: 2, bgcolor: 'warning.50', borderColor: 'warning.200', mt: 1 }}>
                   <Typography variant="body2" color="warning.dark" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    ⚠️ <strong>Input Type Required:</strong> Please select how users will answer this question. 
-                    This determines what interface they'll see when filling out the form.
+                    ⚠️ <strong>{t('addNodeDialog.inputTypeRequiredTitle')}</strong> {t('addNodeDialog.inputTypeRequiredDesc')}
                   </Typography>
                 </Paper>
               )}
@@ -252,7 +255,7 @@ const AddNodeDialog: React.FC<AddNodeDialogProps> = ({
               {formData.inputType && (
                 <Paper variant="outlined" sx={{ p: 2, bgcolor: 'info.50', borderColor: 'info.200', mt: 1 }}>
                   <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    👁️ How users will see this {conditionalContext ? 'conditional ' : ''}question:
+                    👁️ {t('addNodeDialog.previewHowUserSees', { conditional: conditionalContext ? t('addNodeDialog.conditional') : '' })}
                   </Typography>
                   <Box sx={{ 
                     bgcolor: 'white', 
@@ -262,19 +265,19 @@ const AddNodeDialog: React.FC<AddNodeDialogProps> = ({
                     fontFamily: 'system-ui'
                   }}>
                     <Typography variant="body2" fontWeight="bold" sx={{ mb: 1 }}>
-                      {formData.title || `Your ${conditionalContext ? 'Conditional ' : ''}Question Title`}
+                      {formData.title || t('addNodeDialog.previewDefaultTitle', { conditional: conditionalContext ? t('addNodeDialog.conditional') : '' })}
                     </Typography>
                     <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic', display: 'block', mb: conditionalContext ? 1 : 2 }}>
                       {inputTypes.find(t => t.value === formData.inputType)?.example}
                     </Typography>
                     {conditionalContext && (
                       <Typography variant="caption" color="secondary" sx={{ fontWeight: 'bold', bgcolor: 'secondary.50', px: 1, py: 0.5, borderRadius: 1 }}>
-                        🎯 Only appears when "{conditionalContext.triggerOption.label}" is selected
+                        🎯 {t('addNodeDialog.onlyAppearsWhen', { option: conditionalContext.triggerOption.label })}
                       </Typography>
                     )}
                     {(formData.inputType === 'single-choice' || formData.inputType === 'multiple-choice') && !conditionalContext && (
                       <Typography variant="caption" color="primary" sx={{ fontWeight: 'bold' }}>
-                        💡 After creating this question, expand it to add answer options
+                        💡 {t('addNodeDialog.expandToAddOptions')}
                       </Typography>
                     )}
                   </Box>
@@ -285,13 +288,13 @@ const AddNodeDialog: React.FC<AddNodeDialogProps> = ({
 
           {/* Weight Configuration */}
           <TextField
-            label="Weight"
+            label={t('addNodeDialog.weight')}
             type="number"
             value={formData.weight}
             onChange={(e) => setFormData({ ...formData, weight: parseInt(e.target.value) || 1 })}
             fullWidth
             inputProps={{ min: 1, max: 10 }}
-            helperText="Importance of this item in scoring (1-10)"
+            helperText={t('addNodeDialog.weightHelper')}
             size="small"
           />
 
@@ -299,20 +302,20 @@ const AddNodeDialog: React.FC<AddNodeDialogProps> = ({
           {formData.type === 'group' && (
             <Paper variant="outlined" sx={{ p: 3, bgcolor: 'primary.50', borderColor: 'primary.200' }}>
               <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                📊 Analytics Configuration
+                📊 {t('addNodeDialog.analyticsConfig')}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Configure how this group's data will be visualized in reports and analytics.
+                {t('addNodeDialog.analyticsConfigDesc')}
               </Typography>
               
               <Stack spacing={2}>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Box>
                     <Typography variant="body2" fontWeight="bold">
-                      Enable Analytics
+                      {t('addNodeDialog.enableAnalytics', 'Enable Analytics')}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      Show this group in charts and reports
+                      {t('addNodeDialog.graphableDesc', 'Show this group in charts and reports')}
                     </Typography>
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -323,7 +326,7 @@ const AddNodeDialog: React.FC<AddNodeDialogProps> = ({
                       style={{ marginRight: 8, transform: 'scale(1.2)' }}
                     />
                     <Chip 
-                      label={formData.graphable ? "Graphable" : "Not Graphable"}
+                      label={formData.graphable ? t('addNodeDialog.graphable', 'Graphable') : t('addNodeDialog.notGraphable', 'Not Graphable')}
                       size="small"
                       color={formData.graphable ? "success" : "default"}
                     />
@@ -332,11 +335,11 @@ const AddNodeDialog: React.FC<AddNodeDialogProps> = ({
 
                 {formData.graphable && (
                   <FormControl fullWidth>
-                    <InputLabel>Preferred Chart Type</InputLabel>
+                    <InputLabel>{t('addNodeDialog.preferredChartType')}</InputLabel>
                     <Select
                       value={formData.preferredChartType}
-                      onChange={(e) => setFormData({ ...formData, preferredChartType: e.target.value as any })} // eslint-disable-line @typescript-eslint/no-explicit-any
-                      label="Preferred Chart Type"
+                      onChange={(e) => setFormData({ ...formData, preferredChartType: e.target.value as any })}
+                      label={t('addNodeDialog.preferredChartType')}
                     >
                       {chartTypes.map(chart => (
                         <MenuItem key={chart.value} value={chart.value}>
@@ -362,8 +365,7 @@ const AddNodeDialog: React.FC<AddNodeDialogProps> = ({
           {conditionalContext && (
             <Paper variant="outlined" sx={{ p: 2, bgcolor: 'success.50', borderColor: 'success.200' }}>
               <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                🎯 <strong>Condition:</strong> This {formData.type} will appear only when "{conditionalContext.triggerOption.label}" is selected
-                in "{conditionalContext.parentQuestion.title}".
+                🎯 <strong>{t('addNodeDialog.condition')}:</strong> {t('addNodeDialog.conditionDesc', { type: t('addNodeDialog.' + formData.type), option: conditionalContext.triggerOption.label, parent: conditionalContext.parentQuestion.title })}
               </Typography>
             </Paper>
           )}
@@ -372,8 +374,7 @@ const AddNodeDialog: React.FC<AddNodeDialogProps> = ({
           {formData.type === 'question' && !conditionalContext && (
             <Paper variant="outlined" sx={{ p: 2, bgcolor: 'grey.50', borderStyle: 'dashed' }}>
               <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                ℹ️ <strong>Note:</strong> Individual questions don't have analytics settings. 
-                Analytics are generated for parent groups that aggregate question scores.
+                ℹ️ <strong>{t('addNodeDialog.note')}</strong> {t('addNodeDialog.noAnalyticsForQuestions')}
               </Typography>
             </Paper>
           )}
@@ -381,8 +382,7 @@ const AddNodeDialog: React.FC<AddNodeDialogProps> = ({
           {formData.type === 'question' && !conditionalContext && (
             <Paper variant="outlined" sx={{ p: 2, bgcolor: 'info.50', borderStyle: 'dashed' }}>
               <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                💡 <strong>Tip:</strong> After creating this question, expand it in the tree to add answer options.
-                You can then add conditional questions to specific options.
+                💡 <strong>{t('addNodeDialog.tip')}</strong> {t('addNodeDialog.tipDesc')}
               </Typography>
             </Paper>
           )}
@@ -391,7 +391,7 @@ const AddNodeDialog: React.FC<AddNodeDialogProps> = ({
 
       <DialogActions sx={{ p: 3, gap: 1 }}>
         <Button onClick={onClose}>
-          Cancel
+          {t('addNodeDialog.cancel')}
         </Button>
         <Button
           variant="contained"
@@ -399,7 +399,7 @@ const AddNodeDialog: React.FC<AddNodeDialogProps> = ({
           disabled={!isFormValid()}
           startIcon={conditionalContext ? <ConditionalIcon /> : undefined}
         >
-          {editingNode ? 'Update' : 'Create'}
+          {editingNode ? t('addNodeDialog.update') : t('addNodeDialog.create')}
         </Button>
       </DialogActions>
     </Dialog>
