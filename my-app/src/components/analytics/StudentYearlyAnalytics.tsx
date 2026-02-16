@@ -1,3 +1,5 @@
+/// <reference path="../date-fns-locale.d.ts" />
+/// <reference path="../date-fns-locale.d.ts" />
 import React, { useState, useEffect } from 'react';
 import httpService from './Api-Requests/httpService';
 import DomainBarChart from './DomainBarChart';
@@ -5,7 +7,8 @@ import { Box, Checkbox, FormControlLabel, FormGroup, Typography, TextField } fro
 //port { DateRangePicker } from '@mui/x-date-pickers-pro';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-//port { he as heLocale } from 'date-fns/locale';
+import { DateRangePicker } from '@mui/x-date-pickers-pro';
+import { he as heLocale } from 'date-fns/locale';
 
 interface YearlyScore {
   year: string;
