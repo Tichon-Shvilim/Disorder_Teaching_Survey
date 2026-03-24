@@ -17,6 +17,7 @@ import {
   Palette as PaletteIcon,
 } from '@mui/icons-material';
 import type { GraphSettings } from './models/FormModels';
+import { useTranslation } from 'react-i18next';
 
 
 interface AnalyticsSettingsProps {
@@ -29,6 +30,7 @@ const AnalyticsSettings: React.FC<AnalyticsSettingsProps> = ({
   onChange
 }) => {
   const [localSettings, setLocalSettings] = useState<GraphSettings>(graphSettings);
+  const { t } = useTranslation();
 
   const updateSettings = useCallback((newSettings: GraphSettings) => {
     setLocalSettings(newSettings);
@@ -93,10 +95,10 @@ const AnalyticsSettings: React.FC<AnalyticsSettingsProps> = ({
   return (
     <Box sx={{ p: 4 }}>
       <Typography variant="h6" gutterBottom>
-        📊 Analytics Configuration
+        {t('analyticsSettings.title', '📊 Analytics Configuration')}
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
-        Configure how your form data will be visualized in charts and reports.
+        {t('analyticsSettings.desc', 'Configure how your form data will be visualized in charts and reports.')}
       </Typography>
 
       {/* Color Ranges Section */}
@@ -104,10 +106,10 @@ const AnalyticsSettings: React.FC<AnalyticsSettingsProps> = ({
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
           <Box>
             <Typography variant="h6" gutterBottom>
-              Score Color Ranges
+              {t('analyticsSettings.scoreColorRanges', 'Score Color Ranges')}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Define color coding for different score ranges in your analytics
+              {t('analyticsSettings.scoreColorRangesDesc', 'Define color coding for different score ranges in your analytics')}
             </Typography>
           </Box>
           <Button
@@ -116,14 +118,14 @@ const AnalyticsSettings: React.FC<AnalyticsSettingsProps> = ({
             onClick={addColorRange}
             size="small"
           >
-            Add Range
+            {t('analyticsSettings.addRange', 'Add Range')}
           </Button>
         </Stack>
 
         {/* Preset Options */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" gutterBottom>
-            Quick Presets:
+            {t('analyticsSettings.quickPresets', 'Quick Presets:')}
           </Typography>
           <Stack direction="row" spacing={2}>
             {presetColorRanges.map((preset, index) => (
@@ -134,7 +136,9 @@ const AnalyticsSettings: React.FC<AnalyticsSettingsProps> = ({
                 onClick={() => applyPreset(preset)}
                 startIcon={<PaletteIcon />}
               >
-                {preset.name}
+                {preset.name === 'Traffic Light (3 levels)' ? t('analyticsSettings.presetTrafficLight', 'Traffic Light (3 levels)') :
+                 preset.name === 'Performance (5 levels)' ? t('analyticsSettings.presetPerformance', 'Performance (5 levels)') :
+                 preset.name}
               </Button>
             ))}
           </Stack>
@@ -143,7 +147,7 @@ const AnalyticsSettings: React.FC<AnalyticsSettingsProps> = ({
         {/* Color Ranges List */}
         {localSettings.colorRanges.length === 0 ? (
           <Alert severity="info" sx={{ mb: 2 }}>
-            No color ranges defined. Add some ranges to enable colored analytics visualization.
+            {t('analyticsSettings.noColorRanges', 'No color ranges defined. Add some ranges to enable colored analytics visualization.')}
           </Alert>
         ) : (
           <Box>

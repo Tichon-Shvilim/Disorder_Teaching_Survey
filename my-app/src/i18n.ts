@@ -39,7 +39,6 @@ i18n
   .init({
     resources,
     fallbackLng: 'he', // Default to Hebrew
-    lng: 'he', // Set Hebrew as primary language
     
     interpolation: {
       escapeValue: false, // React already does escaping

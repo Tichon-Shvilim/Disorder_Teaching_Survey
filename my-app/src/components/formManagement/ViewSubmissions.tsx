@@ -8,8 +8,39 @@ import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import { PDFDownloadButton } from '../common';
+import StudentYearlyAnalytics from '../analytics/StudentYearlyAnalytics';
+import DomainAnalytics from '../analytics/DomainAnalytics';
 
 const ViewSubmissions: React.FC = () => {
+    // Batch update scores for all submissions
+    const handleBatchUpdateScores = async () => {
+      try {
+        const submissionIds = submissions.map(sub => sub._id);
+        if (!submissionIds.length) {
+          toast.warning('אין מבחנים לעדכון');
+          return;
+        }
+        // שלח בקשת עדכון לשרת
+        const response = await fetch('/api/forms/submissions/batch-update-scores', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ submissionIds }),
+        });
+        const result = await response.json();
+        if (result.success) {
+          toast.success('ציונים עודכנו בהצלחה!');
+          // רענן את הרשימה
+          window.location.reload();
+        } else {
+          toast.error('עדכון ציונים נכשל: ' + (result.message || '')); 
+        }
+      } catch (error) {
+        toast.error('שגיאה בעדכון ציונים');
+        console.error(error);
+      }
+    };
   const { t, i18n } = useTranslation();
   const isRTL = i18n.dir() === 'rtl';
   const location = useLocation();
@@ -23,6 +54,11 @@ const ViewSubmissions: React.FC = () => {
   const studentName = location.state?.studentName || t('formSubmissions.unknownStudent', 'Unknown Student');
 
   const [submissions, setSubmissions] = useState<FormSubmission[]>([]);
+  useEffect(() => {
+    if (submissions.length) {
+      console.log('Submissions array structure:', submissions);
+    }
+  }, [submissions]);
   const [questionnaires, setQuestionnaires] = useState<QuestionnaireTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSubmission, setSelectedSubmission] = useState<FormSubmission | null>(null);
@@ -232,6 +268,16 @@ const ViewSubmissions: React.FC = () => {
               {t('students.student', 'Student')}: <strong>{studentName}</strong>
             </p>
           </div>
+
+          {/* Student Yearly Analytics Chart */}
+          <div style={{ marginTop: '32px' }}>
+            <StudentYearlyAnalytics submissions={submissions} />
+          </div>
+          {/* Domain Analytics Chart */}
+          <div style={{ marginTop: '32px' }}>
+            <DomainAnalytics submissions={submissions} />
+          </div>
+          </div>
         </div>
 
         {/* Actions and Filters */}
@@ -418,7 +464,7 @@ const ViewSubmissions: React.FC = () => {
                         {submission.questionnaireTitle}
                       </h3>
                       <span style={{
-                        backgroundColor: getStatusColor(submission.status),
+                        backgroundColor: getStatusColor(typeof submission.status === 'string' ? submission.status : ''),
                         color: 'white',
                         padding: '4px 8px',
                         borderRadius: '12px',
@@ -428,15 +474,15 @@ const ViewSubmissions: React.FC = () => {
                         alignItems: 'center',
                         gap: '4px'
                       }}>
-                        {getStatusIcon(submission.status)}
-                        {t(`formSubmissions.status.${submission.status}`, submission.status.charAt(0).toUpperCase() + submission.status.slice(1))}
+                        {getStatusIcon(typeof submission.status === 'string' ? submission.status : '')}
+                        {typeof submission.status === 'string' ? t(`formSubmissions.status.${submission.status}`, submission.status.charAt(0).toUpperCase() + submission.status.slice(1)) : t('formSubmissions.status.unknown', 'Unknown')}
                       </span>
                     </div>
                     
                     <div style={{ display: 'flex', gap: '16px', fontSize: '14px', color: '#6b7280' }}>
                       <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <Calendar style={{ height: '14px', width: '14px' }} />
-                        {submission.submittedAt ? formatDate(submission.submittedAt) : 'Draft - ' + formatDate(submission.createdAt)}
+                        {submission.submittedAt ? formatDate(submission.submittedAt ?? '') : 'Draft - ' + formatDate(submission.createdAt ?? '')}
                       </span>
                       <span>
                         {t('formSubmissions.answersCount', { count: submission.answers?.length || 0 })}
@@ -645,11 +691,11 @@ const ViewSubmissions: React.FC = () => {
                   </h3>
                   <div style={{ display: 'flex', gap: '16px', fontSize: '14px', color: '#6b7280' }}>
                     <span>{t('students.student', 'Student')}: {selectedSubmission.studentName}</span>
-                    <span>{t('formSubmissions.statusLabel', 'Status')}: {t(`formSubmissions.status.${selectedSubmission.status}`, selectedSubmission.status)}</span>
+                    <span>{t('formSubmissions.statusLabel', 'Status')}: {typeof selectedSubmission.status === 'string' ? t(`formSubmissions.status.${selectedSubmission.status}`, selectedSubmission.status) : t('formSubmissions.status.unknown', 'Unknown')}</span>
                     <span>
                       {selectedSubmission.submittedAt 
-                        ? `${t('formSubmissions.submitted', 'Submitted')}: ${formatDate(selectedSubmission.submittedAt)}`
-                        : `${t('formSubmissions.created', 'Created')}: ${formatDate(selectedSubmission.createdAt)}`
+                        ? `${t('formSubmissions.submitted', 'Submitted')}: ${formatDate(selectedSubmission.submittedAt ?? '')}`
+                        : `${t('formSubmissions.created', 'Created')}: ${formatDate(selectedSubmission.createdAt ?? '')}`
                       }
                     </span>
                   </div>
@@ -702,7 +748,7 @@ const ViewSubmissions: React.FC = () => {
                             
                             {/* Question Metadata */}
                             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                              {answer.weight > 1 && (
+                              {typeof answer.weight === 'number' && answer.weight !== undefined && answer.weight > 1 && (
                                 <span style={{
                                   backgroundColor: '#f59e0b',
                                   color: 'white',
@@ -723,7 +769,7 @@ const ViewSubmissions: React.FC = () => {
                                   fontSize: '11px',
                                   fontWeight: '500'
                                 }}>
-                                  {t('formSubmissions.analytics', 'Analytics')}
+                                  {t('questionnaireList.graphable', 'גרפי')}
                                 </span>
                               )}
                               {isSubQuestion && (
@@ -828,7 +874,7 @@ const ViewSubmissions: React.FC = () => {
                       {t('formSubmissions.domainScores', 'Domain Scores')}
                     </h4>
                     <div style={{ display: 'grid', gap: '12px' }}>
-                      {selectedSubmission.domainScores.map((domain, index) => (
+                      {(Array.isArray(selectedSubmission.domainScores) && selectedSubmission.domainScores.map((domain: {title: string; score: number; maxScore: number}, index: number) => (
                         <div key={index} style={{
                           padding: '12px',
                           backgroundColor: '#f0f9ff',
@@ -844,7 +890,7 @@ const ViewSubmissions: React.FC = () => {
                             {domain.score} / {domain.maxScore}
                           </span>
                         </div>
-                      ))}
+                      )))}
                     </div>
                   </div>
                 )}
@@ -945,17 +991,6 @@ const ViewSubmissions: React.FC = () => {
           </div>
         )}
       </div>
-
-      {/* CSS Animation */}
-      <style>
-        {`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}
-      </style>
-    </div>
   );
 };
 

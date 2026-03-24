@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import httpService from './Api-Requests/httpService';
 import DomainBarChart from './DomainBarChart';
 import './Analytics.css';
@@ -48,6 +49,7 @@ interface AnalyticsProps {
 }
 
 const Analytics: React.FC<AnalyticsProps> = ({ type, id, questionnaireId, startDate, endDate }) => {
+  const { t } = useTranslation('analyticsSettings');
   const [analytics, setAnalytics] = useState<StudentAnalytics | ClassAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -137,11 +139,10 @@ const Analytics: React.FC<AnalyticsProps> = ({ type, id, questionnaireId, startD
   };
 
   const getScoreLabel = (score: number) => {
-    // Score is already 0-100, so use directly
-    if (score >= 80) return 'Excellent';
-    if (score >= 60) return 'Good';
-    if (score >= 40) return 'Needs Improvement';
-    return 'Concerning';
+    if (score >= 80) return t('excellent');
+    if (score >= 60) return t('good');
+    if (score >= 40) return t('average');
+    return t('poor');
   };
 
   if (loading) {
@@ -182,7 +183,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ type, id, questionnaireId, startD
     <div className="analytics-container">
       <div className="analytics-header">
         <h2>
-          {type === 'student' ? 'Student Analytics' : 'Class Analytics'}
+          {type === 'student' ? t('studentAnalyticsTitle', 'Student Analytics') : t('classAnalyticsTitle', 'Class Analytics')}
         </h2>
         
         <div className="overall-score">
@@ -227,7 +228,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ type, id, questionnaireId, startD
       </div>
 
       <div className="analytics-chart">
-        <h3>Domain Scores</h3>
+        <h3>{t('domainScores', 'Domain Scores')}</h3>
         <DomainBarChart 
           data={analytics.domains} 
           type={type}
@@ -235,7 +236,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ type, id, questionnaireId, startD
       </div>
 
       <div className="domain-details">
-        <h3>Domain Breakdown</h3>
+        <h3>{t('domainBreakdown', 'Domain Breakdown')}</h3>
         <div className="domains-grid">
           {analytics.domains.map((domain) => (
             <div key={domain.nodeId} className="domain-card">
@@ -251,20 +252,20 @@ const Analytics: React.FC<AnalyticsProps> = ({ type, id, questionnaireId, startD
               
               <div className="domain-stats">
                 <div className="domain-stat">
-                  <span className="stat-label">Questions:</span>
+                  <span className="stat-label">{t('questions', 'Questions')}:</span>
                   <span className="stat-value">{domain.totalQuestions}</span>
                 </div>
                 
                 {type === 'student' && 'submissions' in domain && (
                   <>
                     <div className="domain-stat">
-                      <span className="stat-label">Submissions:</span>
+                      <span className="stat-label">{t('submissions', 'Submissions')}:</span>
                       <span className="stat-value">{domain.submissions}</span>
                     </div>
                     
                     {domain.trend !== undefined && (
                       <div className="domain-stat">
-                        <span className="stat-label">Trend:</span>
+                        <span className="stat-label">{t('trend', 'Trend')}:</span>
                         <span 
                           className={`stat-value ${domain.trend > 0 ? 'positive' : domain.trend < 0 ? 'negative' : 'neutral'}`}
                         >
@@ -278,13 +279,13 @@ const Analytics: React.FC<AnalyticsProps> = ({ type, id, questionnaireId, startD
                 {type === 'class' && 'studentCount' in domain && (
                   <>
                     <div className="domain-stat">
-                      <span className="stat-label">Students:</span>
+                      <span className="stat-label">{t('students', 'Students')}:</span>
                       <span className="stat-value">{domain.studentCount}</span>
                     </div>
                     
                     {'minScore' in domain && 'maxScore' in domain && (
                       <div className="domain-stat">
-                        <span className="stat-label">Range:</span>
+                        <span className="stat-label">{t('range', 'Range')}:</span>
                         <span className="stat-value">
                           {Math.round(domain.minScore)}% - {Math.round(domain.maxScore)}%
                         </span>
@@ -301,8 +302,8 @@ const Analytics: React.FC<AnalyticsProps> = ({ type, id, questionnaireId, startD
       {type === 'student' && 'dateRange' in analytics && analytics.dateRange && (
         <div className="analytics-footer">
           <p className="date-range">
-            Data from {new Date(analytics.dateRange.earliest).toLocaleDateString()} 
-            {' to '} 
+            {t('dataFrom', 'Data from')} {new Date(analytics.dateRange.earliest).toLocaleDateString()} 
+            {t('to', 'to')} 
             {new Date(analytics.dateRange.latest).toLocaleDateString()}
           </p>
         </div>
