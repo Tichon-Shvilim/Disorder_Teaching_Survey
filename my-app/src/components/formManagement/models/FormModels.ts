@@ -1,194 +1,169 @@
-/**
- * Enhanced TypeScript interfaces for Questionnaire System
- * Supporting hierarchical structure with groups and questions
- */
-
-// User interface for populated references
-export interface User {
+export interface FormSubmission {
   _id: string;
-  name: string;
-  email: string;
-  role: string;
+  formId: string;
+  questionnaireId?: string;
+  userId: string;
+  answers: FormAnswer[];
+  submittedAt: Date;
+  createdAt?: Date;
+  status?: string;
+  notes?: string;
+  studentName?: string;
+  questionnaireTitle?: string;
+  completedBy?: string;
+  totalScore?: number;
+  domainScores?: Array<{ title: string; score: number; maxScore: number }>;
 }
 
-// Option for choice-based questions
+export interface FormAnswer {
+  questionId: string;
+  answer: string | number | string[];
+  nodePath?: string | string[];
+  selectedOptions?: Option[];
+  questionTitle?: string;
+  weight?: number;
+  graphable?: boolean;
+  inputType?: string;
+}
+
+export interface FormNode {
+  id: string;
+  type: string;
+  label?: string;
+  title?: string;
+  weight?: number;
+  description?: string;
+  inputType?: 'single-choice' | 'multiple-choice' | 'scale' | 'number' | 'text';
+  graphable?: boolean;
+  required?: boolean;
+  condition?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  visibilityConditions?: VisibilityCondition[];
+  options?: Option[];
+  children?: FormNode[];
+  preferredChartType?: 'bar' | 'line' | 'radar' | 'gauge' | 'pie';
+  scaleMin?: number;
+  scaleMax?: number;
+}
+
 export interface Option {
   id: string;
   label: string;
   value: number;
-  children?: FormNode[]; // Sub-questions specific to this option
+  children?: FormNode[];
 }
 
-// Conditional logic for showing questions based on parent selections
-export interface NodeCondition {
-  parentQuestionId?: string;
-  parentOptionId?: string;
-}
 
-// Visibility conditions for dynamic form logic
-export interface VisibilityCondition {
-  questionId: string;
-  operator: 'equals' | 'not_equals' | 'greater_than' | 'less_than' | 'contains';
-  value: string | number;
-}
-
-// Graph settings for analytics
-export interface GraphSettings {
-  colorRanges: Array<{
-    label: string;     // e.g. "Low", "Medium", "High"
-    min: number;
-    max: number;
-    color: string;     // e.g. "#ef4444", "#fbbf24", "#10b981"
-  }>;
-}
-
-// Recursive FormNode - can be either a group (domain/subdomain) or a question
-export interface FormNode {
-  id: string;
-  type: 'group' | 'question';
-  title: string;
-  description?: string;
-  weight: number;
-  required?: boolean; // For questions
-  
-  // Question-specific fields
-  inputType?: 'single-choice' | 'multiple-choice' | 'scale' | 'number' | 'text';
-  options?: Option[];
-  scaleMin?: number; // For scale questions
-  scaleMax?: number; // For scale questions
-  
-  // Conditional logic
-  condition?: NodeCondition;
-  visibilityConditions?: VisibilityCondition[];
-  
-  // Analytics configuration
-  graphable: boolean;
-  preferredChartType: 'bar' | 'line' | 'radar' | 'gauge' | 'pie';
-  
-  // Hierarchical structure
-  children: FormNode[];
-}
-
-// Complete questionnaire template
 export interface QuestionnaireTemplate {
   _id: string;
   title: string;
   description?: string;
-  structure: FormNode[];
-  graphSettings?: GraphSettings;
-  isActive: boolean;
-  createdBy: string | User;
-  version: number;
-  createdAt: Date;
-  updatedAt: Date;
+  domains: DomainModel[];
+  questions: QuestionModel[];
+  structure?: FormNode[];
 }
 
-// Metadata provided by the API
-export interface QuestionnaireMetadata {
-  totalQuestions: number;
-  totalNodes: number;
-  maxPossibleScore: number;
-  graphableQuestions: number;
-  nodePaths?: Array<{
-    nodeId: string;
-    nodePath: string[];
-    type: 'group' | 'question';
-  }>;
-}
-
-// Full questionnaire with metadata
 export interface QuestionnaireTemplateWithMetadata extends QuestionnaireTemplate {
   metadata: QuestionnaireMetadata;
-}
-
-// For form creation/editing
-export interface CreateQuestionnaireRequest {
-  title: string;
-  description?: string;
-  structure: FormNode[];
+  structure?: FormNode[];
+  createdAt?: Date;
+  createdBy?: string | { name: string };
   graphSettings?: GraphSettings;
+  isActive?: boolean;
+  version?: number;
 }
 
-// Enhanced form submission interfaces
-export interface FormAnswer {
-  questionId: string;
-  nodePath: string[];
-  inputType: 'single-choice' | 'multiple-choice' | 'scale' | 'number' | 'text';
-  answer: string | number | (string | number)[];
-  selectedOptions?: Option[];
-  questionTitle?: string;
-  weight: number;
-  graphable: boolean;
-}
-
-export interface DomainScore {
-  nodeId: string;
-  nodePath: string[];
-  title: string;
-  score: number;
-  maxScore: number;
-}
-
-export interface FormSubmission {
-  _id: string;
-  studentId: string;
-  studentName: string;
-  questionnaireId: string;
-  questionnaireTitle: string;
-  answers: FormAnswer[];
-  submittedAt: Date;
-  completedBy?: string;
-  status: 'draft' | 'completed' | 'reviewed';
-  notes?: string;
-  totalScore?: number;
-  domainScores: DomainScore[];
+export interface QuestionnaireMetadata {
+  createdBy: string;
   createdAt: Date;
   updatedAt: Date;
+  version: number;
+  totalQuestions?: number;
+  totalNodes?: number;
+  graphableQuestions?: number;
 }
 
-// UI State Management Interfaces
-export interface FormBuilderState {
-  questionnaire: {
-    title: string;
-    description: string;
-    structure: FormNode[];
-    graphSettings: GraphSettings;
-  };
-  currentEditingNode: FormNode | null;
-  expandedNodes: Set<string>;
-  selectedNodePath: string[];
-  validationErrors: string[];
-  isDirty: boolean;
-}
-
-// Form Builder Action Types
-export type FormBuilderAction =
-  | { type: 'SET_TITLE'; payload: string }
-  | { type: 'SET_DESCRIPTION'; payload: string }
-  | { type: 'ADD_NODE'; payload: { parentPath: string[]; node: FormNode } }
-  | { type: 'UPDATE_NODE'; payload: { nodePath: string[]; updates: Partial<FormNode> } }
-  | { type: 'DELETE_NODE'; payload: { nodePath: string[] } }
-  | { type: 'MOVE_NODE'; payload: { fromPath: string[]; toPath: string[] } }
-  | { type: 'SET_EDITING_NODE'; payload: FormNode | null }
-  | { type: 'TOGGLE_NODE_EXPANSION'; payload: string }
-  | { type: 'SET_VALIDATION_ERRORS'; payload: string[] }
-  | { type: 'SET_GRAPH_SETTINGS'; payload: GraphSettings }
-  | { type: 'RESET_FORM' };
-
-// Node templates for quick creation
-export interface NodeTemplate {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  type: 'group' | 'question';
-  defaultNode: Partial<FormNode>;
-}
-
-// API Response wrapper
 export interface ApiResponse<T> {
   success: boolean;
   data?: T;
   message?: string;
   errors?: string[];
 }
+
+export interface VisibilityCondition {
+  questionId: string;
+  optionId: string;
+  value: string | number;
+  operator?: string;
+}
+
+export type GraphSettings = {
+  colorRanges: Array<{
+    label: string;
+    min: number;
+    max: number;
+    color: string;
+  }>;
+};
+export interface DomainModel {
+  _id: string;
+  name: string;
+  description?: string;
+  color?: string;
+}
+
+export interface OptionModel {
+  id: string;
+  value: number;
+  label: string;
+  subQuestions?: QuestionModel[];
+}
+
+// Removed misplaced property
+
+export interface QuestionModel {
+  _id: string;
+  text: string;
+  domainId: string;
+  type: 'single-choice' | 'multiple-choice' | 'text' | 'number' | 'scale';
+  options: OptionModel[];
+  required?: boolean;
+  title?: string;
+  weight?: number;
+  helpText?: string;
+  order: number;
+  parentQuestionId?: string;
+  parentOptionId?: string;
+}
+
+export interface QuestionnaireModel {
+  _id: string;
+  title: string;
+  description?: string;
+  domains: DomainModel[];
+  questions: QuestionModel[];
+  isActive: boolean;
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+  version: number;
+}
+
+// For creating questionnaires - just omit the _id fields
+export interface CreateQuestionnaireRequest {
+  title: string;
+  description?: string;
+  domains: Omit<DomainModel, '_id'>[];
+  questions: Omit<QuestionModel, '_id' | 'options'>[] & {
+    options: Omit<OptionModel, 'id' | 'subQuestions'>[] & {
+      subQuestions?: Omit<QuestionModel, '_id'>[];
+    };
+  }[];
+  structure?: FormNode[];
+  graphSettings?: GraphSettings;
+}
+
+// Remove QuestionFormData entirely - just use QuestionModel without _id
+export type QuestionFormData = Omit<QuestionModel, '_id'>;
+
+
+

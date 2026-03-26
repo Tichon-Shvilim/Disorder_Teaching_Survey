@@ -20,7 +20,7 @@ const SaveHebrewQuestionnaire: React.FC = () => {
       console.log('🔍 Validating Hebrew questionnaire structure...');
       
       const questionnaireRequest = createHebrewQuestionnaireRequest();
-      const response = await questionnaireApiService.validateStructure(questionnaireRequest.structure);
+      const response = await questionnaireApiService.validateStructure(questionnaireRequest.structure ?? []);
       
       if (response.success && response.data) {
         console.log('✅ Questionnaire structure is valid!', response.data);
@@ -51,8 +51,8 @@ const SaveHebrewQuestionnaire: React.FC = () => {
       console.log('📋 Questionnaire data prepared:', {
         title: questionnaireRequest.title,
         description: questionnaireRequest.description,
-        structureCount: questionnaireRequest.structure.length,
-        totalQuestions: countQuestions(questionnaireRequest.structure)
+        structureCount: (questionnaireRequest.structure ?? []).length,
+        totalQuestions: countQuestions(questionnaireRequest.structure ?? [])
       });
 
       // Save via API
@@ -123,7 +123,7 @@ const SaveHebrewQuestionnaire: React.FC = () => {
           </div>
           <div>
             <strong>שאלות ניתנות לגרף:</strong> {hebrewQuestionnaireData.structure.map(convertToFormNode).filter(node => 
-              node.children.some(child => child.type === 'question' && child.graphable)
+              node.children?.some(child => child.type === 'question' && child.graphable)
             ).length}
           </div>
         </div>

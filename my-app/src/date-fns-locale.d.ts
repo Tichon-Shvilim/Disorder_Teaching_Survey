@@ -1,0 +1,1 @@
+declare module 'date-fns/locale';declare module 'date-fns/locale';

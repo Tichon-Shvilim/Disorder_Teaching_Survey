@@ -12,6 +12,7 @@ const convertToFormNode = (data: any): FormNode => {
   const node: FormNode = {
     id: data.id,
     type: data.type as 'group' | 'question',
+    label: data.title,
     title: data.title,
     description: data.description,
     weight: data.weight || 1,
@@ -75,8 +76,8 @@ export const saveHebrewQuestionnaire = async (): Promise<string> => {
     console.log('📋 Questionnaire data prepared:', {
       title: questionnaireRequest.title,
       description: questionnaireRequest.description,
-      structureCount: questionnaireRequest.structure.length,
-      totalQuestions: countQuestions(questionnaireRequest.structure)
+      structureCount: (questionnaireRequest.structure ?? []).length,
+      totalQuestions: countQuestions(questionnaireRequest.structure ?? [])
     });
 
     // Save via API
@@ -88,7 +89,7 @@ export const saveHebrewQuestionnaire = async (): Promise<string> => {
       console.log('📈 Total questions:', response.data.metadata?.totalQuestions || 'Unknown');
       console.log('🎯 Graphable questions:', response.data.metadata?.graphableQuestions || 'Unknown');
       
-      return response.data._id;
+      return response.data._id ?? '';
     } else {
       console.error('❌ Failed to save questionnaire:', response.errors || response.message);
       throw new Error(response.message || 'Failed to save questionnaire');
@@ -119,7 +120,7 @@ export const validateHebrewQuestionnaire = async (): Promise<boolean> => {
     console.log('🔍 Validating Hebrew questionnaire structure...');
     
     const questionnaireRequest = createHebrewQuestionnaireRequest();
-    const response = await questionnaireApiService.validateStructure(questionnaireRequest.structure);
+    const response = await questionnaireApiService.validateStructure(questionnaireRequest.structure ?? []);
     
     if (response.success && response.data) {
       console.log('✅ Questionnaire structure is valid!');
@@ -146,8 +147,8 @@ if (typeof window === 'undefined' && typeof globalThis !== 'undefined') {
   }).catch((error) => {
     console.error('Script failed:', error);
     // Exit only if process is available
-    if (typeof process !== 'undefined') {
-      process.exit(1);
+    if (typeof (globalThis as any).process !== 'undefined') {
+      (globalThis as any).process.exit(1);
     }
   });
 }
