@@ -95,7 +95,7 @@ const ViewSubmissions: React.FC = () => {
       return;
     }
 
-    navigate(`/layout/forms/fill/${submission.questionnaireId}`, {
+    navigate(`/layout/forms/fill/${submission.questionnaireId ?? ''}`, {
       state: { 
         studentId: studentId, 
         studentName,
@@ -418,7 +418,7 @@ const ViewSubmissions: React.FC = () => {
                         {submission.questionnaireTitle}
                       </h3>
                       <span style={{
-                        backgroundColor: getStatusColor(submission.status),
+                        backgroundColor: getStatusColor(submission.status ?? ''),
                         color: 'white',
                         padding: '4px 8px',
                         borderRadius: '12px',
@@ -428,15 +428,15 @@ const ViewSubmissions: React.FC = () => {
                         alignItems: 'center',
                         gap: '4px'
                       }}>
-                        {getStatusIcon(submission.status)}
-                        {t(`formSubmissions.status.${submission.status}`, submission.status.charAt(0).toUpperCase() + submission.status.slice(1))}
+                        {getStatusIcon(submission.status ?? '')}
+                        {submission.status ? t(`formSubmissions.status.${submission.status}`, submission.status.charAt(0).toUpperCase() + submission.status.slice(1)) : ''}
                       </span>
                     </div>
                     
                     <div style={{ display: 'flex', gap: '16px', fontSize: '14px', color: '#6b7280' }}>
                       <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <Calendar style={{ height: '14px', width: '14px' }} />
-                        {submission.submittedAt ? formatDate(submission.submittedAt) : 'Draft - ' + formatDate(submission.createdAt)}
+                        {submission.submittedAt ? formatDate(submission.submittedAt) : submission.createdAt ? 'Draft - ' + formatDate(submission.createdAt) : 'Draft'}
                       </span>
                       <span>
                         {t('formSubmissions.answersCount', { count: submission.answers?.length || 0 })}
@@ -645,11 +645,11 @@ const ViewSubmissions: React.FC = () => {
                   </h3>
                   <div style={{ display: 'flex', gap: '16px', fontSize: '14px', color: '#6b7280' }}>
                     <span>{t('students.student', 'Student')}: {selectedSubmission.studentName}</span>
-                    <span>{t('formSubmissions.statusLabel', 'Status')}: {t(`formSubmissions.status.${selectedSubmission.status}`, selectedSubmission.status)}</span>
+                    <span>{t('formSubmissions.statusLabel', 'Status')}: {t(`formSubmissions.status.${selectedSubmission.status ?? ''}`, selectedSubmission.status ?? '')}</span>
                     <span>
                       {selectedSubmission.submittedAt 
                         ? `${t('formSubmissions.submitted', 'Submitted')}: ${formatDate(selectedSubmission.submittedAt)}`
-                        : `${t('formSubmissions.created', 'Created')}: ${formatDate(selectedSubmission.createdAt)}`
+                        : selectedSubmission.createdAt ? `${t('formSubmissions.created', 'Created')}: ${formatDate(selectedSubmission.createdAt)}` : ''
                       }
                     </span>
                   </div>
@@ -702,7 +702,7 @@ const ViewSubmissions: React.FC = () => {
                             
                             {/* Question Metadata */}
                             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                              {answer.weight > 1 && (
+                              {(answer.weight ?? 0) > 1 && (
                                 <span style={{
                                   backgroundColor: '#f59e0b',
                                   color: 'white',

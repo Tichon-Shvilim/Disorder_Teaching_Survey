@@ -1,14 +1,7 @@
-/// <reference path="../date-fns-locale.d.ts" />
-/// <reference path="../date-fns-locale.d.ts" />
 import React, { useState, useEffect } from 'react';
 import httpService from './Api-Requests/httpService';
 import DomainBarChart from './DomainBarChart';
 import { Box, Checkbox, FormControlLabel, FormGroup, Typography, TextField } from '@mui/material';
-//port { DateRangePicker } from '@mui/x-date-pickers-pro';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DateRangePicker } from '@mui/x-date-pickers-pro';
-import { he as heLocale } from 'date-fns/locale';
 
 interface YearlyScore {
   year: string;
@@ -81,17 +74,22 @@ const StudentYearlyAnalytics: React.FC<StudentYearlyAnalyticsProps> = ({ student
   return (
     <Box>
       <Typography variant="h6" gutterBottom>גרף ציונים לפי שנים</Typography>
-      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={heLocale}>
-        <DateRangePicker
-          value={dateRange}
-          onChange={(newValue: [Date | null, Date | null]) => setDateRange(newValue)}
-          slots={{ field: TextField }}
-          formatDensity="spacious"
-          enableAccessibleFieldDOMStructure={false}
-          selectedSections={undefined}
-          onSelectedSectionsChange={() => {}}
+      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+        <TextField
+          label="Start Date"
+          type="date"
+          size="small"
+          InputLabelProps={{ shrink: true }}
+          onChange={(e) => setDateRange([e.target.value ? new Date(e.target.value) : null, dateRange[1]])}
         />
-      </LocalizationProvider>
+        <TextField
+          label="End Date"
+          type="date"
+          size="small"
+          InputLabelProps={{ shrink: true }}
+          onChange={(e) => setDateRange([dateRange[0], e.target.value ? new Date(e.target.value) : null])}
+        />
+      </Box>
       <Box sx={{ mt: 2 }}>
         <Typography variant="subtitle2">בחר שנים להצגה (לא חובה):</Typography>
         <FormGroup row>

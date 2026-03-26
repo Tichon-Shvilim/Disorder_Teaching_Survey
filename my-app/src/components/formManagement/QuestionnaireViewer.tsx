@@ -39,7 +39,7 @@ import { questionnaireApiService } from './Api-Requests/questionnaireApi';
 import FormPreview from './FormPreview';
 
 const QuestionnaireViewer: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   
@@ -124,7 +124,7 @@ const QuestionnaireViewer: React.FC = () => {
       if (node.type === 'question') {
         return count + 1;
       }
-      return count + getQuestionCount(node.children);
+      return count + getQuestionCount(node.children ?? []);
     }, 0);
   };
 
@@ -344,7 +344,7 @@ const QuestionnaireViewer: React.FC = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <DateIcon color="action" fontSize="small" />
             <Typography variant="body2" color="text.secondary">
-              {t('questionnaireViewer.created', 'Created')}: {formatDate(questionnaire.createdAt)}
+              {t('questionnaireViewer.created', 'Created')}: {questionnaire.createdAt ? formatDate(questionnaire.createdAt) : '-'}
             </Typography>
           </Box>
           
@@ -364,7 +364,7 @@ const QuestionnaireViewer: React.FC = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <QuizIcon color="action" fontSize="small" />
             <Typography variant="body2" color="text.secondary">
-              {t('questionnaireViewer.questions', 'Questions')}: {questionnaire.metadata?.totalQuestions || getQuestionCount(questionnaire.structure)}
+              {t('questionnaireViewer.questions', 'Questions')}: {questionnaire.metadata?.totalQuestions || getQuestionCount(questionnaire.structure ?? [])}
             </Typography>
           </Box>
           
@@ -385,7 +385,7 @@ const QuestionnaireViewer: React.FC = () => {
         <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 2 }}>
           <Card variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
             <Typography variant="h4" color="primary" fontWeight="bold">
-              {questionnaire.structure.length}
+              {questionnaire.structure?.length ?? 0}
             </Typography>
             <Typography variant="body2" color="text.secondary">
               {t('questionnaireViewer.rootGroups', 'Root Groups')}
@@ -394,7 +394,7 @@ const QuestionnaireViewer: React.FC = () => {
           
           <Card variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
             <Typography variant="h4" color="primary" fontWeight="bold">
-              {getQuestionCount(questionnaire.structure)}
+              {getQuestionCount(questionnaire.structure ?? [])}
             </Typography>
             <Typography variant="body2" color="text.secondary">
               {t('questionnaireViewer.totalQuestions', 'Total Questions')}
@@ -436,10 +436,10 @@ const QuestionnaireViewer: React.FC = () => {
               const collectIds = (nodes: FormNode[]) => {
                 nodes.forEach(node => {
                   allNodeIds.add(node.id);
-                  collectIds(node.children);
+                  collectIds(node.children ?? []);
                 });
               };
-              collectIds(questionnaire.structure);
+              collectIds(questionnaire.structure ?? []);
               if (expandedNodes.size === allNodeIds.size) {
                 setExpandedNodes(new Set());
               } else {
@@ -451,13 +451,13 @@ const QuestionnaireViewer: React.FC = () => {
           </Button>
         </Box>
         
-        {questionnaire.structure.length === 0 ? (
+        {(questionnaire.structure?.length ?? 0) === 0 ? (
           <Alert severity="info">
             {t('questionnaireViewer.noStructure', 'This questionnaire has no structure defined.')}
           </Alert>
         ) : (
           <Box>
-            {questionnaire.structure.map((node) => renderStructureNode(node))}
+            {(questionnaire.structure ?? []).map((node) => renderStructureNode(node))}
           </Box>
         )}
       </Paper>
@@ -467,7 +467,7 @@ const QuestionnaireViewer: React.FC = () => {
         <FormPreview
           title={questionnaire.title}
           description={questionnaire.description}
-          structure={questionnaire.structure}
+          structure={questionnaire.structure ?? []}
           onClose={() => setShowPreview(false)}
         />
       )}

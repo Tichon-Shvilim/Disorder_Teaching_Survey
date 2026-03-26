@@ -31,6 +31,7 @@ class QuestionnaireApiService {
     } catch (error) {
       return {
         success: false,
+        data: undefined as unknown as T,
         errors: [error instanceof Error ? error.message : 'Unknown error occurred']
       };
     }
@@ -66,6 +67,7 @@ class QuestionnaireApiService {
 
     return {
       success: false,
+      data: undefined as never,
       message: errorMessage,
       errors: errors.length > 0 ? errors : [errorMessage]
     };
@@ -167,6 +169,7 @@ class QuestionnaireApiService {
     return {
       id: `group-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       type: 'group',
+      label: title,
       title,
       description,
       weight: 1,
@@ -187,6 +190,7 @@ class QuestionnaireApiService {
     const baseQuestion: FormNode = {
       id: `question-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       type: 'question',
+      label: title,
       title,
       description,
       weight: 1,

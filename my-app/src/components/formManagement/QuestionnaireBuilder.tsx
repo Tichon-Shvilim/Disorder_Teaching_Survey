@@ -126,7 +126,7 @@ const QuestionnaireBuilder: React.FC<QuestionnaireBuilderProps> = ({
         if (response.success && response.data) {
           setTitle(response.data.title);
           setDescription(response.data.description || '');
-          setStructure(response.data.structure);
+          setStructure(response.data.structure ?? []);
           setGraphSettings(response.data.graphSettings || { colorRanges: [] });
         }
       } catch (error) {
@@ -234,6 +234,8 @@ const QuestionnaireBuilder: React.FC<QuestionnaireBuilderProps> = ({
       const questionnaireData: CreateQuestionnaireRequest = {
         title,
         description,
+        domains: [],
+        questions: [],
         structure,
         graphSettings
       };
@@ -444,7 +446,7 @@ const QuestionnaireBuilder: React.FC<QuestionnaireBuilderProps> = ({
       if (node.type === 'question') {
         return count + 1;
       }
-      return count + getQuestionCount(node.children);
+      return count + getQuestionCount(node.children ?? []);
     }, 0);
   };
 

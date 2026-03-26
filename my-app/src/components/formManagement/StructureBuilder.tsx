@@ -132,8 +132,8 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
             options: [...(node.options || []), newOption]
           };
         }
-        if (node.children.length > 0) {
-          return { ...node, children: updateStructure(node.children) };
+        if ((node.children?.length ?? 0) > 0) {
+          return { ...node, children: updateStructure(node.children ?? []) };
         }
         return node;
       });
@@ -153,8 +153,8 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
             ) || []
           };
         }
-        if (node.children.length > 0) {
-          return { ...node, children: updateStructure(node.children) };
+        if ((node.children?.length ?? 0) > 0) {
+          return { ...node, children: updateStructure(node.children ?? []) };
         }
         return node;
       });
@@ -172,8 +172,8 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
             options: node.options?.filter((_, i) => i !== optionIndex) || []
           };
         }
-        if (node.children.length > 0) {
-          return { ...node, children: updateStructure(node.children) };
+        if ((node.children?.length ?? 0) > 0) {
+          return { ...node, children: updateStructure(node.children ?? []) };
         }
         return node;
       });
@@ -201,6 +201,7 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
   const createNodeFromForm = useCallback((formData: NodeFormData): FormNode => {
     const node: FormNode = {
       id: generateId(),
+      label: formData.title,
       title: formData.title,
       description: formData.description,
       type: formData.type,
@@ -225,7 +226,7 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
         .filter(node => node.id !== nodeId)
         .map(node => ({
           ...node,
-          children: deleteFromStructure(node.children)
+          children: deleteFromStructure(node.children ?? [])
         }));
     };
     onChange(deleteFromStructure(structure));
@@ -237,7 +238,7 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
       ...original,
       id: generateId(),
       title: `${original.title} (Copy)`,
-      children: original.children.map(duplicateNode)
+      children: (original.children ?? []).map(duplicateNode)
     });
 
     const newNode = duplicateNode(node);
@@ -251,7 +252,7 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
       if (index === -1) {
         return nodes.map(node => ({
           ...node,
-          children: moveInArray(node.children)
+          children: moveInArray(node.children ?? [])
         }));
       }
 
@@ -272,12 +273,12 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
     setNewNodeForm({
       title: node.title || '',
       description: node.description || '',
-      type: node.type,
+      type: (node.type === 'group' || node.type === 'question') ? node.type : 'group',
       inputType: node.inputType,
       options: node.options || [],
-      weight: node.weight,
-      graphable: node.graphable,
-      preferredChartType: node.preferredChartType
+      weight: node.weight ?? 1,
+      graphable: node.graphable ?? false,
+      preferredChartType: node.preferredChartType ?? 'bar'
     });
     setIsAddingNode(true);
   }, []);
@@ -327,8 +328,8 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
             if (node.id === editingNode.id) {
               return { ...updatedNode, children: node.children };
             }
-            if (node.children.length > 0) {
-              return { ...node, children: updateInStructure(node.children) };
+            if ((node.children?.length ?? 0) > 0) {
+              return { ...node, children: updateInStructure(node.children ?? []) };
             }
             return node;
           });
@@ -340,10 +341,10 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
         const updateStructure = (nodes: FormNode[]): FormNode[] => {
           return nodes.map(node => {
             if (node.id === conditionalContext.parentQuestion.id) {
-              return { ...node, children: [...node.children, newNode] };
+              return { ...node, children: [...(node.children ?? []), newNode] };
             }
-            if (node.children.length > 0) {
-              return { ...node, children: updateStructure(node.children) };
+            if ((node.children?.length ?? 0) > 0) {
+              return { ...node, children: updateStructure(node.children ?? []) };
             }
             return node;
           });
@@ -354,10 +355,10 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
         const updateStructure = (nodes: FormNode[]): FormNode[] => {
           return nodes.map(node => {
             if (node.id === addingToParentId) {
-              return { ...node, children: [...node.children, newNode] };
+              return { ...node, children: [...(node.children ?? []), newNode] };
             }
-            if (node.children.length > 0) {
-              return { ...node, children: updateStructure(node.children) };
+            if ((node.children?.length ?? 0) > 0) {
+              return { ...node, children: updateStructure(node.children ?? []) };
             }
             return node;
           });
@@ -516,10 +517,10 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
                     {node.options && node.options.length > 0 && (
                       <Chip label={`${node.options.length} options`} size="small" color="info" variant="outlined" />
                     )}
-                    {node.children.some(child => child.condition) && (
+                    {(node.children ?? []).some(child => child.condition) && (
                       <Chip 
                         icon={<ConditionalIcon />}
-                        label={`${node.children.filter(child => child.condition).length} conditional`}
+                        label={`${(node.children ?? []).filter(child => child.condition).length} conditional`}
                         size="small" 
                         color="secondary" 
                         variant="filled"
@@ -625,7 +626,7 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
                   </Typography>
                   <Stack spacing={2}>
                     {node.options.map((option, index) => {
-                      const hasConditionalChildren = node.children.some(child => 
+                      const hasConditionalChildren = (node.children ?? []).some(child => 
                         child.condition?.parentOptionId === option.id
                       );
                       return (
@@ -684,7 +685,7 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
                               <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold', mb: 1, display: 'block' }}>
                                 🎯 Conditional Questions for "{option.label}":
                               </Typography>
-                              {node.children
+                              {(node.children ?? [])
                                 .filter(child => child.condition?.parentOptionId === option.id)
                                 .map(conditionalChild => (
                                   <Box key={conditionalChild.id} sx={{ mb: 1 }}>

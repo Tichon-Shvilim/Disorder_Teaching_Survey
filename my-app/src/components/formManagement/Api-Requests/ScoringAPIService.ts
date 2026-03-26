@@ -307,7 +307,7 @@ export class ScoringAPIService {
       
       // Filter by questionnaire if specified
       const filteredSubmissions = questionnaireId 
-        ? submissions.filter((s: { questionnaireId: string }) => s.questionnaireId === questionnaireId)
+        ? submissions.filter((s: { questionnaireId?: string }) => s.questionnaireId === questionnaireId)
         : submissions;
 
       if (filteredSubmissions.length === 0) {

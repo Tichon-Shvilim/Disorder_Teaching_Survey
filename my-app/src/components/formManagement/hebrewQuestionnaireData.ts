@@ -453,6 +453,7 @@ export const convertToFormNode = (data: QuestionnaireData): FormNode => {
   const node: FormNode = {
     id: data.id,
     type: data.type,
+    label: data.title,
     title: data.title,
     description: data.description,
     weight: data.weight || 1,
@@ -514,6 +515,8 @@ export const createHebrewQuestionnaireRequest = (): CreateQuestionnaireRequest =
   return {
     title: hebrewQuestionnaireData.title,
     description: hebrewQuestionnaireData.description,
+    domains: [],
+    questions: [],
     structure,
     graphSettings
   };
