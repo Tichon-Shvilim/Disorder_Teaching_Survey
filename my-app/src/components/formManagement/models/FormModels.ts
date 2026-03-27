@@ -4,7 +4,7 @@ export interface FormSubmission {
   questionnaireId?: string;
   userId: string;
   answers: FormAnswer[];
-  submittedAt: Date;
+  submittedAt?: Date;
   createdAt?: Date;
   status?: string;
   notes?: string;
@@ -51,7 +51,6 @@ export interface Option {
   value: number;
   children?: FormNode[];
 }
-
 
 export interface QuestionnaireTemplate {
   _id: string;
@@ -104,6 +103,7 @@ export type GraphSettings = {
     color: string;
   }>;
 };
+
 export interface DomainModel {
   _id: string;
   name: string;
@@ -117,8 +117,6 @@ export interface OptionModel {
   label: string;
   subQuestions?: QuestionModel[];
 }
-
-// Removed misplaced property
 
 export interface QuestionModel {
   _id: string;
@@ -148,7 +146,6 @@ export interface QuestionnaireModel {
   version: number;
 }
 
-// For creating questionnaires - just omit the _id fields
 export interface CreateQuestionnaireRequest {
   title: string;
   description?: string;
@@ -162,8 +159,4 @@ export interface CreateQuestionnaireRequest {
   graphSettings?: GraphSettings;
 }
 
-// Remove QuestionFormData entirely - just use QuestionModel without _id
 export type QuestionFormData = Omit<QuestionModel, '_id'>;
-
-
-
