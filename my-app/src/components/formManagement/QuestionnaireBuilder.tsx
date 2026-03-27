@@ -126,7 +126,7 @@ const QuestionnaireBuilder: React.FC<QuestionnaireBuilderProps> = ({
         if (response.success && response.data) {
           setTitle(response.data.title);
           setDescription(response.data.description || '');
-          setStructure(response.data.structure ?? []);
+          setStructure((response.data.structure ?? []) as FormNode[]);
           setGraphSettings(response.data.graphSettings || { colorRanges: [] });
         }
       } catch (error) {
@@ -234,8 +234,8 @@ const QuestionnaireBuilder: React.FC<QuestionnaireBuilderProps> = ({
       const questionnaireData: CreateQuestionnaireRequest = {
         title,
         description,
-        domains: [],
-        questions: [],
+        domains: [], // Add real domains if available
+        questions: [], // Add real questions if available
         structure,
         graphSettings
       };
@@ -441,7 +441,8 @@ const QuestionnaireBuilder: React.FC<QuestionnaireBuilderProps> = ({
   };
 
   // Helper function to count questions
-  const getQuestionCount = (nodes: FormNode[]): number => {
+  const getQuestionCount = (nodes: FormNode[] | undefined): number => {
+    if (!Array.isArray(nodes)) return 0;
     return nodes.reduce((count, node) => {
       if (node.type === 'question') {
         return count + 1;
@@ -585,7 +586,7 @@ const QuestionnaireBuilder: React.FC<QuestionnaireBuilderProps> = ({
                   {step.completed && (
                     <Chip
                       icon={<CheckIcon sx={{ fontSize: 16 }} />}
-                      label="Done"
+                      label={t('questionnaireBuilder.done', 'בוצע')}
                       size="small"
                       sx={{
                         backgroundColor: '#4caf50',
@@ -640,7 +641,7 @@ const QuestionnaireBuilder: React.FC<QuestionnaireBuilderProps> = ({
               fontSize: '1rem'
             }}
           >
-            ← Back
+            {t('questionnaireBuilder.back', '← חזור')}
           </Button>
           
           <Box sx={{ 
@@ -650,7 +651,7 @@ const QuestionnaireBuilder: React.FC<QuestionnaireBuilderProps> = ({
             textAlign: 'center' 
           }}>
             <Typography variant="body2" color="text.secondary">
-              Step {activeStep + 1} of {steps.length}
+              {t('questionnaireBuilder.stepProgress', 'שלב')} {activeStep + 1} {t('questionnaireBuilder.of', 'מתוך')} {steps.length}
             </Typography>
             <Typography variant="h6" color="primary" fontWeight="bold">
               {steps[activeStep].title}
@@ -675,7 +676,7 @@ const QuestionnaireBuilder: React.FC<QuestionnaireBuilderProps> = ({
                 }
               }}
             >
-              Next →
+              {t('questionnaireBuilder.next', 'הבא →')}
             </Button>
           ) : (
             <Button

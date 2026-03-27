@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface DomainData {
   nodeId: string;
@@ -15,6 +16,7 @@ interface DomainBarChartProps {
 }
 
 const DomainBarChart: React.FC<DomainBarChartProps> = ({ data }) => {
+  const { t } = useTranslation('analyticsSettings');
   const getBarWidth = (score: number) => {
     // Score is already 0-100, so use directly
     return `${Math.max(2, score)}%`; // Minimum 2% for visibility
@@ -66,19 +68,19 @@ const DomainBarChart: React.FC<DomainBarChartProps> = ({ data }) => {
       <div className="chart-legend">
         <div className="legend-item">
           <div className="legend-color" style={{ backgroundColor: '#4CAF50' }}></div>
-          <span>Excellent (80%+)</span>
+          <span>{t('excellent')} (80%+)</span>
         </div>
         <div className="legend-item">
           <div className="legend-color" style={{ backgroundColor: '#FF9800' }}></div>
-          <span>Good (60-79%)</span>
+          <span>{t('good')} (60-79%)</span>
         </div>
         <div className="legend-item">
           <div className="legend-color" style={{ backgroundColor: '#FFC107' }}></div>
-          <span>Needs Improvement (40-59%)</span>
+          <span>{t('average')} (40-59%)</span>
         </div>
         <div className="legend-item">
           <div className="legend-color" style={{ backgroundColor: '#F44336' }}></div>
-          <span>Concerning (&lt;40%)</span>
+          <span>{t('poor')} (&lt;40%)</span>
         </div>
       </div>
     </div>

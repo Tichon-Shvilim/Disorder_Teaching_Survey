@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import httpService from './Api-Requests/httpService';
-import DomainBarChart from './DomainBarChart';
+import { useTranslation } from 'react-i18next';
+import axios from 'axios';
+import YearlyBarChart from './YearlyBarChart';
 import { Box, Checkbox, FormControlLabel, FormGroup, Typography, TextField } from '@mui/material';
 
 interface YearlyScore {
@@ -10,53 +11,37 @@ interface YearlyScore {
 }
 
 interface StudentYearlyAnalyticsProps {
-  studentId: string;
+  submissions: Array<{ submittedAt?: string; totalScore?: number }>; // Minimal shape
 }
 
-const StudentYearlyAnalytics: React.FC<StudentYearlyAnalyticsProps> = ({ studentId }) => {
-  const [data, setData] = useState<YearlyScore[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
+
+const StudentYearlyAnalytics: React.FC<StudentYearlyAnalyticsProps> = ({ submissions }) => {
+  const { t } = useTranslation('analyticsSettings');
   const [selectedYears, setSelectedYears] = useState<string[]>([]);
-
-  // טוען נתונים מהשרת לפי טווח תאריכים
-  useEffect(() => {
-    const fetchYearlyAnalytics = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const params: any = {};
-        if (dateRange[0]) params.startDate = dateRange[0].toISOString();
-        if (dateRange[1]) params.endDate = dateRange[1].toISOString();
-        const response = await httpService.get(`/analytics/student/${studentId}/yearly`, { params });
-        if (response.data.success) {
-          setData(response.data.data);
-        } else {
-          setError(response.data.message || 'Failed to fetch yearly analytics');
-        }
-      } catch (err: unknown) {
-        setError('שגיאה בטעינת נתוני גרף שנתי');
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (studentId) fetchYearlyAnalytics();
-  }, [studentId, dateRange]);
-
-  // הפקת רשימת שנים מתוך הנתונים
-  const allYears = Array.from(new Set(data.map((item) => item.year)));
-
-  // סינון לפי שנים שנבחרו
-  const filteredData = selectedYears.length > 0
-    ? data.filter((item) => selectedYears.includes(item.year))
-    : data;
-
-  if (loading) return <div>טוען גרף שנתי...</div>;
-  if (error) return <div style={{color:'red'}}>{error}</div>;
-  if (!data.length) return <div>אין נתונים להצגה.</div>;
-
-  // התאמה ל-DomainBarChart: year כשם, averageScore כציון
+  // Debug log: show all submissions and which are used for yearly graph
+  console.log('All submissions:', submissions);
+  const yearlyMap: { [year: string]: { scores: number[]; submissions: number } } = {};
+  const usedSubmissions: Array<{ submittedAt?: string; totalScore?: number }> = [];
+  submissions.forEach(sub => {
+    if (!sub.submittedAt) return;
+    // Treat null/undefined totalScore as 0 for completed submissions
+    const score = typeof sub.totalScore === 'number' ? sub.totalScore : 0;
+    usedSubmissions.push({ ...sub, totalScore: score });
+    const year = new Date(sub.submittedAt).getFullYear().toString();
+    if (!yearlyMap[year]) yearlyMap[year] = { scores: [], submissions: 0 };
+    yearlyMap[year].scores.push(score);
+    yearlyMap[year].submissions++;
+  });
+  console.log('Used submissions for yearly graph:', usedSubmissions);
+  const data: YearlyScore[] = Object.entries(yearlyMap).map(([year, { scores, submissions }]) => ({
+    year,
+    averageScore: scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0,
+    submissions
+  }));
+  console.log('Yearly graph data:', data);
+  const allYears = data.map(item => item.year);
+  const filteredData = selectedYears.length > 0 ? data.filter(item => selectedYears.includes(item.year)) : data;
+  if (!data.length) return <div>{t('noData', 'No data to display.')}</div>;
   const chartData = filteredData.map((item) => ({
     nodeId: item.year,
     title: item.year,
@@ -91,7 +76,7 @@ const StudentYearlyAnalytics: React.FC<StudentYearlyAnalyticsProps> = ({ student
         />
       </Box>
       <Box sx={{ mt: 2 }}>
-        <Typography variant="subtitle2">בחר שנים להצגה (לא חובה):</Typography>
+        <Typography variant="subtitle2">{t('selectYearsToDisplay', 'Select years to display (optional):')}</Typography>
         <FormGroup row>
           {allYears.map((year) => (
             <FormControlLabel
@@ -108,7 +93,7 @@ const StudentYearlyAnalytics: React.FC<StudentYearlyAnalyticsProps> = ({ student
         </FormGroup>
       </Box>
       <Box sx={{ mt: 3 }}>
-        <DomainBarChart data={chartData} type="student" />
+        <YearlyBarChart data={filteredData} />
       </Box>
     </Box>
   );

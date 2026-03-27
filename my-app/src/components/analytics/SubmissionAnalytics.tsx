@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { ScoringAPIService, type NodeScore, type SubmissionScore } from '../formManagement/Api-Requests/ScoringAPIService';
 import { toast } from 'react-toastify';
@@ -9,6 +10,7 @@ interface SubmissionAnalyticsProps {
 }
 
 const SubmissionAnalytics: React.FC<SubmissionAnalyticsProps> = ({ submissionId, onClose }) => {
+  const { t } = useTranslation('analyticsSettings');
   const [scores, setScores] = useState<SubmissionScore | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedDepth, setSelectedDepth] = useState<number>(1); // Show root level by default
@@ -111,10 +113,10 @@ const SubmissionAnalytics: React.FC<SubmissionAnalyticsProps> = ({ submissionId,
       }}>
         <div>
           <h2 style={{ fontSize: '24px', fontWeight: '600', color: '#1f2937', margin: '0 0 8px 0' }}>
-            Submission Analytics
+            {t('submissionAnalyticsTitle', 'Submission Analytics')}
           </h2>
           <p style={{ fontSize: '16px', color: '#6b7280', margin: 0 }}>
-            Student: {scores.studentName} | Questionnaire: {scores.questionnaireTitle}
+            {t('student', 'Student')}: {scores.studentName} | {t('questionnaire', 'Questionnaire')}: {scores.questionnaireTitle}
           </p>
         </div>
         {onClose && (
@@ -143,7 +145,7 @@ const SubmissionAnalytics: React.FC<SubmissionAnalyticsProps> = ({ submissionId,
         border: `2px solid ${getScoreColor(scores.overallScore)}`
       }}>
         <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', margin: '0 0 8px 0' }}>
-          Overall Score
+          {t('overallScore', 'Overall Score')}
         </h3>
         <div style={{ 
           fontSize: '36px', 
@@ -154,7 +156,7 @@ const SubmissionAnalytics: React.FC<SubmissionAnalyticsProps> = ({ submissionId,
           {scores.overallScore.toFixed(1)}%
         </div>
         <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
-          Submitted: {new Date(scores.submittedAt).toLocaleDateString()}
+          {t('submitted', 'Submitted')}: {new Date(scores.submittedAt).toLocaleDateString()}
         </p>
       </div>
 
@@ -168,7 +170,7 @@ const SubmissionAnalytics: React.FC<SubmissionAnalyticsProps> = ({ submissionId,
             marginBottom: '8px', 
             display: 'block' 
           }}>
-            View Level:
+            {t('viewLevel', 'View Level:')}
           </label>
           <div style={{ display: 'flex', gap: '8px' }}>
             {availableDepths.map((depth: number) => (
@@ -186,7 +188,7 @@ const SubmissionAnalytics: React.FC<SubmissionAnalyticsProps> = ({ submissionId,
                   fontWeight: '500'
                 }}
               >
-                Level {depth} {depth === 1 ? '(Domains)' : ''}
+                {t('level', 'Level')} {depth} {depth === 1 ? '(' + t('domains', 'Domains') + ')' : ''}
               </button>
             ))}
           </div>
@@ -197,7 +199,7 @@ const SubmissionAnalytics: React.FC<SubmissionAnalyticsProps> = ({ submissionId,
       {chartData.length > 0 && (
         <div style={{ marginBottom: '24px' }}>
           <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', marginBottom: '16px' }}>
-            Scores by Domain (Level {selectedDepth})
+            {t('scoresByDomain', 'Scores by Domain')} ({t('level', 'Level')} {selectedDepth})
           </h3>
           <ResponsiveContainer width="100%" height={400}>
             <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
@@ -232,7 +234,7 @@ const SubmissionAnalytics: React.FC<SubmissionAnalyticsProps> = ({ submissionId,
       {/* Score Details Table */}
       <div>
         <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', marginBottom: '16px' }}>
-          Detailed Scores (Level {selectedDepth})
+          {t('detailedScores', 'Detailed Scores')} ({t('level', 'Level')} {selectedDepth})
         </h3>
         <div style={{
           backgroundColor: '#f9fafb',
@@ -250,7 +252,7 @@ const SubmissionAnalytics: React.FC<SubmissionAnalyticsProps> = ({ submissionId,
                   fontWeight: '600',
                   color: '#374151'
                 }}>
-                  Domain
+                  {t('domain', 'Domain')}
                 </th>
                 <th style={{ 
                   padding: '12px 16px', 
@@ -259,7 +261,7 @@ const SubmissionAnalytics: React.FC<SubmissionAnalyticsProps> = ({ submissionId,
                   fontWeight: '600',
                   color: '#374151'
                 }}>
-                  Score
+                  {t('score', 'Score')}
                 </th>
                 <th style={{ 
                   padding: '12px 16px', 
@@ -268,7 +270,7 @@ const SubmissionAnalytics: React.FC<SubmissionAnalyticsProps> = ({ submissionId,
                   fontWeight: '600',
                   color: '#374151'
                 }}>
-                  Questions
+                  {t('questions', 'Questions')}
                 </th>
                 <th style={{ 
                   padding: '12px 16px', 
@@ -277,7 +279,7 @@ const SubmissionAnalytics: React.FC<SubmissionAnalyticsProps> = ({ submissionId,
                   fontWeight: '600',
                   color: '#374151'
                 }}>
-                  Weight
+                  {t('weight', 'Weight')}
                 </th>
               </tr>
             </thead>

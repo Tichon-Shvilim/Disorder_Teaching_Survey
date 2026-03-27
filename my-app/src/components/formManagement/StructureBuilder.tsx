@@ -496,7 +496,7 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
                     {node.type === 'group' && node.graphable && (
                       <Chip 
                         icon={chartTypes.find(t => t.value === node.preferredChartType)?.icon as React.ReactElement}
-                        label={`📊 ${chartTypes.find(t => t.value === node.preferredChartType)?.label}`}
+                        label={`📊 ${t(`structureBuilder.chartType.${node.preferredChartType}.label`, chartTypes.find(t => t.value === node.preferredChartType)?.label || '')}`}
                         size="small" 
                         color="primary" 
                         variant="filled"
@@ -815,7 +815,7 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
             startIcon={<AddIcon />}
             onClick={() => handleAddNode()}
           >
-            Create Your First Group
+            {t('structureBuilder.createFirstGroup', 'צור קבוצה ראשונה')}
           </Button>
         </Card>
       ) : (
