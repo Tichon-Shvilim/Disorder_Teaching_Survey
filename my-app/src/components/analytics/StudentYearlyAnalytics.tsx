@@ -1,12 +1,8 @@
-/// <reference path="../date-fns-locale.d.ts" />
-/// <reference path="../date-fns-locale.d.ts" />
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import YearlyBarChart from './YearlyBarChart';
 import { Box, Checkbox, FormControlLabel, FormGroup, Typography, TextField } from '@mui/material';
-//port { DateRangePicker } from '@mui/x-date-pickers-pro';
-// הסרנו DateRangePicker וכל התלויות
 
 interface YearlyScore {
   year: string;
@@ -62,7 +58,23 @@ const StudentYearlyAnalytics: React.FC<StudentYearlyAnalyticsProps> = ({ submiss
 
   return (
     <Box>
-      <Typography variant="h6" gutterBottom>{t('yearlyScoresChart', 'Yearly Scores Chart')}</Typography>
+      <Typography variant="h6" gutterBottom>גרף ציונים לפי שנים</Typography>
+      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+        <TextField
+          label="Start Date"
+          type="date"
+          size="small"
+          InputLabelProps={{ shrink: true }}
+          onChange={(e) => setDateRange([e.target.value ? new Date(e.target.value) : null, dateRange[1]])}
+        />
+        <TextField
+          label="End Date"
+          type="date"
+          size="small"
+          InputLabelProps={{ shrink: true }}
+          onChange={(e) => setDateRange([dateRange[0], e.target.value ? new Date(e.target.value) : null])}
+        />
+      </Box>
       <Box sx={{ mt: 2 }}>
         <Typography variant="subtitle2">{t('selectYearsToDisplay', 'Select years to display (optional):')}</Typography>
         <FormGroup row>

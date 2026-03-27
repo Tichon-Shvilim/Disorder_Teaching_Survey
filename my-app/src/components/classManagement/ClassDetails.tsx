@@ -48,23 +48,15 @@ const ClassDetails: React.FC = () => {
     try {
       const response = await getAllStudents();
       const students = response.data;
-      console.log("=== FETCH ALL STUDENTS DEBUG ===");
-      console.log("Total students fetched:", students.length);
       
       // Log a few students to see their structure
       if (students.length > 0) {
-        console.log("Sample student data:", students.slice(0, 3).map(s => ({
-          name: s.name,
-          _id: s._id,
-          classId: s.classId,
-          classIdType: typeof s.classId
-        })));
+        console.log("student exist");
       }
       
       // Show ALL students but we'll handle class transfer validation during save
       // This allows admins to see all students and make informed decisions
       setAvailableStudents(students);
-      console.log('Total students:', students.length, 'All available for selection (transfers will be confirmed)');
     } catch (err: unknown) {
       console.error('Error fetching students:', err);
       toast.error(t('classes.failedToLoadStudents', 'Failed to load students'));

@@ -131,7 +131,7 @@ const ViewSubmissions: React.FC = () => {
       return;
     }
 
-    navigate(`/layout/forms/fill/${submission.questionnaireId}`, {
+    navigate(`/layout/forms/fill/${submission.questionnaireId ?? ''}`, {
       state: { 
         studentId: studentId, 
         studentName,

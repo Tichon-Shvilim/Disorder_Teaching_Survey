@@ -486,7 +486,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
                 {node.title}
               </Typography>
               <Chip 
-                label={`${node.children.length} item${node.children.length !== 1 ? 's' : ''}`}
+                label={`${(node.children ?? []).length} item${(node.children ?? []).length !== 1 ? 's' : ''}`}
                 size="small"
                 color="primary"
                 variant="outlined"
@@ -499,7 +499,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
                 {node.description}
               </Typography>
             )}
-            {node.children.map(child => renderNode(child, level + 1))}
+            {(node.children ?? []).map(child => renderNode(child, level + 1))}
           </AccordionDetails>
         </Accordion>
       </Card>
@@ -522,7 +522,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
       if (node.type === 'question') {
         return count + 1;
       }
-      return count + getQuestionCount(node.children);
+      return count + getQuestionCount(node.children ?? []);
     }, 0);
   };
 

@@ -250,7 +250,7 @@ const QuestionnaireList: React.FC = () => {
                         size="small"
                       />
                       <Chip
-                        label={t('questionnaireList.version', { version: questionnaire.version })}
+                        label={t('questionnaireList.version', { version: questionnaire.version ?? 1 })}
                         variant="outlined"
                         size="small"
                       />
@@ -301,7 +301,7 @@ const QuestionnaireList: React.FC = () => {
                       <Typography variant="body2">{t('questionnaireList.created')}</Typography>
                     </Box>
                     <Typography variant="body2" fontWeight="bold">
-                      {formatDate(questionnaire.createdAt)}
+                      {questionnaire.createdAt ? formatDate(questionnaire.createdAt) : '-'}
                     </Typography>
                   </Box>
                 </Stack>

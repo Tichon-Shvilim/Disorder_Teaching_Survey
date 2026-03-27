@@ -43,10 +43,10 @@ const FillForm: React.FC = () => {
         if (editSubmissionId) {
           // Load existing submission for editing
           const submission = await FormAPIService.getSubmission(editSubmissionId);
-          const questionnaireData = await FormAPIService.getQuestionnaireTemplate(submission.questionnaireId);
+          const questionnaireData = await FormAPIService.getQuestionnaireTemplate(submission.questionnaireId ?? '');
           
           setQuestionnaire(questionnaireData);
-          setSelectedQuestionnaireId(submission.questionnaireId);
+          setSelectedQuestionnaireId(submission.questionnaireId ?? '');
           setCurrentSubmissionId(submission._id);
           
           // Convert submission answers to form state
@@ -109,7 +109,7 @@ const FillForm: React.FC = () => {
               };
               
               // Process children of questions (traditional sub-questions)
-              if (node.children && node.children.length > 0) {
+                      if (node.children && node.children.length > 0) {
                 extractQuestions(node.children, currentPath);
               }
               
@@ -130,7 +130,7 @@ const FillForm: React.FC = () => {
           });
         };
         
-        extractQuestions(data.structure);
+        extractQuestions(data.structure ?? []);
         setAnswers(initialAnswers);
       } catch (error) {
         console.error('Error fetching questionnaire:', error);
@@ -157,7 +157,7 @@ const FillForm: React.FC = () => {
       ...prev,
       [questionId]: {
         ...prev[questionId],
-        answer,
+        answer: answer as string | number | string[],
         selectedOptions: selectedOptions || []
       }
     }));
@@ -461,7 +461,7 @@ const FillForm: React.FC = () => {
                         }
                         
                         // Update answer array with values from selected options
-                        const newAnswer = newSelectedOptions.map(opt => opt.value);
+                        const newAnswer = newSelectedOptions.map(opt => String(opt.value));
 
                         handleAnswerChange(node.id, newAnswer, newSelectedOptions);
                       }}
@@ -661,7 +661,7 @@ const FillForm: React.FC = () => {
           return Number(dependentAnswer.answer) < Number(condition.value);
         case 'contains':
           if (Array.isArray(dependentAnswer.answer)) {
-            return dependentAnswer.answer.includes(condition.value);
+            return dependentAnswer.answer.includes(String(condition.value));
           }
           return String(dependentAnswer.answer).includes(String(condition.value));
         default:
@@ -701,7 +701,7 @@ const FillForm: React.FC = () => {
                 validateNodes(option.children);
               }
               // For multiple-choice, validate sub-questions if this option is selected
-              else if (node.inputType === 'multiple-choice' && Array.isArray(currentAnswer.answer) && currentAnswer.answer.includes(option.value) && option.children) {
+              else if (node.inputType === 'multiple-choice' && Array.isArray(currentAnswer.answer) && currentAnswer.answer.includes(String(option.value)) && option.children) {
                 validateNodes(option.children);
               }
             });
@@ -711,7 +711,7 @@ const FillForm: React.FC = () => {
     };
 
     if (questionnaire) {
-      validateNodes(questionnaire.structure);
+      validateNodes(questionnaire.structure ?? []);
     }
 
     setErrors(newErrors);
