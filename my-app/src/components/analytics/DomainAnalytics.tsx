@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
@@ -19,7 +19,7 @@ const mockDomainScores: DomainScore[] = [
   { domain: 'רגשי', score: 90, maxScore: 100 },
 ];
 
-const DomainAnalytics: React.FC<DomainAnalyticsProps> = ({ studentId, questionnaires }) => {
+const DomainAnalytics: React.FC<DomainAnalyticsProps> = (_props) => {
   const { t } = useTranslation('analyticsSettings');
   // Restore mock data for demo
   const domainScores: DomainScore[] = mockDomainScores;

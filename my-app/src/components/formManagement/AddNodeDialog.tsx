@@ -213,7 +213,7 @@ const AddNodeDialog: React.FC<AddNodeDialogProps> = ({
                                 <InputLabel>{t('addNodeDialog.inputTypeLabel')}</InputLabel>
                 <Select
                   value={formData.inputType || ''}
-                  onChange={(e) => setFormData({ ...formData, inputType: e.target.value as any })} // eslint-disable-line @typescript-eslint/no-explicit-any
+                  onChange={(e) => setFormData({ ...formData, inputType: e.target.value as NodeFormData['inputType'] })}
                   label={t('addNodeDialog.inputTypeLabel')}
                   required
                 >
@@ -338,7 +338,7 @@ const AddNodeDialog: React.FC<AddNodeDialogProps> = ({
                     <InputLabel>{t('addNodeDialog.preferredChartType')}</InputLabel>
                     <Select
                       value={formData.preferredChartType}
-                      onChange={(e) => setFormData({ ...formData, preferredChartType: e.target.value as any })}
+                      onChange={(e) => setFormData({ ...formData, preferredChartType: e.target.value as NodeFormData['preferredChartType'] })}
                       label={t('addNodeDialog.preferredChartType')}
                     >
                       {chartTypes.map(chart => (

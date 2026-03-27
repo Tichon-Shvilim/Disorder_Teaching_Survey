@@ -12,35 +12,6 @@ import StudentYearlyAnalytics from '../analytics/StudentYearlyAnalytics';
 import DomainAnalytics from '../analytics/DomainAnalytics';
 
 const ViewSubmissions: React.FC = () => {
-    // Batch update scores for all submissions
-    const handleBatchUpdateScores = async () => {
-      try {
-        const submissionIds = submissions.map(sub => sub._id);
-        if (!submissionIds.length) {
-          toast.warning('אין מבחנים לעדכון');
-          return;
-        }
-        // שלח בקשת עדכון לשרת
-        const response = await fetch('/api/forms/submissions/batch-update-scores', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ submissionIds }),
-        });
-        const result = await response.json();
-        if (result.success) {
-          toast.success('ציונים עודכנו בהצלחה!');
-          // רענן את הרשימה
-          window.location.reload();
-        } else {
-          toast.error('עדכון ציונים נכשל: ' + (result.message || '')); 
-        }
-      } catch (error) {
-        toast.error('שגיאה בעדכון ציונים');
-        console.error(error);
-      }
-    };
   const { t, i18n } = useTranslation();
   const isRTL = i18n.dir() === 'rtl';
   const location = useLocation();
