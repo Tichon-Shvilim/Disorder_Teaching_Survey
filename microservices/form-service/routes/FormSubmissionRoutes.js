@@ -6,6 +6,28 @@ const QuestionnaireTemplate = require('../models/QuestionnaireTemplate');
 const { authenticateJWT, authorizeRole } = require('../middleware/auth');
 
 const router = express.Router();
+// עדכון totalScore בלבד לפי מזהה submission
+router.patch('/submissions/:id/score', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { totalScore } = req.body;
+    if (typeof totalScore !== 'number') {
+      return res.status(400).json({ success: false, message: 'totalScore must be a number' });
+    }
+    const updated = await FormSubmission.findByIdAndUpdate(
+      id,
+      { totalScore, updatedAt: new Date() },
+      { new: true }
+    );
+    if (!updated) {
+      return res.status(404).json({ success: false, message: 'Submission not found' });
+    }
+    res.json({ success: true, message: 'totalScore updated', data: { submissionId: id, totalScore } });
+  } catch (error) {
+    console.error('Error updating totalScore:', error);
+    res.status(500).json({ success: false, message: 'Failed to update totalScore', error: error.message });
+  }
+});
 
 // Helper function to fetch student data from student-service
 async function fetchStudentData(studentId, authHeader) {

@@ -70,19 +70,19 @@ const AnalyticsSettings: React.FC<AnalyticsSettingsProps> = ({
     {
       name: 'Traffic Light (3 levels)',
       ranges: [
-        { label: 'Low', min: 0, max: 33, color: '#ef4444' },
-        { label: 'Medium', min: 34, max: 66, color: '#fbbf24' },
-        { label: 'High', min: 67, max: 100, color: '#10b981' }
+        { label: t('analyticsSettings.low', 'Low'), min: 0, max: 33, color: '#ef4444' },
+        { label: t('analyticsSettings.medium', 'Medium'), min: 34, max: 66, color: '#fbbf24' },
+        { label: t('analyticsSettings.high', 'High'), min: 67, max: 100, color: '#10b981' }
       ]
     },
     {
       name: 'Performance (5 levels)',
       ranges: [
-        { label: 'Poor', min: 0, max: 20, color: '#dc2626' },
-        { label: 'Below Average', min: 21, max: 40, color: '#f59e0b' },
-        { label: 'Average', min: 41, max: 60, color: '#eab308' },
-        { label: 'Good', min: 61, max: 80, color: '#22c55e' },
-        { label: 'Excellent', min: 81, max: 100, color: '#16a34a' }
+        { label: t('analyticsSettings.poor', 'Poor'), min: 0, max: 20, color: '#dc2626' },
+        { label: t('analyticsSettings.belowAverage', 'Below Average'), min: 21, max: 40, color: '#f59e0b' },
+        { label: t('analyticsSettings.average', 'Average'), min: 41, max: 60, color: '#eab308' },
+        { label: t('analyticsSettings.good', 'Good'), min: 61, max: 80, color: '#22c55e' },
+        { label: t('analyticsSettings.excellent', 'Excellent'), min: 81, max: 100, color: '#16a34a' }
       ]
     }
   ];
@@ -155,15 +155,15 @@ const AnalyticsSettings: React.FC<AnalyticsSettingsProps> = ({
               <Card key={index} variant="outlined" sx={{ mb: 2, p: 2 }}>
                 <Stack direction="row" spacing={2} alignItems="center">
                   <TextField
-                    label="Label"
+                    label={t('analyticsSettings.label', 'Label')}
                     value={range.label}
                     onChange={(e) => updateColorRange(index, 'label', e.target.value)}
                     size="small"
                     sx={{ flex: 1 }}
-                    placeholder="e.g., Low, Medium, High"
+                    placeholder={t('analyticsSettings.rangeExample', 'e.g., Low, Medium, High')}
                   />
                   <TextField
-                    label="Min"
+                    label={t('analyticsSettings.min', 'Min')}
                     type="number"
                     value={range.min}
                     onChange={(e) => updateColorRange(index, 'min', parseInt(e.target.value) || 0)}
@@ -171,7 +171,7 @@ const AnalyticsSettings: React.FC<AnalyticsSettingsProps> = ({
                     sx={{ width: 80 }}
                   />
                   <TextField
-                    label="Max"
+                    label={t('analyticsSettings.max', 'Max')}
                     type="number"
                     value={range.max}
                     onChange={(e) => updateColorRange(index, 'max', parseInt(e.target.value) || 100)}
@@ -192,7 +192,7 @@ const AnalyticsSettings: React.FC<AnalyticsSettingsProps> = ({
                       }}
                     />
                     <Chip
-                      label={range.label || 'Range'}
+                      label={range.label || t('analyticsSettings.rangeFallback', 'Range')}
                       size="small"
                       sx={{
                         backgroundColor: range.color,
@@ -219,10 +219,10 @@ const AnalyticsSettings: React.FC<AnalyticsSettingsProps> = ({
       {localSettings.colorRanges.length > 0 && (
         <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
           <Typography variant="h6" gutterBottom>
-            Preview
+            {t('analyticsSettings.preview', 'Preview')}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            This is how your color ranges will appear in analytics:
+            {t('analyticsSettings.previewDesc', 'This is how your color ranges will appear in analytics:')}
           </Typography>
           <Stack direction="row" spacing={1} flexWrap="wrap">
             {localSettings.colorRanges.map((range, index) => (

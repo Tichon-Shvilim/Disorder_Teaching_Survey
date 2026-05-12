@@ -9,9 +9,11 @@ import enTranslation from './locales/en.json';
 const resources = {
   he: {
     translation: heTranslation,
+    analyticsSettings: heTranslation.analyticsSettings,
   },
   en: {
     translation: enTranslation,
+    analyticsSettings: enTranslation.analyticsSettings,
   },
 };
 

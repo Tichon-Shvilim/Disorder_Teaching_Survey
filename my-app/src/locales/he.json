@@ -64,7 +64,18 @@
     "previewDesc": "כך ייראה השאלון למשתמשים. כל האינטראקציות פועלות כמו בטופס האמיתי.",
     "previewMode": "🔍 מצב תצוגה מקדימה",
     "submitForm": "שלח טופס",
-    "previewNotice": "זוהי תצוגה מקדימה - נתונים לא יישמרו"
+    "previewNotice": "זוהי תצוגה מקדימה - נתונים לא יישמרו",
+    "answerPlaceholder": "הקלד את תשובתך כאן...",
+    "numberPlaceholder": "הזן מספר...",
+    "weightLabel": "משקל: {{weight}}",
+    "valueLabel": "ערך: {{value}}",
+    "followUpQuestions": "✨ שאלות המשך",
+    "hiddenConditionalQuestion": "💡 שאלה מותנית מוסתרת: \"{{title}}\" (תופיע כאשר התנאי יתקיים)",
+    "conditionalQuestion": "שאלה מותנית",
+    "low": "נמוך",
+    "high": "גבוה",
+    "defaultAnswerPlaceholder": "תשובה...",
+    "questionsSummary": "{{count}} שאלה{{plural}} • תצוגה אינטראקטיבית"
   },
   "analyticsSettings": {
     "title": "📊 הגדרות אנליטיקה",
@@ -77,20 +88,35 @@
     "label": "תווית",
     "min": "מינימום",
     "max": "מקסימום",
+    "rangeExample": "לדוגמה: נמוך, בינוני, גבוה",
+    "rangeFallback": "טווח",
     "color": "צבע",
     "remove": "הסר",
     "presetTrafficLight": "רמזור (3 רמות)",
     "presetPerformance": "ביצועים (5 רמות)",
     "preview": "תצוגה מקדימה",
-    "previewDesc": "כך ייראו טווחי הצבעים באנליטיקה:"
-    ,"excellent": "מעולה"
-    ,"good": "טוב"
-    ,"average": "ממוצע"
-    ,"belowAverage": "מתחת לממוצע"
-    ,"poor": "גרוע"
-    ,"high": "גבוה"
-    ,"medium": "בינוני"
-    ,"low": "נמוך"
+    "previewDesc": "כך ייראו טווחי הצבעים באנליטיקה:",
+    "excellent": "מעולה",
+    "good": "טוב",
+    "average": "ממוצע",
+    "belowAverage": "מתחת לממוצע",
+    "poor": "גרוע",
+    "high": "גבוה",
+    "medium": "בינוני",
+    "low": "נמוך",
+    "domainScoresByField": "ציוני תחומים לפי שדה",
+    "noDomainScoresAvailable": "אין ציוני תחום זמינים עבור ההגשות שנבחרו.",
+    "selectDomain": "בחר תחום",
+    "submissionScores": "ציוני הגשה",
+    "selectQuestionnaires": "בחר מבחנים להצגה",
+    "selectQuestionnaireHint": "החזק Ctrl/Cmd כדי לבחור מספר מבחנים. השאר ריקים כדי לחשב ממוצע לכל ההגשות.",
+    "averageScore": "ציון ממוצע",
+    "averageScoreLabel": "ציון ממוצע",
+    "averageScoreInfo": "חישוב ממוצע של {{count}} הגשה/ות נבחרו.",
+    "noSubmissionScoresAvailable": "אין ציוני הגשה תקפים עבור המבחנים שנבחרו.",
+    "score": "ציון",
+    "year": "שנה",
+    "selectYearsToDisplay": "בחר שנים להצגה (אופציונלי):"
   },
   "questionnaireBuilder": {
     "progressBoxTitle": "התקדמות",

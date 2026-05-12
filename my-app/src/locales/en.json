@@ -64,7 +64,18 @@
     "previewDesc": "This is how your questionnaire will appear to users. All interactions work as they would in the real form.",
     "previewMode": "🔍 Preview Mode",
     "submitForm": "Submit Form",
-    "previewNotice": "This is a preview - no data will be saved"
+    "previewNotice": "This is a preview - no data will be saved",
+    "answerPlaceholder": "Type your answer here...",
+    "numberPlaceholder": "Enter a number...",
+    "weightLabel": "Weight: {{weight}}",
+    "valueLabel": "Value: {{value}}",
+    "followUpQuestions": "✨ Follow-up Questions",
+    "hiddenConditionalQuestion": "💡 Hidden conditional question: \"{{title}}\" (will appear when condition is met)",
+    "conditionalQuestion": "Conditional Question",
+    "low": "Low",
+    "high": "High",
+    "defaultAnswerPlaceholder": "Answer...",
+    "questionsSummary": "{{count}} question{{plural}} • Interactive preview"
   },
   "analyticsSettings": {
     "title": "📊 הגדרת אנליטיקה",
@@ -77,6 +88,11 @@
     "label": "Label",
     "min": "Min",
     "max": "Max",
+    "preview": "Preview",
+    "previewDesc": "This is how your color ranges will appear in analytics:",
+    "label": "Label",
+    "rangeExample": "e.g., Low, Medium, High",
+    "rangeFallback": "Range",
     "color": "Color",
     "remove": "Remove",
     "presetTrafficLight": "רמזור (3 רמות)",
@@ -91,6 +107,19 @@
     ,"high": "High"
     ,"medium": "Medium"
     ,"low": "Low"
+    ,"domainScoresByField": "Domain Scores by Field"
+    ,"noDomainScoresAvailable": "No domain scores available for the selected submissions."
+    ,"selectDomain": "Select Domain"
+    ,"submissionScores": "Submission Scores"
+    ,"selectQuestionnaires": "Select tests to display"
+    ,"selectQuestionnaireHint": "Hold Ctrl/Cmd to select multiple tests. Leave empty to average all selected submissions."
+    ,"averageScore": "Average Score"
+    ,"averageScoreLabel": "Average Score"
+    ,"averageScoreInfo": "Averaging {{count}} selected submission(s)."
+    ,"noSubmissionScoresAvailable": "No valid submission scores available for the selected questionnaires."
+    ,"score": "Score"
+    ,"year": "Year"
+    ,"selectYearsToDisplay": "Select years to display (optional):"
   },
   "addNodeDialog": {
       "enableAnalytics": "אפשר אנליטיקה",

@@ -122,7 +122,19 @@ router.post('/calculate/:submissionId', async (req, res) => {
     }
     
     await analytics.save();
-    
+
+    // עדכון totalScore במסמך FormSubmission
+    try {
+      const formServiceUrl = process.env.FORM_SERVICE_URL || 'http://form-service:3003';
+      await axios.patch(
+        `${formServiceUrl}/api/forms/submissions/${submissionId}/score`,
+        { totalScore: overallScoreData.overallScore },
+        { timeout: 5000 }
+      );
+    } catch (err) {
+      console.error('Failed to update totalScore in FormSubmission:', err.message);
+    }
+
     res.json({
       success: true,
       message: 'Analytics calculated successfully',

@@ -27,6 +27,7 @@ import ViewSubmissions from "./components/formManagement/ViewSubmissions";
 import QuestionnaireViewer from "./components/formManagement/QuestionnaireViewer";
 import SaveHebrewQuestionnaire from "./components/formManagement/SaveHebrewQuestionnaire";
 import FormResults from "./components/formManagement/FormResults";
+import StudentAnalyticsPage from "./components/analytics/StudentAnalyticsPage";
 import FormSubmissionComplete from "./components/formManagement/FormSubmissionComplete";
 
 const App: React.FC = () => {
@@ -54,6 +55,7 @@ const App: React.FC = () => {
           <Route path="forms/fill/:questionnaireId" element={<FillForm />} />
           <Route path="forms/submissions" element={<ViewSubmissions />} />
           <Route path="form-results/:submissionId" element={<FormResults />} />
+          <Route path="student-analytics/:studentId" element={<StudentAnalyticsPage />} />
           <Route path="form-submission-complete/:submissionId" element={<FormSubmissionComplete />} />
           <Route path="classes" element={<ClassList/>} />
           <Route path="classes/:id" element={<ModernClassManagement />} />

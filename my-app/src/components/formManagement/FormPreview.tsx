@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Typography,
@@ -45,6 +46,8 @@ interface FormData {
 }
 
 const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure, onClose }) => {
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.dir() === 'rtl';
 
   const [formData, setFormData] = useState<FormData>({});
   const [viewMode, setViewMode] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
@@ -101,7 +104,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
               </Typography>
               {node.weight !== 1 && (
                 <Chip 
-                  label={`Weight: ${node.weight}`} 
+                  label={t('formPreview.weightLabel', 'Weight: {{weight}}', { weight: node.weight })} 
                   size="small" 
                   variant="outlined"
                   color="secondary"
@@ -110,7 +113,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
             </Box>
             <TextField
               fullWidth
-              placeholder="Type your answer here..."
+              placeholder={t('formPreview.answerPlaceholder', 'Type your answer here...')}
               value={value}
               onChange={(e) => handleInputChange(node.id, e.target.value)}
               helperText={node.description}
@@ -127,7 +130,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
               </Typography>
               {node.weight !== 1 && (
                 <Chip 
-                  label={`Weight: ${node.weight}`} 
+                  label={t('formPreview.weightLabel', 'Weight: {{weight}}', { weight: node.weight })} 
                   size="small" 
                   variant="outlined"
                   color="secondary"
@@ -137,7 +140,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
             <TextField
               fullWidth
               type="number"
-              placeholder="Enter a number..."
+              placeholder={t('formPreview.numberPlaceholder', 'Enter a number...')}
               value={value}
               onChange={(e) => handleInputChange(node.id, e.target.value)}
               helperText={node.description}
@@ -152,7 +155,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
               {node.title}
               {node.weight !== 1 && (
                 <Chip 
-                  label={`Weight: ${node.weight}`} 
+                  label={t('formPreview.weightLabel', 'Weight: {{weight}}', { weight: node.weight })} 
                   size="small" 
                   variant="outlined"
                   color="secondary"
@@ -179,7 +182,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
                           {option.label}
                         </Typography>
                         <Chip 
-                          label={`Value: ${option.value}`} 
+                          label={t('formPreview.valueLabel', 'Value: {{value}}', { value: option.value })} 
                           size="small" 
                           variant="outlined"
                           color="primary"
@@ -213,7 +216,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
                           fontSize: '0.7rem'
                         }}
                       >
-                        ✨ Follow-up Questions
+                        {t('formPreview.followUpQuestions', '✨ Follow-up Questions')}
                       </Typography>
                       <Box sx={{ pt: 1 }}>
                         {node.children
@@ -238,7 +241,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
               {node.title}
               {node.weight !== 1 && (
                 <Chip 
-                  label={`Weight: ${node.weight}`} 
+                  label={t('formPreview.weightLabel', 'Weight: {{weight}}', { weight: node.weight })} 
                   size="small" 
                   variant="outlined"
                   color="secondary"
@@ -272,7 +275,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
                           {option.label}
                         </Typography>
                         <Chip 
-                          label={`Value: ${option.value}`} 
+                          label={t('formPreview.valueLabel', 'Value: {{value}}', { value: option.value })} 
                           size="small" 
                           variant="outlined"
                           color="primary"
@@ -306,7 +309,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
                           fontSize: '0.7rem'
                         }}
                       >
-                        ✨ Follow-up Questions
+                        {t('formPreview.followUpQuestions', '✨ Follow-up Questions')}
                       </Typography>
                       <Box sx={{ pt: 1 }}>
                         {node.children
@@ -333,7 +336,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
               </Typography>
               {node.weight !== 1 && (
                 <Chip 
-                  label={`Weight: ${node.weight}`} 
+                  label={t('formPreview.weightLabel', 'Weight: {{weight}}', { weight: node.weight })} 
                   size="small" 
                   variant="outlined"
                   color="secondary"
@@ -357,8 +360,8 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
                 sx={{ mt: 2 }}
               />
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-                <Typography variant="caption">Low</Typography>
-                <Typography variant="caption">High</Typography>
+                <Typography variant="caption">{t('formPreview.low', 'Low')}</Typography>
+                <Typography variant="caption">{t('formPreview.high', 'High')}</Typography>
               </Box>
             </Box>
           </Box>
@@ -369,7 +372,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
           <TextField
             fullWidth
             label={node.title}
-            placeholder="Answer..."
+            placeholder={t('formPreview.defaultAnswerPlaceholder', 'Answer...')}
             value={value}
             onChange={(e) => handleInputChange(node.id, e.target.value)}
             helperText={node.description}
@@ -399,7 +402,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
           }}
         >
           <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-            💡 Hidden conditional question: "{node.title}" (will appear when condition is met)
+            {t('formPreview.hiddenConditionalQuestion', '💡 Hidden conditional question: "{{title}}" (will appear when condition is met)', { title: node.title })}
           </Typography>
         </Box>
       );
@@ -410,7 +413,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
         <Box key={node.id} sx={{ mb: 2 }}>
           {isConditional && (
             <Chip 
-              label="Conditional Question"
+              label={t('formPreview.conditionalQuestion', 'Conditional Question')}
               size="small"
               color="info"
               variant="outlined"
@@ -486,7 +489,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
                 {node.title}
               </Typography>
               <Chip 
-                label={`${(node.children ?? []).length} item${(node.children ?? []).length !== 1 ? 's' : ''}`}
+                label={t('formPreview.itemsCount', '{{count}} item{{plural}}', { count: (node.children ?? []).length, plural: (node.children ?? []).length !== 1 ? 's' : '' })}
                 size="small"
                 color="primary"
                 variant="outlined"
@@ -537,7 +540,8 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
       bottom: 0, 
       backgroundColor: 'rgba(0,0,0,0.5)',
       zIndex: 1300,
-      overflow: 'auto'
+      overflow: 'auto',
+      direction: isRTL ? 'rtl' : 'ltr'
     }}>
       <Box sx={{ 
         backgroundColor: 'white', 
@@ -558,16 +562,19 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
           <Stack direction="row" justifyContent="space-between" alignItems="center">
             <Box>
               <Typography variant="h5" fontWeight="bold" gutterBottom>
-                📋 Form Preview
+                {t('common.formPreviewTitle', '📋 Form Preview')}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {totalQuestions} question{totalQuestions !== 1 ? 's' : ''} • Interactive preview
+                {t('formPreview.questionsSummary', '{{count}} question{{plural}} • Interactive preview', {
+                  count: totalQuestions,
+                  plural: totalQuestions !== 1 ? 's' : ''
+                })}
               </Typography>
             </Box>
             
             <Stack direction="row" spacing={1}>
               {/* Viewport Toggle */}
-              <Tooltip title="Desktop View">
+              <Tooltip title={t('formPreview.desktopView', 'Desktop View')}>
                 <IconButton 
                   onClick={() => setViewMode('desktop')}
                   color={viewMode === 'desktop' ? 'primary' : 'default'}
@@ -575,7 +582,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
                   <DesktopIcon />
                 </IconButton>
               </Tooltip>
-              <Tooltip title="Tablet View">
+              <Tooltip title={t('formPreview.tabletView', 'Tablet View')}>
                 <IconButton 
                   onClick={() => setViewMode('tablet')}
                   color={viewMode === 'tablet' ? 'primary' : 'default'}
@@ -583,7 +590,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
                   <TabletIcon />
                 </IconButton>
               </Tooltip>
-              <Tooltip title="Mobile View">
+              <Tooltip title={t('formPreview.mobileView', 'Mobile View')}>
                 <IconButton 
                   onClick={() => setViewMode('mobile')}
                   color={viewMode === 'mobile' ? 'primary' : 'default'}
@@ -606,10 +613,10 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
           {structure.length === 0 ? (
             <Card sx={{ p: 6, textAlign: 'center' }}>
               <Typography variant="h6" color="text.secondary">
-                No structure to preview
+                {t('formPreview.noStructure', 'No structure to preview')}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Add some groups and questions to see the preview
+                {t('formPreview.addGroups', 'Add some groups and questions to see the preview')}
               </Typography>
             </Card>
           ) : (
@@ -617,14 +624,14 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
               {/* Form Header */}
               <Card elevation={3} sx={{ p: 4, mb: 4, borderRadius: 3, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
                 <Typography variant="h4" fontWeight="bold" gutterBottom>
-                  {title || 'Questionnaire Preview'}
+                  {title || t('formPreview.questionnairePreview', 'Questionnaire Preview')}
                 </Typography>
                 <Typography variant="body1" sx={{ opacity: 0.9 }}>
-                  {description || 'This is how your questionnaire will appear to users. All interactions work as they would in the real form.'}
+                  {description || t('formPreview.previewDesc', 'This is how your questionnaire will appear to users. All interactions work as they would in the real form.')}
                 </Typography>
                 {title && (
                   <Chip 
-                    label="🔍 Preview Mode" 
+                    label={t('formPreview.previewMode', '🔍 Preview Mode')} 
                     sx={{ 
                       mt: 2, 
                       backgroundColor: 'rgba(255,255,255,0.2)', 
@@ -648,10 +655,10 @@ const FormPreview: React.FC<FormPreviewProps> = ({ title, description, structure
                     background: 'linear-gradient(45deg, #4caf50 30%, #8bc34a 90%)'
                   }}
                 >
-                  Submit Form
+                  {t('formPreview.submitForm', 'Submit Form')}
                 </Button>
                 <Typography variant="caption" display="block" sx={{ mt: 2 }}>
-                  This is a preview - no data will be saved
+                  {t('formPreview.previewNotice', 'This is a preview - no data will be saved')}
                 </Typography>
               </Card>
             </Box>
