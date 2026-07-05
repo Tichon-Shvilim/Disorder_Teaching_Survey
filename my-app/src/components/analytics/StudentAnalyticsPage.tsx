@@ -95,7 +95,7 @@ const StudentAnalyticsPage: React.FC = () => {
 
         <div style={{ display: 'grid', gap: '32px' }}>
           <StudentYearlyAnalytics submissions={submissions} />
-          <DomainAnalytics submissions={submissions} />
+          <DomainAnalytics submissions={submissions} studentId={studentId} />
         </div>
       </div>
     </div>
