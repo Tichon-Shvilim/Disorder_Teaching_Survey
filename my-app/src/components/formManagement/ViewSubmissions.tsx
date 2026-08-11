@@ -381,7 +381,7 @@ const ViewSubmissions: React.FC = () => {
           }}>
             <div>
               <label style={{ fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px', display: 'block' }}>
-                Status
+                {t('formSubmissions.statusLabel', 'סטטוס')}
               </label>
               <select
                 value={filterStatus}
@@ -395,16 +395,16 @@ const ViewSubmissions: React.FC = () => {
                   cursor: 'pointer'
                 }}
               >
-                <option value="all">All Statuses</option>
-                <option value="draft">Draft</option>
-                <option value="completed">Completed</option>
-                <option value="reviewed">Reviewed</option>
+                <option value="all">{t('formSubmissions.allStatuses', 'כל הסטטוסים')}</option>
+                <option value="draft">{t('formSubmissions.draft', 'טיוטה')}</option>
+                <option value="completed">{t('formSubmissions.completed', 'הושלם')}</option>
+                <option value="reviewed">{t('formSubmissions.reviewed', 'נבדק')}</option>
               </select>
             </div>
 
             <div>
               <label style={{ fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px', display: 'block' }}>
-                Questionnaire
+                {t('formSubmissions.questionnaire', 'שאלון')}
               </label>
               <select
                 value={filterQuestionnaire}
@@ -419,7 +419,7 @@ const ViewSubmissions: React.FC = () => {
                   minWidth: '200px'
                 }}
               >
-                <option value="all">All Questionnaires</option>
+                <option value="all">{t('formSubmissions.allQuestionnaires', 'כל השאלונים')}</option>
                 {questionnaires.map((q) => (
                   <option key={q._id} value={q._id}>{q.title}</option>
                 ))}

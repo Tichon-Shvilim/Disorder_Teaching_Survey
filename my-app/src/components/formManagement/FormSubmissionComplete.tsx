@@ -1,15 +1,17 @@
 import React from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { CheckCircle, BarChart3, Edit, ArrowLeft } from 'lucide-react';
 
 const FormSubmissionComplete: React.FC = () => {
+  const { t } = useTranslation();
   const { submissionId } = useParams<{ submissionId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
   
   // Get data from navigation state
-  const studentName = location.state?.studentName || 'Student';
-  const questionnaireTitle = location.state?.questionnaireTitle || 'Form';
+  const studentName = location.state?.studentName || t('formSubmissionComplete.defaultStudent', 'תלמיד');
+  const questionnaireTitle = location.state?.questionnaireTitle || t('formSubmissionComplete.defaultForm', 'טופס');
   const canEdit = location.state?.canEdit || false;
 
   const handleViewAnalytics = () => {
@@ -68,7 +70,7 @@ const FormSubmissionComplete: React.FC = () => {
           color: '#1f2937',
           margin: '0 0 12px 0'
         }}>
-          Form Submission Complete!
+          {t('formSubmissionComplete.title', 'הגשת הטופס הושלמה!')}
         </h1>
 
         <p style={{
@@ -77,7 +79,7 @@ const FormSubmissionComplete: React.FC = () => {
           margin: '0 0 32px 0',
           lineHeight: '1.6'
         }}>
-          The form "{questionnaireTitle}" for {studentName} has been successfully submitted.
+          {t('formSubmissionComplete.description', 'הטופס "{{questionnaireTitle}}" עבור {{studentName}} הוגש בהצלחה.', { questionnaireTitle, studentName })}
         </p>
 
         {/* Action Buttons */}
@@ -115,7 +117,7 @@ const FormSubmissionComplete: React.FC = () => {
             }}
           >
             <BarChart3 style={{ width: '20px', height: '20px' }} />
-            View Result Analytics
+            {t('formSubmissionComplete.viewResultAnalytics', 'צפה באנליטיקת התוצאות')}
           </button>
 
           {canEdit && (
@@ -144,7 +146,7 @@ const FormSubmissionComplete: React.FC = () => {
               }}
             >
               <Edit style={{ width: '16px', height: '16px' }} />
-              Make Changes to Form
+              {t('formSubmissionComplete.makeChangesToForm', 'ערוך את הטופס')}
             </button>
           )}
         </div>
@@ -177,7 +179,7 @@ const FormSubmissionComplete: React.FC = () => {
           }}
         >
           <ArrowLeft style={{ width: '16px', height: '16px' }} />
-          Back to Students
+          {t('formSubmissionComplete.backToStudents', 'חזרה לתלמידים')}
         </button>
       </div>
     </div>
