@@ -79,6 +79,23 @@ class AnalyticsApiService {
       throw error;
     }
   }
+
+  // Get aggregated domains for a student
+  async getStudentDomains(studentId: string): Promise<any> {
+    try {
+      const response = await getItemById<any>('api/analytics/domains/student', studentId);
+      const apiResponse = this.handleResponse<any>(response);
+
+      if (apiResponse.success && apiResponse.data) {
+        return apiResponse.data;
+      }
+
+      throw new Error(apiResponse.error || 'Failed to fetch student domains');
+    } catch (error) {
+      console.error('Error fetching student domains:', error);
+      throw error;
+    }
+  }
 }
 
 // Export singleton instance

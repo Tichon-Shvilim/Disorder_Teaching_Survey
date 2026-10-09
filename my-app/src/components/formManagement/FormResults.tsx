@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, BarChart3, PieChart, Radar } from 'lucide-react';
 import DomainBarChart from '../analytics/DomainBarChart';
 import { AnalyticsAPIService } from '../analytics';
@@ -24,6 +25,7 @@ interface SubmissionAnalytics {
 }
 
 const FormResults: React.FC = () => {
+  const { t } = useTranslation();
   const { submissionId } = useParams<{ submissionId: string }>();
   const navigate = useNavigate();
   
@@ -68,7 +70,7 @@ const FormResults: React.FC = () => {
               if (isMounted && attempts < 2) {
                 setTimeout(() => retryFetch(attempts + 1), 3000);
               } else if (isMounted) {
-                toast.error('Analytics are being calculated. Please refresh in a moment.');
+                toast.error(t('formResults.analyticsAreBeingCalculated', 'האנליטיקה מחושבת. אנא רענן את הדף בעוד כמה רגעים.'));
               }
             }
           };
@@ -76,7 +78,7 @@ const FormResults: React.FC = () => {
           setTimeout(() => retryFetch(), 2000);
         } catch {
           if (isMounted) {
-            toast.error('Failed to calculate analytics. Please try again later.');
+            toast.error(t('formResults.failedToCalculateAnalytics', 'נכשל בחישוב האנליטיקה. אנא נסה שוב מאוחר יותר.'));
           }
         }
       } finally {
@@ -101,10 +103,10 @@ const FormResults: React.FC = () => {
   };
 
   const getScoreLabel = (score: number) => {
-    if (score >= 80) return 'Excellent';
-    if (score >= 60) return 'Good';
-    if (score >= 40) return 'Needs Improvement';
-    return 'Concerning';
+    if (score >= 80) return t('formResults.excellent', 'מעולה');
+    if (score >= 60) return t('formResults.good', 'טוב');
+    if (score >= 40) return t('formResults.needsImprovement', 'זקוק לשיפור');
+    return t('formResults.concerning', 'מדאיג');
   };
 
   if (loading) {
@@ -125,7 +127,7 @@ const FormResults: React.FC = () => {
           borderRadius: '50%',
           animation: 'spin 1s linear infinite'
         }}></div>
-        <p style={{ fontSize: '16px', color: '#6b7280' }}>Loading results...</p>
+        <p style={{ fontSize: '16px', color: '#6b7280' }}>{t('formResults.loadingResults', 'טוען תוצאות...')}</p>
       </div>
     );
   }
@@ -141,7 +143,7 @@ const FormResults: React.FC = () => {
         gap: '16px' 
       }}>
         <p style={{ fontSize: '16px', color: '#6b7280' }}>Analytics are being calculated...</p>
-        <p style={{ fontSize: '14px', color: '#9ca3af' }}>This may take a few moments. Please refresh the page.</p>
+        <p style={{ fontSize: '14px', color: '#9ca3af' }}>{t('formResults.thisMayTakeAFewMoments', 'זה עלול לקחת כמה רגעים. אנא רענן את הדף.')}</p>
         <div style={{ display: 'flex', gap: '12px' }}>
           <button
             onClick={() => window.location.reload()}
@@ -154,7 +156,7 @@ const FormResults: React.FC = () => {
               cursor: 'pointer'
             }}
           >
-            Refresh
+            {t('formResults.refresh', 'רענן')}
           </button>
           <button
             onClick={() => navigate(-1)}
@@ -167,7 +169,7 @@ const FormResults: React.FC = () => {
               cursor: 'pointer'
             }}
           >
-            Go Back
+            {t('formResults.goBack', 'חזור')}
           </button>
         </div>
       </div>
@@ -211,16 +213,16 @@ const FormResults: React.FC = () => {
               color: '#1f2937', 
               margin: '0 0 8px 0' 
             }}>
-              Form Results
+              {t('formResults.formResults', 'תוצאות טופס')}
             </h1>
             <p style={{ fontSize: '16px', color: '#6b7280', margin: '0 0 8px 0' }}>
-              Student: <strong>{analytics.studentName}</strong>
+              {t('students.student', 'תלמיד')}: <strong>{analytics.studentName}</strong>
             </p>
             <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
-              Form: <strong>{analytics.questionnaireTitle}</strong>
+              {t('formResults.form', 'טופס')}: <strong>{analytics.questionnaireTitle}</strong>
             </p>
             <p style={{ fontSize: '14px', color: '#6b7280', margin: '4px 0 0 0' }}>
-              Submitted: {new Date(analytics.submittedAt).toLocaleDateString()}
+              {t('formResults.submitted', 'הוגש')}: {new Date(analytics.submittedAt).toLocaleDateString()}
             </p>
           </div>
         </div>
@@ -234,7 +236,7 @@ const FormResults: React.FC = () => {
           marginBottom: '32px'
         }}>
           <h2 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '24px', color: '#1f2937' }}>
-            Overall Score
+            {t('formResults.overallScore', 'ציון כולל')}
           </h2>
           <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
             <div style={{
@@ -272,7 +274,7 @@ const FormResults: React.FC = () => {
                 {getScoreLabel(analytics.overallScore)}
               </h3>
               <p style={{ fontSize: '16px', color: '#6b7280', margin: 0 }}>
-                Based on {analytics.domainScores.length} domain{analytics.domainScores.length !== 1 ? 's' : ''}
+                {t('formResults.basedOnDomains', 'מבוסס על {{count}} תחום{{plural}}', { count: analytics.domainScores.length, plural: analytics.domainScores.length !== 1 ? 'ים' : '' })}
               </p>
             </div>
           </div>
@@ -306,7 +308,7 @@ const FormResults: React.FC = () => {
               }}
             >
               <BarChart3 style={{ height: '16px', width: '16px' }} />
-              Bar Chart
+              {t('formResults.barChart', 'גרף עמודות')}
             </button>
             <button
               onClick={() => setChartType('pie')}
@@ -324,7 +326,7 @@ const FormResults: React.FC = () => {
               }}
             >
               <PieChart style={{ height: '16px', width: '16px' }} />
-              Pie Chart
+              {t('formResults.pieChart', 'גרף עוגה')}
             </button>
             <button
               onClick={() => setChartType('radar')}
@@ -342,7 +344,7 @@ const FormResults: React.FC = () => {
               }}
             >
               <Radar style={{ height: '16px', width: '16px' }} />
-              Radar Chart
+              {t('formResults.radarChart', 'גרף רדאר')}
             </button>
           </div>
 
@@ -362,7 +364,7 @@ const FormResults: React.FC = () => {
           {chartType === 'pie' && (
             <div style={{ textAlign: 'center', padding: '48px' }}>
               <p style={{ color: '#6b7280', fontSize: '16px' }}>
-                Pie chart visualization coming soon...
+                {t('formResults.pieChartVisualizationComingSoon', 'הדמיית גרף עוגה בקרוב...')}
               </p>
             </div>
           )}
@@ -370,7 +372,7 @@ const FormResults: React.FC = () => {
           {chartType === 'radar' && (
             <div style={{ textAlign: 'center', padding: '48px' }}>
               <p style={{ color: '#6b7280', fontSize: '16px' }}>
-                Radar chart visualization coming soon...
+                {t('formResults.radarChartVisualizationComingSoon', 'הדמיית גרף רדאר בקרוב...')}
               </p>
             </div>
           )}
@@ -384,7 +386,7 @@ const FormResults: React.FC = () => {
           boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
         }}>
           <h2 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '24px', color: '#1f2937' }}>
-            Detailed Breakdown
+            {t('formResults.detailedBreakdown', 'פירוט מפורט')}
           </h2>
           <div style={{ display: 'grid', gap: '16px' }}>
             {analytics.domainScores.map((domain) => (
@@ -403,7 +405,7 @@ const FormResults: React.FC = () => {
                       {domain.title}
                     </h3>
                     <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
-                      {domain.answeredQuestions} of {domain.totalQuestions} questions answered
+                      {domain.answeredQuestions} {t('formResults.of', 'מתוך')} {domain.totalQuestions} {t('formResults.questionsAnswered', 'שאלות שנענו')}
                     </p>
                   </div>
                   <div style={{ textAlign: 'right' }}>

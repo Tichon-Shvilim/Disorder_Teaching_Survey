@@ -462,7 +462,7 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
                     {node.title}
                     {node.condition && (
                       <Chip 
-                        label="Conditional" 
+                        label={t('structureBuilder.conditionalTag', 'Conditional')} 
                         size="small" 
                         color="secondary" 
                         variant="outlined"
@@ -654,13 +654,13 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
                             {hasConditionalChildren && (
                               <Chip
                                 icon={<ConditionalIcon />}
-                                label="Has conditions"
+                                label={t('structureBuilder.hasConditions', 'Has conditions')}
                                 size="small"
                                 color="secondary"
                                 variant="filled"
                               />
                             )}
-                            <Tooltip title="Add Conditional Question for this option">
+                            <Tooltip title={t('structureBuilder.addConditionalQuestionTooltip', 'Add Conditional Question for this option')}>
                               <IconButton
                                 size="small"
                                 color="secondary"
@@ -683,7 +683,7 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
                           {hasConditionalChildren && (
                             <Box sx={{ mt: 2, ml: 2, pl: 2, borderLeft: '3px solid #e0e0e0' }}>
                               <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold', mb: 1, display: 'block' }}>
-                                🎯 Conditional Questions for "{option.label}":
+                                {t('structureBuilder.conditionalQuestionsFor', '🎯 Conditional Questions for')} "{option.label}":
                               </Typography>
                               {(node.children ?? [])
                                 .filter(child => child.condition?.parentOptionId === option.id)
@@ -730,7 +730,7 @@ const StructureBuilder: React.FC<StructureBuilderProps> = ({
                   {node.children.filter(child => !child.condition).length > 0 && (
                     <>
                       <Typography variant="subtitle2" gutterBottom>
-                        Children ({node.children.filter(child => !child.condition).length}):
+                        {t('structureBuilder.childrenLabel', 'Children')} ({node.children.filter(child => !child.condition).length}):
                       </Typography>
                       {node.children
                         .filter(child => !child.condition)
