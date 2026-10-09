@@ -13,6 +13,7 @@ export interface FormSubmission {
   completedBy?: string;
   totalScore?: number;
   domainScores?: Array<{ title: string; score: number; maxScore: number }>;
+  graphSettings?: GraphSettings;
 }
 
 export interface FormAnswer {

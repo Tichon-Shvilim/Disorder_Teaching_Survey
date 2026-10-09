@@ -8,8 +8,6 @@ import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import { PDFDownloadButton } from '../common';
-import StudentYearlyAnalytics from '../analytics/StudentYearlyAnalytics';
-import DomainAnalytics from '../analytics/DomainAnalytics';
 
 const ViewSubmissions: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -108,6 +106,17 @@ const ViewSubmissions: React.FC = () => {
         studentName,
         editSubmissionId: submission._id
       }
+    });
+  };
+
+  const handleViewStudentAnalytics = () => {
+    if (!studentId) {
+      toast.info(t('formSubmissions.noStudentSelectedForAnalytics', 'No student selected for analytics.'));
+      return;
+    }
+
+    navigate(`/layout/student-analytics/${studentId}`, {
+      state: { studentName }
     });
   };
 
@@ -239,20 +248,35 @@ const ViewSubmissions: React.FC = () => {
               {t('students.student', 'Student')}: <strong>{studentName}</strong>
             </p>
           </div>
-
-          {/* Student Yearly Analytics Chart */}
-          <div style={{ marginTop: '32px' }}>
-            <StudentYearlyAnalytics submissions={submissions} />
-          </div>
-          {/* Domain Analytics Chart */}
-          <div style={{ marginTop: '32px' }}>
-            <DomainAnalytics submissions={submissions} />
-          </div>
           </div>
         </div>
 
         {/* Actions and Filters */}
         <div style={{ marginBottom: '24px', display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+          {/* View Student Analytics Button */}
+          <button
+            onClick={handleViewStudentAnalytics}
+            disabled={!studentId}
+            style={{
+              background: studentId ? 'linear-gradient(135deg, #16a34a 0%, #059669 100%)' : '#d1d5db',
+              color: 'white',
+              padding: '12px 20px',
+              borderRadius: '8px',
+              border: 'none',
+              cursor: studentId ? 'pointer' : 'not-allowed',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '14px',
+              fontWeight: '500',
+              boxShadow: studentId ? '0 2px 4px rgba(0, 0, 0, 0.1)' : 'none'
+            }}
+            title={t('formSubmissions.viewStudentAnalytics', 'View Student Analytics')}
+          >
+            <BarChart3 style={{ height: '16px', width: '16px' }} />
+            {t('formSubmissions.viewStudentAnalytics', 'View Student Analytics')}
+          </button>
+
           {/* New Form Button */}
           <div className="dropdown" style={{ position: 'relative', display: 'inline-block' }}>
             <button
@@ -357,7 +381,7 @@ const ViewSubmissions: React.FC = () => {
           }}>
             <div>
               <label style={{ fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px', display: 'block' }}>
-                Status
+                {t('formSubmissions.statusLabel', 'סטטוס')}
               </label>
               <select
                 value={filterStatus}
@@ -371,16 +395,16 @@ const ViewSubmissions: React.FC = () => {
                   cursor: 'pointer'
                 }}
               >
-                <option value="all">All Statuses</option>
-                <option value="draft">Draft</option>
-                <option value="completed">Completed</option>
-                <option value="reviewed">Reviewed</option>
+                <option value="all">{t('formSubmissions.allStatuses', 'כל הסטטוסים')}</option>
+                <option value="draft">{t('formSubmissions.draft', 'טיוטה')}</option>
+                <option value="completed">{t('formSubmissions.completed', 'הושלם')}</option>
+                <option value="reviewed">{t('formSubmissions.reviewed', 'נבדק')}</option>
               </select>
             </div>
 
             <div>
               <label style={{ fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px', display: 'block' }}>
-                Questionnaire
+                {t('formSubmissions.questionnaire', 'שאלון')}
               </label>
               <select
                 value={filterQuestionnaire}
@@ -395,7 +419,7 @@ const ViewSubmissions: React.FC = () => {
                   minWidth: '200px'
                 }}
               >
-                <option value="all">All Questionnaires</option>
+                <option value="all">{t('formSubmissions.allQuestionnaires', 'כל השאלונים')}</option>
                 {questionnaires.map((q) => (
                   <option key={q._id} value={q._id}>{q.title}</option>
                 ))}
@@ -682,6 +706,7 @@ const ViewSubmissions: React.FC = () => {
                     </p>
                   </div>
                 )}
+
 
                 <div>
                   <h4 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: '0 0 24px 0' }}>

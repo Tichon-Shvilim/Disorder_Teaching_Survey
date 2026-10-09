@@ -64,7 +64,18 @@
     "previewDesc": "כך ייראה השאלון למשתמשים. כל האינטראקציות פועלות כמו בטופס האמיתי.",
     "previewMode": "🔍 מצב תצוגה מקדימה",
     "submitForm": "שלח טופס",
-    "previewNotice": "זוהי תצוגה מקדימה - נתונים לא יישמרו"
+    "previewNotice": "זוהי תצוגה מקדימה - נתונים לא יישמרו",
+    "answerPlaceholder": "הקלד את תשובתך כאן...",
+    "numberPlaceholder": "הזן מספר...",
+    "weightLabel": "משקל: {{weight}}",
+    "valueLabel": "ערך: {{value}}",
+    "followUpQuestions": "✨ שאלות המשך",
+    "hiddenConditionalQuestion": "💡 שאלה מותנית מוסתרת: \"{{title}}\" (תופיע כאשר התנאי יתקיים)",
+    "conditionalQuestion": "שאלה מותנית",
+    "low": "נמוך",
+    "high": "גבוה",
+    "defaultAnswerPlaceholder": "תשובה...",
+    "questionsSummary": "{{count}} שאלה{{plural}} • תצוגה אינטראקטיבית"
   },
   "analyticsSettings": {
     "title": "📊 הגדרות אנליטיקה",
@@ -77,20 +88,36 @@
     "label": "תווית",
     "min": "מינימום",
     "max": "מקסימום",
+    "rangeExample": "לדוגמה: נמוך, בינוני, גבוה",
+    "rangeFallback": "טווח",
     "color": "צבע",
     "remove": "הסר",
     "presetTrafficLight": "רמזור (3 רמות)",
     "presetPerformance": "ביצועים (5 רמות)",
     "preview": "תצוגה מקדימה",
-    "previewDesc": "כך ייראו טווחי הצבעים באנליטיקה:"
-    ,"excellent": "מעולה"
-    ,"good": "טוב"
-    ,"average": "ממוצע"
-    ,"belowAverage": "מתחת לממוצע"
-    ,"poor": "גרוע"
-    ,"high": "גבוה"
-    ,"medium": "בינוני"
-    ,"low": "נמוך"
+    "previewDesc": "כך ייראו טווחי הצבעים באנליטיקה:",
+    "excellent": "מעולה",
+    "good": "טוב",
+    "average": "ממוצע",
+    "belowAverage": "מתחת לממוצע",
+    "poor": "גרוע",
+    "high": "גבוה",
+    "medium": "בינוני",
+    "low": "נמוך",
+    "domainScoresByField": "ציוני תחומים לפי שדה",
+    "noDomainScoresAvailable": "אין ציוני תחום זמינים עבור ההגשות שנבחרו.",
+    "selectDomain": "בחר תחום/תחומים",
+    "selectedDomainAverage": "ממוצע ({{count}} תחומים)",
+    "submissionScores": "ציוני הגשה",
+    "selectQuestionnaires": "בחר מבחנים להצגה",
+    "selectQuestionnaireHint": "החזק Ctrl/Cmd כדי לבחור מספר מבחנים. השאר ריקים כדי לחשב ממוצע לכל ההגשות.",
+    "averageScore": "ציון ממוצע",
+    "averageScoreLabel": "ציון ממוצע",
+    "averageScoreInfo": "חישוב ממוצע של {{count}} הגשה/ות נבחרו.",
+    "noSubmissionScoresAvailable": "אין ציוני הגשה תקפים עבור המבחנים שנבחרו.",
+    "score": "ציון",
+    "year": "שנה",
+    "selectYearsToDisplay": "בחר שנים להצגה (אופציונלי):"
   },
   "questionnaireBuilder": {
     "progressBoxTitle": "התקדמות",
@@ -135,7 +162,8 @@
     "totalQuestions": "שאלות בסך הכול",
     "rootGroups": "קבוצות ראשיות",
     "ready": "מוכן לפריסה",
-    "created": "השאלון נוצר בהצלחה!"
+    "created": "השאלון נוצר בהצלחה!",
+    "previewAndValidate": "תצוגה מקדימה ואימות"
   },
   "addNodeDialog": {
       "enableAnalytics": "אפשר אנליטיקה",
@@ -212,6 +240,11 @@
         "addFirstOption": "הוסף אפשרות ראשונה",
         "needsAnswerOptions": "שאלה זו דורשת אפשרויות תשובה",
         "childrenLabel": "ילדים",
+    "conditionalTag": "מותנה",
+    "hasConditions": "יש תנאים",
+    "conditionalQuestionsFor": "🎯 שאלות מותנות עבור",
+    "showsWhenSelected": "🎯 יופיע כאשר אפשרות מסוימת נבחרת",
+    "addConditionalQuestionTooltip": "הוסף שאלה מותנית לאפשרות זו",
       "tip": "💡 טיפ: קבוצות עם אנליטיקה (גרפיות) יופיעו בדוחות וגרפים עם הדגשה כחולה.",
     "header": "בניית מבנה",
     "debugInfo": "ניפוי: אורך מבנה: {{length}}, מוסיף: {{adding}}, קבוצות גרפיות: {{graphable}}",
@@ -651,16 +684,35 @@
     "saving": "שומר...",
     "submitting": "מגיש..."
   },
+  "formSubmissionComplete": {
+    "title": "הגשת הטופס הושלמה!",
+    "description": "הטופס \"{{questionnaireTitle}}\" עבור {{studentName}} הוגש בהצלחה.",
+    "viewResultAnalytics": "צפה באנליטיקת התוצאות",
+    "makeChangesToForm": "ערוך את הטופס",
+    "backToStudents": "חזרה לתלמידים",
+    "defaultStudent": "תלמיד",
+    "defaultForm": "טופס"
+  },
   "formSubmissions": {
-    "formSubmissions": "שאלונים בעברית!",
+    "formSubmissions": "הגשות טפסים",
     "loadingSubmissions": "טוען הגשות...",
     "fillNewForm": "מלא טופס חדש",
     "filters": "מסננים",
-    "status": "סטטוס",
+    "statusLabel": "סטטוס",
     "allStatuses": "כל הסטטוסים",
+    "status": {
+      "draft": "טיוטה",
+      "completed": "הושלם",
+      "reviewed": "נבדק",
+      "unknown": "לא ידוע"
+    },
     "draft": "טיוטה",
     "completed": "הושלם",
     "reviewed": "נבדק",
+    "answersCount_one": "{{count}} תשובה",
+    "answersCount_two": "{{count}} תשובות",
+    "answersCount_many": "{{count}} תשובות",
+    "answersCount_other": "{{count}} תשובות",
     "questionnaire": "שאלון",
     "allQuestionnaires": "כל השאלונים",
     "noSubmissionsFound": "לא נמצאו הגשות",
@@ -691,6 +743,7 @@
     "notes": "הערות",
     "formResponses": "תגובות הטופס",
     "question": "שאלה",
+    "viewStudentAnalytics": "הצג אנליטיקת תלמידים",
     "selectedOptions": "אפשרויות שנבחרו",
     "domainScores": "ציוני תחומים",
     "totalScore": "ציון כולל",
@@ -701,6 +754,7 @@
     "loadingAnalyticsOptions": "טוען אפשרויות אנליטיקה...",
     "viewType": "סוג תצוגה",
     "studentAnalytics": "אנליטיקה של תלמיד",
+    "studentAnalyticsDescription": "אנליטיקה משולבת של כל ההגשות של התלמיד הנבחר.",
     "classAnalytics": "אנליטיקה של כיתה",
     "selectStudent": "בחר תלמיד",
     "selectAStudent": "-- בחר תלמיד --",

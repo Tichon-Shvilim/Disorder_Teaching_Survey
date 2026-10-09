@@ -404,7 +404,7 @@ const QuestionnaireBuilder: React.FC<QuestionnaireBuilderProps> = ({
         return (
           <Box sx={{ p: 4 }}>
             <Typography variant="h6" gutterBottom>
-              Preview and Validate
+              {t('questionnaireBuilder.previewAndValidate', 'Preview and Validate')}
             </Typography>
             <Box sx={{ mb: 3 }}>
               <Button
@@ -414,22 +414,22 @@ const QuestionnaireBuilder: React.FC<QuestionnaireBuilderProps> = ({
                 disabled={structure.length === 0}
                 size="large"
               >
-                Preview Complete Form
+                {t('questionnaireBuilder.previewForm')}
               </Button>
             </Box>
             {structure.length > 0 && (
               <Card sx={{ p: 3, backgroundColor: '#f8f9fa' }}>
                 <Typography variant="subtitle1" gutterBottom>
-                  Form Summary:
+                  {t('questionnaireBuilder.formSummary')}
                 </Typography>
                 <Typography variant="body2">
-                  • {getQuestionCount(structure)} total questions
+                  • {getQuestionCount(structure)} {t('questionnaireBuilder.totalQuestions')}
                 </Typography>
                 <Typography variant="body2">
-                  • {structure.length} root-level groups
+                  • {structure.length} {t('questionnaireBuilder.rootGroups')}
                 </Typography>
                 <Typography variant="body2">
-                  • Ready for deployment
+                  • {t('questionnaireBuilder.ready')}
                 </Typography>
               </Card>
             )}
